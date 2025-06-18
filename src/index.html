@@ -1,0 +1,37 @@
+<!-- src/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Moto POS</title>
+</head>
+
+<body>
+    <h1>Moto POS</h1>
+
+    <h3>Add New Product</h3>
+    <form id="product-form">
+        <label>
+            Name:
+            <input type="text" id="name" required />
+        </label><br><br>
+        <label>
+            Price:
+            <input type="number" id="price" required />
+        </label><br><br>
+        <label>
+            Stock:
+            <input type="number" id="stock" required />
+        </label><br><br>
+        <button type="submit">Add Product</button>
+    </form>
+
+    <hr>
+    <h3>Product List</h3>
+    <ul id="product-list"></ul>
+
+    <script src="./renderer.js"></script>
+</body>
+
+</html>
