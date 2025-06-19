@@ -95,3 +95,29 @@ ipcMain.handle('add-product', async (event, product) => {
         });
     });
 });
+
+// সব প্রোডাক্ট লোড করার জন্য
+ipcMain.handle('get-products', async () => {
+    return new Promise((resolve, reject) => {
+        const sql = `
+      SELECT
+        p.id, p.name, p.sku, p.description,
+        p.purchase_price, p.sale_price,
+        p.quantity_in_stock, p.unit,
+        p.created_at,
+        c.name as category_name
+      FROM product p
+      LEFT JOIN product_category c ON p.category_id = c.id
+      ORDER BY p.id DESC
+    `;
+        db.all(sql, [], (err, rows) => {
+            if (err) {
+                console.error(err.message);
+                reject('Error loading products');
+            } else {
+                resolve(rows);
+            }
+        });
+    });
+});
+
