@@ -1,6 +1,16 @@
 moto_pos/
 │
-├── public/                     # Static files like icons, images
+├── renderer/               # React frontend
+│   │   ├── components/         # React components (Invoice, ProductForm, etc.)
+|   │   ├── public/ 
+|   │   ├── src/
+|   │       ├── assets/
+│   │   ├── pages/              # Route-based pages (Home, POS, Reports)
+│   │   ├── i18n/               # For multilingual support
+│   │   ├── App.css
+│   │   ├── App.js
+│   │   ├── index.css
+│   │   └── main.jsx
 │
 ├── src/
 │   ├── main/                   # Electron main process
@@ -9,12 +19,6 @@ moto_pos/
 │   │   └── database/           # SQLite DB logic here
 │   │       └── db.js
 │
-│   ├── renderer/               # React frontend
-│   │   ├── components/         # React components (Invoice, ProductForm, etc.)
-│   │   ├── pages/              # Route-based pages (Home, POS, Reports)
-│   │   ├── i18n/               # For multilingual support
-│   │   ├── App.js
-│   │   └── index.jsx
 │
 ├── .env                       # Environment variables
 ├── .gitignore

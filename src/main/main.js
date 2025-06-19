@@ -1,5 +1,6 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
+const db = require('./database/db');
 
 function createWindow() {
     const win = new BrowserWindow({
@@ -7,8 +8,8 @@ function createWindow() {
         height: 800,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
-            contextIsolation: true
-        }
+            contextIsolation: true,
+        },
     });
 
     const startUrl = app.isPackaged
@@ -22,4 +23,18 @@ app.whenReady().then(createWindow);
 
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') app.quit();
+});
+
+// 🟨 IPC for add-category
+ipcMain.handle('add-category', async (event, name) => {
+    return new Promise((resolve, reject) => {
+        db.run(`INSERT INTO product_category (name) VALUES (?)`, [name], function (err) {
+            if (err) {
+                console.error(err.message);
+                reject('Error inserting category');
+            } else {
+                resolve({ success: true, id: this.lastID });
+            }
+        });
+    });
 });
