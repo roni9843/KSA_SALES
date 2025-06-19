@@ -1,19 +1,36 @@
 {
   "name": "moto_pos",
   "version": "1.0.0",
-  "main": "src/main.js",
+  "main": "src/main/main.js",
   "scripts": {
-    "start": "electron ."
+    "dev": "concurrently \"cross-env BROWSER=none npm run dev-react\" \"npm run dev-electron\"",
+    "dev-react": "cd renderer && npm run dev",
+    "dev-electron": "electron .",
+    "build": "cd renderer && npm run build && electron-builder",
+    "postinstall": "electron-builder install-app-deps"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
-  "devDependencies": {
-    "electron": "^36.4.0",
-    "electron-rebuild": "^3.2.9"
+  "build": {
+    "appId": "com.moto.pos",
+    "productName": "Moto POS",
+    "directories": {
+      "buildResources": "public",
+      "output": "dist"
+    },
+    "files": [
+      "dist",
+      "src",
+      "renderer/dist",
+      "node_modules",
+      "package.json"
+    ]
   },
   "dependencies": {
-    "better-sqlite3": "^11.10.0"
+    "sqlite3": "^5.1.6"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0",
+    "cross-env": "^7.0.3",
+    "electron": "^30.0.0",
+    "electron-builder": "^24.6.0"
   }
 }
