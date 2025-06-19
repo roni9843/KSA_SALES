@@ -38,3 +38,60 @@ ipcMain.handle('add-category', async (event, name) => {
         });
     });
 });
+
+// সব ক্যাটেগরি লোড করার জন্য
+ipcMain.handle('get-categories', async () => {
+    return new Promise((resolve, reject) => {
+        db.all(`SELECT * FROM product_category ORDER BY id DESC`, [], (err, rows) => {
+            if (err) {
+                console.error(err.message);
+                reject('Error reading categories');
+            } else {
+                resolve(rows);
+            }
+        });
+    });
+});
+
+// ক্যাটেগরি ডিলিট করার জন্য
+ipcMain.handle('delete-category', async (event, id) => {
+    return new Promise((resolve, reject) => {
+        db.run(`DELETE FROM product_category WHERE id = ?`, [id], function (err) {
+            if (err) {
+                console.error(err.message);
+                reject('Error deleting category');
+            } else {
+                resolve({ success: true });
+            }
+        });
+    });
+});
+
+// 🟨 IPC for add-product
+ipcMain.handle('add-product', async (event, product) => {
+    return new Promise((resolve, reject) => {
+        const sql = `
+      INSERT INTO product
+      (name, sku, category_id, description, purchase_price, sale_price, quantity_in_stock, unit)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+        const params = [
+            product.name,
+            product.sku,
+            product.category_id,
+            product.description,
+            product.purchase_price,
+            product.sale_price,
+            product.quantity_in_stock,
+            product.unit,
+        ];
+        db.run(sql, params, function (err) {
+            if (err) {
+                console.error(err.message);
+                reject('Error adding product');
+            } else {
+                resolve({ success: true, id: this.lastID });
+            }
+        });
+    });
+});

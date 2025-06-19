@@ -15,4 +15,24 @@ db.serialize(() => {
   `);
 });
 
+// ✅ product table তৈরি
+db.serialize(() => {
+    db.run(`
+    CREATE TABLE IF NOT EXISTS product (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      sku TEXT UNIQUE NOT NULL,
+      category_id INTEGER NOT NULL,
+      description TEXT,
+      purchase_price REAL,
+      sale_price REAL,
+      quantity_in_stock INTEGER DEFAULT 0,
+      unit TEXT,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (category_id) REFERENCES product_category(id)
+    )
+  `);
+});
+
+
 module.exports = db;
