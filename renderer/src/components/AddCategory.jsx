@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 function AddCategory() {
+    const { t } = useTranslation();
     const [name, setName] = useState('');
     const [message, setMessage] = useState('');
     const [categories, setCategories] = useState([]);
@@ -47,14 +49,14 @@ function AddCategory() {
 
     return (
         <div>
-            <h2>Add Product Category</h2>
+            <h2>{t('add_category')}</h2>
             <input
                 type="text"
                 value={name}
                 placeholder="Category Name"
                 onChange={(e) => setName(e.target.value)}
             />
-            <button onClick={handleAdd}>Add</button>
+            <button onClick={handleAdd}>{t('add')}</button>
             <p>{message}</p>
 
             <h3>Category List</h3>
