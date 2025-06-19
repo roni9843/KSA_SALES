@@ -6,7 +6,7 @@ const db = new sqlite3.Database(dbPath);
 
 // টেবিল তৈরি: product_category
 db.serialize(() => {
-    db.run(`
+  db.run(`
     CREATE TABLE IF NOT EXISTS product_category (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
@@ -17,7 +17,7 @@ db.serialize(() => {
 
 // ✅ product table তৈরি
 db.serialize(() => {
-    db.run(`
+  db.run(`
     CREATE TABLE IF NOT EXISTS product (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
@@ -34,5 +34,32 @@ db.serialize(() => {
   `);
 });
 
+// ✅ invoices টেবিল
+db.run(`
+  CREATE TABLE IF NOT EXISTS invoice (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    customer_name TEXT,
+    total REAL,
+    discount REAL,
+    tax REAL,
+    paid REAL,
+    due REAL,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+  )
+`);
+
+// ✅ invoice_details টেবিল
+db.run(`
+  CREATE TABLE IF NOT EXISTS invoice_details (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    invoice_id INTEGER,
+    product_id INTEGER,
+    quantity INTEGER,
+    unit_price REAL,
+    total_price REAL,
+    FOREIGN KEY (invoice_id) REFERENCES invoice(id),
+    FOREIGN KEY (product_id) REFERENCES product(id)
+  )
+`);
 
 module.exports = db;

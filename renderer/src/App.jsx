@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import AddCategory from './components/AddCategory';
 import AddProduct from './components/AddProduct';
 import ProductList from './components/ProductList';
+import CreateInvoice from './components/CreateInvoice';
 
 function App() {
   const { t, i18n } = useTranslation();
@@ -24,6 +25,7 @@ function App() {
       <AddCategory />
       <AddProduct />
       <ProductList />
+      <CreateInvoice />
     </div>
   );
 }

@@ -121,3 +121,56 @@ ipcMain.handle('get-products', async () => {
     });
 });
 
+
+// 🟨 IPC for create-invoice
+ipcMain.handle('create-invoice', async (event, data) => {
+    return new Promise((resolve, reject) => {
+        const db = require('./database/db');
+        db.serialize(() => {
+            db.run('BEGIN TRANSACTION');
+
+            // 1. ইনভয়েস ইনসার্ট
+            const stmt = `
+        INSERT INTO invoice (customer_name, total, discount, tax, paid, due)
+        VALUES (?, ?, ?, ?, ?, ?)
+      `;
+            const invoiceParams = [
+                data.customer_name,
+                data.total,
+                data.discount,
+                data.tax,
+                data.paid,
+                data.total - data.paid
+            ];
+
+            db.run(stmt, invoiceParams, function (err) {
+                if (err) {
+                    db.run('ROLLBACK');
+                    return reject('Failed to create invoice');
+                }
+
+                const invoiceId = this.lastID;
+
+                // 2. প্রতিটি পণ্যের ইনভয়েস ডিটেইল ও স্টক কমানো
+                for (const item of data.items) {
+                    db.run(`
+            INSERT INTO invoice_details (invoice_id, product_id, quantity, unit_price, total_price)
+            VALUES (?, ?, ?, ?, ?)
+          `, [invoiceId, item.product_id, item.quantity, item.unit_price, item.total_price]);
+
+                    // stock কমানো
+                    db.run(`
+            UPDATE product
+            SET quantity_in_stock = quantity_in_stock - ?
+            WHERE id = ?
+          `, [item.quantity, item.product_id]);
+                }
+
+                db.run('COMMIT');
+                resolve({ success: true, invoice_id: invoiceId });
+            });
+        });
+    });
+});
+
+
