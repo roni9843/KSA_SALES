@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 function CreateInvoice() {
     const [products, setProducts] = useState([]);
@@ -8,6 +9,9 @@ function CreateInvoice() {
     const [discount, setDiscount] = useState(0);
     const [paid, setPaid] = useState(0);
     const [message, setMessage] = useState('');
+
+
+    const navigate = useNavigate();
 
     useEffect(() => {
         async function fetchProducts() {
@@ -58,6 +62,8 @@ function CreateInvoice() {
                 setTax(0);
                 setDiscount(0);
                 setPaid(0);
+
+                navigate(`/invoice/${result.invoice_id}`);
             }
         } catch (err) {
             setMessage('Error: ' + err);

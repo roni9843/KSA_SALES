@@ -1,11 +1,19 @@
 moto_pos/
 │
 ├── renderer/               # React frontend
-│   │   ├── components/         # React components (Invoice, ProductForm, etc.)
+│   │   ├── components/
+│   │   |   ├── Navbar.jsx         ✅ নতুন Navigation Bar
+|   |   │   ├── AddProduct.jsx
+|   │   │   ├── AddCategory.jsx
+|   │   |   ├── ProductList.jsx
+|   │   │   └── CreateInvoice.jsx
 |   │   ├── public/ 
 |   │   ├── src/
 |   │       ├── assets/
-│   │   ├── pages/              # Route-based pages (Home, POS, Reports)
+│   │   ├── pages/
+|   |   │   ├── Home.jsx           ✅ Home page layout
+|   |   │   ├── InvoicePrint.jsx
+|   |   │   └── NotFound.jsx
 │   │   ├── i18n/               # For multilingual support
 │   │   ├── App.css
 │   │   ├── App.js
@@ -25,3 +33,5 @@ moto_pos/
 ├── package.json               # NPM dependencies
 ├── electron-builder.json      # Build config for making installer
 └── README.md
+
+

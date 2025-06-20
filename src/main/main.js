@@ -9,6 +9,8 @@ function createWindow() {
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             contextIsolation: true,
+            enableRemoteModule: false,
+            nodeIntegration: false, // এটাকে অবশ্যই false রাখতে হবে
         },
     });
 
@@ -172,5 +174,33 @@ ipcMain.handle('create-invoice', async (event, data) => {
         });
     });
 });
+
+// 🟨 IPC for get-invoice
+ipcMain.handle('get-invoice', async (event, invoiceId) => {
+    return new Promise((resolve, reject) => {
+        const sql1 = `SELECT * FROM invoice WHERE id = ?`;
+        const sql2 = `
+      SELECT d.*, p.name as product_name
+      FROM invoice_details d
+      JOIN product p ON d.product_id = p.id
+      WHERE d.invoice_id = ?
+    `;
+
+        db.get(sql1, [invoiceId], (err, invoice) => {
+            if (err) return reject(err);
+            db.all(sql2, [invoiceId], (err2, details) => {
+                if (err2) return reject(err2);
+                resolve({ invoice, details });
+            });
+        });
+    });
+});
+
+
+ipcMain.handle('ping', () => {
+    return 'pong';
+});
+
+
 
 
