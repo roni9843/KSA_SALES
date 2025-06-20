@@ -2,7 +2,9 @@ moto_pos/
 │
 ├── renderer/               # React frontend
 │   │   ├── components/
-│   │   |   ├── Navbar.jsx         ✅ নতুন Navigation Bar
+│   │   │   ├── Sidebar.jsx         ✅ New sidebar
+│   │   │   ├── Layout.jsx          ✅ Wrapper with sidebar + content
+│   │   |   ├── Navbar.jsx          ✅ নতুন Navigation Bar
 |   |   │   ├── AddProduct.jsx
 |   │   │   ├── AddCategory.jsx
 |   │   |   ├── ProductList.jsx
@@ -11,7 +13,7 @@ moto_pos/
 |   │   ├── src/
 |   │       ├── assets/
 │   │   ├── pages/
-|   |   │   ├── Home.jsx           ✅ Home page layout
+|   |   │   ├── Home.jsx            ✅ Home page layout
 |   |   │   ├── InvoicePrint.jsx
 |   |   │   └── NotFound.jsx
 │   │   ├── i18n/               # For multilingual support

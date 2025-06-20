@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
+
 
 function InvoicePrint() {
     const { id } = useParams();
     const [invoice, setInvoice] = useState(null);
     const [details, setDetails] = useState([]);
+
+    const navigate = useNavigate();
 
     useEffect(() => {
         async function fetchData() {
@@ -35,6 +38,15 @@ function InvoicePrint() {
 
 
     if (!invoice) return <p>Loading...</p>;
+
+    const handlePrint = () => {
+        window.print();
+
+        // Delay করে redirect (1s পর)
+        setTimeout(() => {
+            navigate('/');
+        }, 1000);
+    };
 
     return (
         <div id="invoice-a4" style={{ padding: '40px', maxWidth: '800px', margin: '0 auto', fontFamily: 'Arial' }}>
@@ -74,7 +86,7 @@ function InvoicePrint() {
                 <p><strong>Due: {(invoice.total - invoice.paid).toFixed(2)}</strong></p>
             </div>
 
-            <button onClick={() => window.print()}>🖨️ Print</button>
+            <button onClick={handlePrint}>🖨️ Print</button>
         </div>
     );
 }

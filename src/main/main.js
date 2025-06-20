@@ -175,7 +175,7 @@ ipcMain.handle('create-invoice', async (event, data) => {
     });
 });
 
-// 🟨 IPC for get-invoice
+// 🟨 IPC for get-invoice Single Invoice
 ipcMain.handle('get-invoice', async (event, invoiceId) => {
     return new Promise((resolve, reject) => {
         const sql1 = `SELECT * FROM invoice WHERE id = ?`;
@@ -195,6 +195,18 @@ ipcMain.handle('get-invoice', async (event, invoiceId) => {
         });
     });
 });
+
+// 🟨 IPC for get-invoices All Invoices
+ipcMain.handle('get-invoices', async () => {
+    return new Promise((resolve, reject) => {
+        const sql = `SELECT * FROM invoice ORDER BY id DESC`;
+        db.all(sql, [], (err, rows) => {
+            if (err) reject(err);
+            else resolve(rows);
+        });
+    });
+});
+
 
 
 ipcMain.handle('ping', () => {
