@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import Sidebar from './Sidebar';
 
+import { useTranslation } from 'react-i18next';
+
 const Layout = ({ children }) => {
+    const { t, i18n } = useTranslation();
     const [showSidebar, setShowSidebar] = useState(true);
 
     const toggleSidebar = () => setShowSidebar(!showSidebar);
@@ -41,7 +44,7 @@ const Layout = ({ children }) => {
                     >
                         ☰
                     </button>
-                    <h2 style={{ margin: 0 }}>Moto POS</h2>
+                    <h2 style={{ margin: 0 }}>{t('title')} </h2>
                 </div>
             </header>
 

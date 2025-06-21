@@ -213,6 +213,9 @@ ipcMain.handle('ping', () => {
     return 'pong';
 });
 
+require('./ipc/product')(ipcMain);
+
+
 
 
 

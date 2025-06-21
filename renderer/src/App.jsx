@@ -5,10 +5,10 @@ import Layout from './components/Layout';
 
 import Home from './pages/Home';
 import AddCategory from './pages/AddCategory';
-import AddProduct from './pages/AddProduct';
 import CreateInvoice from './pages/CreateInvoice';
 import InvoicePrint from './pages/InvoicePrint';
 import InvoiceList from './pages/InvoiceList';
+import ProductPage from './pages/ProductPage';
 
 
 function App() {
@@ -30,7 +30,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/category" element={<AddCategory />} />
-          <Route path="/product" element={<AddProduct />} />
+          <Route path="/products" element={<ProductPage />} />
           <Route path="/create-invoice" element={<CreateInvoice />} />
           <Route path="/invoice/:id" element={<InvoicePrint />} />
           <Route path="/invoices" element={<InvoiceList />} />

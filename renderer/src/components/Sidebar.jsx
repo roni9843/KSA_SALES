@@ -6,7 +6,7 @@ const Sidebar = () => {
     const menuItems = [
         { path: '/', label: '🏠 Home' },
         { path: '/category', label: '📁 Category' },
-        { path: '/product', label: '📦 Products' },
+        { path: '/products', label: '📦 Products' },
         { path: '/create-invoice', label: '🧾 Invoice' },
         { path: '/invoices', label: '📋 Invoices' }
     ];
@@ -31,5 +31,7 @@ const Sidebar = () => {
         </div>
     );
 };
+
+
 
 export default Sidebar;
