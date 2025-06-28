@@ -24,7 +24,7 @@ const Layout = ({ children }) => {
                     position: 'sticky',
                     top: 0,
                     zIndex: 1000,
-                    width: '100%',
+                    // width: '100%',
                     // marginLeft: showSidebar ? '200px' : '0px',
                     // transition: 'margin-left 0.3s ease-in-out'
                 }}

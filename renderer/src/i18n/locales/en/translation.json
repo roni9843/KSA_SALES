@@ -1,5 +1,7 @@
 {
     "title": "Moto POS",
+    "welcome_message": "Welcome to Moto POS",
+    "select_option_from_menu": "Please select an option from the top menu.",
     "add_category": "Add Category",
     "category_name": "Category Name",
     "add": "Add",
