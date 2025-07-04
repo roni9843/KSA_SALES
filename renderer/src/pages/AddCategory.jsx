@@ -1,94 +1,150 @@
-import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useState, useEffect } from 'react';
 
-function AddCategory() {
-    const { t } = useTranslation();
+const AddCategory = () => {
     const [name, setName] = useState('');
-    const [message, setMessage] = useState('');
-    const [categories, setCategories] = useState([]);
+    const [list, setList] = useState([]);
+    const [editId, setEditId] = useState(null);
 
-    const loadCategories = async () => {
-        try {
-            const result = await window.electron.ipcRenderer.invoke('get-categories');
-            setCategories(result);
-        } catch (err) {
-            console.error('Error loading categories:', err);
-        }
+    const fetchCategories = async () => {
+        const res = await window.electron.ipcRenderer.invoke('get-categories');
+        setList(res);
     };
 
     useEffect(() => {
-        loadCategories();
+        fetchCategories();
     }, []);
 
-    const handleAdd = async () => {
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
         if (!name.trim()) return;
-        try {
-            const result = await window.electron.ipcRenderer.invoke('add-category', name);
-            if (result.success) {
-                setMessage('Category added successfully');
-                setName('');
-                loadCategories(); // রিফ্রেশ
-            }
-        } catch (err) {
-            setMessage('Error: ' + err);
+
+        if (editId) {
+            await window.electron.ipcRenderer.invoke('update-category', { id: editId, name });
+        } else {
+            await window.electron.ipcRenderer.invoke('add-category', name);
         }
+
+        setName('');
+        setEditId(null);
+        fetchCategories();
+    };
+
+    const handleEdit = (cat) => {
+        setName(cat.name);
+        setEditId(cat.id);
     };
 
     const handleDelete = async (id) => {
-        if (!window.confirm('Are you sure you want to delete this category?')) return;
-        try {
-            const result = await window.electron.ipcRenderer.invoke('delete-category', id);
-            if (result.success) {
-                setMessage('Category deleted');
-                loadCategories(); // রিফ্রেশ
-            }
-        } catch (err) {
-            setMessage('Error deleting: ' + err);
+        if (confirm('Are you sure to delete this category?')) {
+            await window.electron.ipcRenderer.invoke('delete-category', id);
+            fetchCategories();
         }
     };
 
     return (
-        <div>
-            <h2>{t('add_category')}</h2>
-            <input
-                type="text"
-                value={name}
-                placeholder="Category Name"
-                onChange={(e) => setName(e.target.value)}
-            />
-            <button onClick={handleAdd}>{t('add')}</button>
-            <p>{message}</p>
+        <div style={cardStyle}>
+            <h2>📂 Category Management</h2>
 
-            <h3>Category List</h3>
-            <table border="1" cellPadding="6" style={{ marginTop: '10px' }}>
+            <form onSubmit={handleSubmit} style={formStyle}>
+                <input
+                    type="text"
+                    placeholder="Category Name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    style={inputStyle}
+                />
+                <button type="submit" style={buttonStyle}>
+                    {editId ? '✏️ Update' : '➕ Add'}
+                </button>
+                {editId && (
+                    <button type="button" onClick={() => { setEditId(null); setName(''); }} style={cancelButtonStyle}>
+                        ❌ Cancel
+                    </button>
+                )}
+            </form>
+
+            <table style={tableStyle}>
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>Created</th>
-                        <th>Action</th>
+                        <th style={thTdStyle}>#</th>
+                        <th style={thTdStyle}>Name</th>
+                        <th style={thTdStyle}>🛠️ Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {categories.map((cat) => (
+                    {list.map((cat, index) => (
                         <tr key={cat.id}>
-                            <td>{cat.id}</td>
-                            <td>{cat.name}</td>
-                            <td>{cat.created_at}</td>
-                            <td>
-                                <button onClick={() => handleDelete(cat.id)}>Delete</button>
+                            <td style={thTdStyle}>{index + 1}</td>
+                            <td style={thTdStyle}>{cat.name}</td>
+                            <td style={{ ...thTdStyle }}>
+                                <div style={actionButtonStyle}>
+                                    <button onClick={() => handleEdit(cat)}>✏️</button>
+                                    <button onClick={() => handleDelete(cat.id)}>🗑</button>
+                                </div>
                             </td>
                         </tr>
                     ))}
-                    {categories.length === 0 && (
-                        <tr>
-                            <td colSpan="4">No categories found.</td>
-                        </tr>
-                    )}
                 </tbody>
             </table>
         </div>
     );
-}
+};
 
 export default AddCategory;
+
+
+const cardStyle = {
+    background: '#2c3e50',
+    padding: '20px',
+    borderRadius: '10px',
+    color: '#fff',
+    marginTop: '20px'
+};
+
+const formStyle = {
+    display: 'flex',
+    gap: '10px',
+    marginBottom: '20px'
+};
+
+const inputStyle = {
+    flex: 1,
+    padding: '10px',
+    borderRadius: '5px',
+    border: '1px solid #ccc',
+};
+
+const buttonStyle = {
+    padding: '10px 20px',
+    backgroundColor: '#3498db',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '5px',
+    cursor: 'pointer'
+};
+
+const cancelButtonStyle = {
+    ...buttonStyle,
+    backgroundColor: '#e74c3c'
+};
+
+const tableStyle = {
+    width: '100%',
+    borderCollapse: 'collapse',
+    backgroundColor: '#34495e',
+    color: '#fff',
+    marginTop: '10px'
+};
+
+const thTdStyle = {
+    padding: '10px 15px',
+    borderBottom: '1px solid #2c3e50',
+    textAlign: 'left',
+};
+
+const actionButtonStyle = {
+    display: 'flex',
+    gap: '10px',
+};
+
