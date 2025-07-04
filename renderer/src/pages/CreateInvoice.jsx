@@ -1,113 +1,182 @@
-import React, { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-function CreateInvoice() {
-    const [products, setProducts] = useState([]);
-    const [items, setItems] = useState([]);
-    const [customerName, setCustomerName] = useState('');
-    const [tax, setTax] = useState(0);
-    const [discount, setDiscount] = useState(0);
-    const [paid, setPaid] = useState(0);
-    const [message, setMessage] = useState('');
-
-
+const CreateInvoice = () => {
     const navigate = useNavigate();
+    const [products, setProducts] = useState([]);
+    const [selectedId, setSelectedId] = useState('');
+    const [qty, setQty] = useState(1);
+    const [invoiceItems, setInvoiceItems] = useState([]);
+    const [discount, setDiscount] = useState(0);
+    const [tax, setTax] = useState(0);
+    const [paid, setPaid] = useState(0);
+    const [customerName, setCustomerName] = useState('');
 
     useEffect(() => {
         async function fetchProducts() {
-            const result = await window.electron.ipcRenderer.invoke('get-products');
-            setProducts(result);
+            const list = await window.electron.ipcRenderer.invoke('get-products');
+            setProducts(list);
         }
         fetchProducts();
     }, []);
 
-    const addItem = () => {
-        setItems([...items, { product_id: '', quantity: 1, unit_price: 0, total_price: 0 }]);
-    };
+    const addToInvoice = () => {
+        const product = products.find(p => p.id === parseInt(selectedId));
+        if (!product) return;
+        const exists = invoiceItems.find(i => i.id === product.id);
+        if (exists) return alert("Already added!");
 
-    const updateItem = (index, key, value) => {
-        const updated = [...items];
-        updated[index][key] = key === 'quantity' || key === 'unit_price' ? parseFloat(value) : value;
-
-        if (key === 'product_id') {
-            const prod = products.find(p => p.id === parseInt(value));
-            if (prod) updated[index].unit_price = prod.sale_price;
-        }
-
-        updated[index].total_price = updated[index].quantity * updated[index].unit_price;
-        setItems(updated);
-    };
-
-    const getTotal = () => {
-        const subtotal = items.reduce((sum, i) => sum + i.total_price, 0);
-        return subtotal + parseFloat(tax || 0) - parseFloat(discount || 0);
-    };
-
-    const handleSubmit = async () => {
-        const data = {
-            customer_name: customerName,
-            items,
-            tax: parseFloat(tax),
-            discount: parseFloat(discount),
-            paid: parseFloat(paid),
-            total: getTotal()
-        };
-
-        try {
-            const result = await window.electron.ipcRenderer.invoke('create-invoice', data);
-            if (result.success) {
-                setMessage(`Invoice Created! ID: ${result.invoice_id}`);
-                setItems([]);
-                setCustomerName('');
-                setTax(0);
-                setDiscount(0);
-                setPaid(0);
-
-                navigate(`/invoice/${result.invoice_id}`);
+        setInvoiceItems([
+            ...invoiceItems,
+            {
+                id: product.id,
+                name: product.name,
+                unit_price: product.sale_price,
+                quantity: qty,
+                total_price: qty * product.sale_price
             }
-        } catch (err) {
-            setMessage('Error: ' + err);
+        ]);
+        setQty(1);
+        setSelectedId('');
+    };
+
+    const removeItem = (id) => {
+        setInvoiceItems(invoiceItems.filter(i => i.id !== id));
+    };
+
+    const total = invoiceItems.reduce((sum, i) => sum + i.total_price, 0);
+    const grandTotal = total + parseFloat(tax) - parseFloat(discount);
+    const due = grandTotal - parseFloat(paid);
+
+    const handleSave = async (print = false) => {
+        const invoice = {
+            customer_name: customerName,
+            total,
+            tax,
+            discount,
+            paid,
+            due
+        };
+        const details = invoiceItems.map(item => ({
+            product_id: item.id,
+            quantity: item.quantity,
+            unit_price: item.unit_price,
+            total_price: item.total_price
+        }));
+
+        const newId = await window.electron.ipcRenderer.invoke('create-invoice', {
+            invoice,
+            details
+        });
+
+        if (print) {
+            navigate(`/invoice/${newId}`);
+        } else {
+            alert("✅ Invoice Saved");
+            setInvoiceItems([]);
+            setCustomerName('');
         }
     };
 
     return (
-        <div style={{ marginTop: '30px' }}>
-            <h2>Create Invoice</h2>
-            <input type="text" placeholder="Customer Name" value={customerName} onChange={e => setCustomerName(e.target.value)} /><br />
-            <button onClick={addItem}>+ Add Item</button>
-            <table border="1" width="100%" style={{ marginTop: '10px' }}>
-                <thead>
-                    <tr>
-                        <th>Product</th><th>Qty</th><th>Unit Price</th><th>Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {items.map((item, idx) => (
-                        <tr key={idx}>
-                            <td>
-                                <select value={item.product_id} onChange={e => updateItem(idx, 'product_id', e.target.value)}>
-                                    <option value="">Select</option>
-                                    {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                                </select>
-                            </td>
-                            <td><input type="number" value={item.quantity} onChange={e => updateItem(idx, 'quantity', e.target.value)} /></td>
-                            <td><input type="number" value={item.unit_price} onChange={e => updateItem(idx, 'unit_price', e.target.value)} /></td>
-                            <td>{item.total_price.toFixed(2)}</td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
+        <div style={formContainer}>
+            <div style={leftCol}>
+                <h3>🧾 Create Invoice</h3>
 
-            <div style={{ marginTop: '10px' }}>
-                <label>Tax: <input type="number" value={tax} onChange={e => setTax(e.target.value)} /></label><br />
-                <label>Discount: <input type="number" value={discount} onChange={e => setDiscount(e.target.value)} /></label><br />
-                <label>Paid: <input type="number" value={paid} onChange={e => setPaid(e.target.value)} /></label><br />
-                <p><strong>Total: {getTotal().toFixed(2)}</strong></p>
-                <button onClick={handleSubmit}>Submit Invoice</button>
-                <p>{message}</p>
+                <select value={selectedId} onChange={(e) => setSelectedId(e.target.value)} style={inputStyle}>
+                    <option value="">Select Product</option>
+                    {products.map(p => (
+                        <option key={p.id} value={p.id}>{p.name}</option>
+                    ))}
+                </select>
+                <input type="number" value={qty} onChange={e => setQty(e.target.value)} style={inputStyle} placeholder="Qty" />
+                <button onClick={addToInvoice} style={buttonStyle}>➕ Add</button>
+
+                <table style={tableStyle}>
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Qty</th>
+                            <th>Rate</th>
+                            <th>Total</th>
+                            <th>❌</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {invoiceItems.map(i => (
+                            <tr key={i.id}>
+                                <td>{i.name}</td>
+                                <td>{i.quantity}</td>
+                                <td>{i.unit_price}</td>
+                                <td>{i.total_price.toFixed(2)}</td>
+                                <td><button onClick={() => removeItem(i.id)}>❌</button></td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+
+            <div style={rightCol}>
+                <h4>🧾 Summary</h4>
+                <input placeholder="Customer Name" value={customerName} onChange={(e) => setCustomerName(e.target.value)} style={inputStyle} />
+                <input placeholder="Discount" value={discount} onChange={(e) => setDiscount(e.target.value)} style={inputStyle} />
+                <input placeholder="Tax" value={tax} onChange={(e) => setTax(e.target.value)} style={inputStyle} />
+                <input placeholder="Paid" value={paid} onChange={(e) => setPaid(e.target.value)} style={inputStyle} />
+                <p><strong>Total:</strong> {total.toFixed(2)}</p>
+                <p><strong>Due:</strong> {due.toFixed(2)}</p>
+                <button style={buttonStyle} onClick={() => handleSave(false)}>💾 Save</button>
+                <button style={buttonStyle} onClick={() => handleSave(true)}>🖨️ Save & Print</button>
             </div>
         </div>
     );
-}
+};
+
+const formContainer = {
+    display: 'flex',
+    justifyContent: 'space-between',
+    gap: '30px',
+    marginTop: '20px',
+    background: '#2c3e50',
+    color: '#fff',
+    padding: '20px',
+    borderRadius: '10px'
+};
+
+const leftCol = {
+    flex: 2
+};
+
+const rightCol = {
+    flex: 1,
+    background: '#34495e',
+    padding: '15px',
+    borderRadius: '10px'
+};
+
+const inputStyle = {
+    width: '100%',
+    padding: '10px',
+    marginBottom: '10px',
+    borderRadius: '5px',
+    border: 'none'
+};
+
+const buttonStyle = {
+    width: '100%',
+    padding: '10px',
+    marginBottom: '10px',
+    backgroundColor: '#27ae60',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '5px'
+};
+
+const tableStyle = {
+    width: '100%',
+    marginTop: '15px',
+    backgroundColor: '#34495e',
+    color: '#fff',
+    borderCollapse: 'collapse'
+};
 
 export default CreateInvoice;
