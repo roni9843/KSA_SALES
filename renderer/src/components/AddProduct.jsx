@@ -67,7 +67,7 @@ const AddProduct = ({ onAdded }) => {
 };
 
 const cardStyle = {
-    background: '#2c3e50',
+    background: '#2D3748',
     padding: '20px',
     borderRadius: '10px',
     color: '#fff',
@@ -87,7 +87,9 @@ const inputStyle = {
     padding: '10px',
     borderRadius: '5px',
     border: '1px solid #ccc',
-    fontSize: '14px'
+    fontSize: '14px',
+    backgroundColor: '#eeeeee',
+    color: '#333',
 };
 
 const buttonStyle = {

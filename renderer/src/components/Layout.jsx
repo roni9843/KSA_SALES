@@ -15,7 +15,7 @@ const Layout = ({ children }) => {
             <header
                 style={{
                     height: '50px',
-                    backgroundColor: '#34495e',
+                    backgroundColor: '#282A35',
                     color: '#fff',
                     display: 'flex',
                     alignItems: 'center',
@@ -34,7 +34,7 @@ const Layout = ({ children }) => {
                         onClick={toggleSidebar}
                         style={{
                             fontSize: '22px',
-                            background: '#2c3e50',
+                            background: '#282A35',
                             color: '#fff',
                             border: 'none',
                             padding: '4px 10px',
@@ -54,7 +54,7 @@ const Layout = ({ children }) => {
                 <aside
                     style={{
                         width: showSidebar ? '200px' : '0px',
-                        background: '#2c3e50',
+                        background: '#282A35',
                         color: '#fff',
                         overflowX: 'hidden',
                         transition: 'width 0.3s ease-in-out'
@@ -72,7 +72,7 @@ const Layout = ({ children }) => {
                     style={{
                         flex: 1,
                         padding: '20px',
-                        background: '#1e1e1e',
+                        background: '#eeeeee',
                         color: '#ecf0f1',
                         overflowY: 'auto',
                         transition: 'all 0.3s ease',

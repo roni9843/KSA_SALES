@@ -124,29 +124,29 @@ const CreateInvoice = () => {
                 <table style={tableStyle}>
                     <thead>
                         <tr>
-                            <th>Product</th>
-                            <th>Qty</th>
-                            <th>Rate</th>
-                            <th>Total</th>
-                            <th>❌</th>
+                            <th style={thTdStyle}>Product</th>
+                            <th style={thTdStyle}>Qty</th>
+                            <th style={thTdStyle}>Rate</th>
+                            <th style={thTdStyle}>Total</th>
+                            <th style={thTdStyle}>❌</th>
                         </tr>
                     </thead>
                     <tbody>
                         {invoiceItems.map(i => (
                             <tr key={i.id}>
-                                <td>{i.name}</td>
-                                <td>
+                                <td style={thTdStyle}>{i.name}</td>
+                                <td style={thTdStyle}>
                                     <input
                                         type="number"
                                         value={i.quantity}
                                         min="1"
                                         onChange={(e) => updateQty(i.id, e.target.value)}
-                                        style={{ width: '60px' }}
+                                        style={{ width: '60px', backgroundColor: '#eeeeee', color: '#333' }}
                                     />
                                 </td>
-                                <td>{i.unit_price}</td>
-                                <td>{i.total_price.toFixed(2)}</td>
-                                <td><button onClick={() => removeItem(i.id)}>❌</button></td>
+                                <td style={thTdStyle}>{i.unit_price}</td>
+                                <td style={thTdStyle}>{i.total_price.toFixed(2)}</td>
+                                <td style={thTdStyle}><button onClick={() => removeItem(i.id)}>❌</button></td>
                             </tr>
                         ))}
                     </tbody>
@@ -180,16 +180,22 @@ const formContainer = {
     justifyContent: 'space-between',
     gap: '30px',
     marginTop: '20px',
-    background: '#2c3e50',
+    background: '#2D3748',
     color: '#fff',
     padding: '20px',
     borderRadius: '10px'
 };
 
+const thTdStyle = {
+    padding: '10px 15px',
+    borderBottom: '1px solid #000000',
+    textAlign: 'left',
+};
+
 const leftCol = { flex: 2 };
 const rightCol = {
     flex: 1,
-    background: '#34495e',
+    background: '#575F6D',
     padding: '15px',
     borderRadius: '10px'
 };
@@ -199,7 +205,9 @@ const inputStyle = {
     padding: '10px',
     marginBottom: '10px',
     borderRadius: '5px',
-    border: 'none'
+    border: 'none',
+    backgroundColor: '#eeeeee',
+    color: '#333',
 };
 
 const buttonStyle = {
@@ -215,7 +223,7 @@ const buttonStyle = {
 const tableStyle = {
     width: '100%',
     marginTop: '15px',
-    backgroundColor: '#34495e',
+    backgroundColor: '#575F6D',
     color: '#fff',
     borderCollapse: 'collapse'
 };

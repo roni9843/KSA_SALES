@@ -95,7 +95,7 @@ export default AddCategory;
 
 
 const cardStyle = {
-    background: '#2c3e50',
+    background: '#2D3748',
     padding: '20px',
     borderRadius: '10px',
     color: '#fff',
@@ -113,6 +113,8 @@ const inputStyle = {
     padding: '10px',
     borderRadius: '5px',
     border: '1px solid #ccc',
+    backgroundColor: '#eeeeee',
+    color: '#333',
 };
 
 const buttonStyle = {
@@ -132,14 +134,14 @@ const cancelButtonStyle = {
 const tableStyle = {
     width: '100%',
     borderCollapse: 'collapse',
-    backgroundColor: '#34495e',
+    backgroundColor: '#575F6D',
     color: '#fff',
     marginTop: '10px'
 };
 
 const thTdStyle = {
     padding: '10px 15px',
-    borderBottom: '1px solid #2c3e50',
+    borderBottom: '1px solid #000000',
     textAlign: 'left',
 };
 

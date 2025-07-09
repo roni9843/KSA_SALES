@@ -55,27 +55,27 @@ const ProductList = ({ refresh }) => {
             <table style={tableStyle}>
                 <thead>
                     <tr>
-                        <th>Name</th>
-                        <th>SKU</th>
-                        <th>Category</th>
-                        <th>Purchase</th>
-                        <th>Sale</th>
-                        <th>Stock</th>
-                        <th>Unit</th>
-                        <th>Action</th>
+                        <th style={thTdStyle}>Name</th>
+                        <th style={thTdStyle}>SKU</th>
+                        <th style={thTdStyle}>Category</th>
+                        <th style={thTdStyle}>Purchase</th>
+                        <th style={thTdStyle}>Sale</th>
+                        <th style={thTdStyle}>Stock</th>
+                        <th style={thTdStyle}>Unit</th>
+                        <th style={thTdStyle}>Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     {list.map(p => (
                         <tr key={p.id}>
-                            <td>{p.name}</td>
-                            <td>{p.sku}</td>
-                            <td>{p.category_name}</td>
-                            <td>{p.purchase_price}</td>
-                            <td>{p.sale_price}</td>
-                            <td>{p.quantity_in_stock}</td>
-                            <td>{p.unit}</td>
-                            <td>
+                            <td style={thTdStyle}>{p.name}</td>
+                            <td style={thTdStyle}>{p.sku}</td>
+                            <td style={thTdStyle}>{p.category_name}</td>
+                            <td style={thTdStyle}>{p.purchase_price}</td>
+                            <td style={thTdStyle}>{p.sale_price}</td>
+                            <td style={thTdStyle}>{p.quantity_in_stock}</td>
+                            <td style={thTdStyle}>{p.unit}</td>
+                            <td style={thTdStyle}>
                                 <button onClick={() => setEditProduct(p)}>✏️</button>
                                 <button onClick={() => deleteProduct(p.id)}>🗑</button>
                             </td>
@@ -123,7 +123,7 @@ const ProductList = ({ refresh }) => {
 };
 
 const cardStyle = {
-    background: '#2c3e50',
+    background: '#2D3748',
     padding: '20px',
     borderRadius: '10px',
     color: '#fff',
@@ -134,8 +134,14 @@ const tableStyle = {
     width: '100%',
     borderCollapse: 'collapse',
     marginTop: '10px',
-    backgroundColor: '#34495e',
+    backgroundColor: '#575F6D',
     color: '#fff'
+};
+
+const thTdStyle = {
+    padding: '10px 15px',
+    borderBottom: '1px solid #000000',
+    textAlign: 'left',
 };
 
 const modalOverlay = {
