@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 const CreateInvoice = () => {
     const navigate = useNavigate();
     const [products, setProducts] = useState([]);
+    const [searchText, setSearchText] = useState('');
     const [selectedId, setSelectedId] = useState('');
     const [qty, setQty] = useState(1);
     const [invoiceItems, setInvoiceItems] = useState([]);
@@ -11,6 +12,7 @@ const CreateInvoice = () => {
     const [tax, setTax] = useState(0);
     const [paid, setPaid] = useState(0);
     const [customerName, setCustomerName] = useState('');
+    const [invoiceDate, setInvoiceDate] = useState(new Date().toISOString().split('T')[0]);
 
     useEffect(() => {
         async function fetchProducts() {
@@ -23,6 +25,7 @@ const CreateInvoice = () => {
     const addToInvoice = () => {
         const product = products.find(p => p.id === parseInt(selectedId));
         if (!product) return;
+        if (product.quantity_in_stock < qty) return alert(`❌ Only ${product.quantity_in_stock} in stock`);
         const exists = invoiceItems.find(i => i.id === product.id);
         if (exists) return alert("Already added!");
 
@@ -38,6 +41,17 @@ const CreateInvoice = () => {
         ]);
         setQty(1);
         setSelectedId('');
+        setSearchText('');
+    };
+
+    const updateQty = (id, newQty) => {
+        setInvoiceItems(items =>
+            items.map(i => i.id === id ? {
+                ...i,
+                quantity: parseInt(newQty),
+                total_price: parseInt(newQty) * i.unit_price
+            } : i)
+        );
     };
 
     const removeItem = (id) => {
@@ -49,14 +63,18 @@ const CreateInvoice = () => {
     const due = grandTotal - parseFloat(paid);
 
     const handleSave = async (print = false) => {
+        if (parseFloat(paid) > grandTotal) return alert("❗ Paid amount can't be more than total");
+
         const invoice = {
             customer_name: customerName,
             total,
             tax,
             discount,
             paid,
-            due
+            due,
+            created_at: invoiceDate
         };
+
         const details = invoiceItems.map(item => ({
             product_id: item.id,
             quantity: item.quantity,
@@ -83,12 +101,23 @@ const CreateInvoice = () => {
             <div style={leftCol}>
                 <h3>🧾 Create Invoice</h3>
 
+                <input
+                    type="text"
+                    value={searchText}
+                    onChange={e => setSearchText(e.target.value)}
+                    placeholder="Search product..."
+                    style={inputStyle}
+                />
+
                 <select value={selectedId} onChange={(e) => setSelectedId(e.target.value)} style={inputStyle}>
                     <option value="">Select Product</option>
-                    {products.map(p => (
-                        <option key={p.id} value={p.id}>{p.name}</option>
-                    ))}
+                    {products
+                        .filter(p => p.name.toLowerCase().includes(searchText.toLowerCase()))
+                        .map(p => (
+                            <option key={p.id} value={p.id}>{p.name}</option>
+                        ))}
                 </select>
+
                 <input type="number" value={qty} onChange={e => setQty(e.target.value)} style={inputStyle} placeholder="Qty" />
                 <button onClick={addToInvoice} style={buttonStyle}>➕ Add</button>
 
@@ -106,7 +135,15 @@ const CreateInvoice = () => {
                         {invoiceItems.map(i => (
                             <tr key={i.id}>
                                 <td>{i.name}</td>
-                                <td>{i.quantity}</td>
+                                <td>
+                                    <input
+                                        type="number"
+                                        value={i.quantity}
+                                        min="1"
+                                        onChange={(e) => updateQty(i.id, e.target.value)}
+                                        style={{ width: '60px' }}
+                                    />
+                                </td>
                                 <td>{i.unit_price}</td>
                                 <td>{i.total_price.toFixed(2)}</td>
                                 <td><button onClick={() => removeItem(i.id)}>❌</button></td>
@@ -118,7 +155,14 @@ const CreateInvoice = () => {
 
             <div style={rightCol}>
                 <h4>🧾 Summary</h4>
-                <input placeholder="Customer Name" value={customerName} onChange={(e) => setCustomerName(e.target.value)} style={inputStyle} />
+                <input type="date" value={invoiceDate} onChange={e => setInvoiceDate(e.target.value)} style={inputStyle} />
+
+                <select value={customerName} onChange={(e) => setCustomerName(e.target.value)} style={inputStyle}>
+                    <option value="">Walk-in Customer</option>
+                    <option value="Karim">Karim</option>
+                    <option value="Rahim">Rahim</option>
+                </select>
+
                 <input placeholder="Discount" value={discount} onChange={(e) => setDiscount(e.target.value)} style={inputStyle} />
                 <input placeholder="Tax" value={tax} onChange={(e) => setTax(e.target.value)} style={inputStyle} />
                 <input placeholder="Paid" value={paid} onChange={(e) => setPaid(e.target.value)} style={inputStyle} />
@@ -142,10 +186,7 @@ const formContainer = {
     borderRadius: '10px'
 };
 
-const leftCol = {
-    flex: 2
-};
-
+const leftCol = { flex: 2 };
 const rightCol = {
     flex: 1,
     background: '#34495e',

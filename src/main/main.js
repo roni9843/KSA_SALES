@@ -127,22 +127,24 @@ ipcMain.handle('get-products', async () => {
 // 🟨 IPC for create-invoice
 ipcMain.handle('create-invoice', async (event, data) => {
     return new Promise((resolve, reject) => {
-        const db = require('./database/db');
         db.serialize(() => {
             db.run('BEGIN TRANSACTION');
 
-            // 1. ইনভয়েস ইনসার্ট
+            const invoice = data.invoice;
+            const items = data.details;
+
             const stmt = `
         INSERT INTO invoice (customer_name, total, discount, tax, paid, due)
         VALUES (?, ?, ?, ?, ?, ?)
       `;
+
             const invoiceParams = [
-                data.customer_name,
-                data.total,
-                data.discount,
-                data.tax,
-                data.paid,
-                data.total - data.paid
+                invoice.customer_name,
+                invoice.total,
+                invoice.discount,
+                invoice.tax,
+                invoice.paid,
+                invoice.due
             ];
 
             db.run(stmt, invoiceParams, function (err) {
@@ -153,14 +155,12 @@ ipcMain.handle('create-invoice', async (event, data) => {
 
                 const invoiceId = this.lastID;
 
-                // 2. প্রতিটি পণ্যের ইনভয়েস ডিটেইল ও স্টক কমানো
-                for (const item of data.items) {
+                for (const item of items) {
                     db.run(`
             INSERT INTO invoice_details (invoice_id, product_id, quantity, unit_price, total_price)
             VALUES (?, ?, ?, ?, ?)
           `, [invoiceId, item.product_id, item.quantity, item.unit_price, item.total_price]);
 
-                    // stock কমানো
                     db.run(`
             UPDATE product
             SET quantity_in_stock = quantity_in_stock - ?
@@ -169,11 +169,12 @@ ipcMain.handle('create-invoice', async (event, data) => {
                 }
 
                 db.run('COMMIT');
-                resolve({ success: true, invoice_id: invoiceId });
+                resolve(invoiceId);
             });
         });
     });
 });
+
 
 // 🟨 IPC for get-invoice Single Invoice
 ipcMain.handle('get-invoice', async (event, invoiceId) => {
@@ -213,7 +214,7 @@ ipcMain.handle('ping', () => {
     return 'pong';
 });
 
-require('./ipc/product')(ipcMain);
+require('./ipc/product');
 
 
 
