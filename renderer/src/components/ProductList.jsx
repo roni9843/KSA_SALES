@@ -51,33 +51,33 @@ const ProductList = ({ refresh }) => {
 
     return (
         <div style={cardStyle}>
-            <h3>📦 Product List</h3>
+            <h3 style={{ textAlign: 'center', fontSize: '24px', marginBottom: '20px' }}>📦 Product List</h3>
             <table style={tableStyle}>
-                <thead>
+                <thead style={tableHeaderStyle}>
                     <tr>
-                        <th style={thTdStyle}>Name</th>
-                        <th style={thTdStyle}>SKU</th>
-                        <th style={thTdStyle}>Category</th>
-                        <th style={thTdStyle}>Purchase</th>
-                        <th style={thTdStyle}>Sale</th>
-                        <th style={thTdStyle}>Stock</th>
-                        <th style={thTdStyle}>Unit</th>
-                        <th style={thTdStyle}>Action</th>
+                        <th style={{ ...thStyle, textAlign: 'left' }}>Name</th>
+                        <th style={thStyle}>SKU</th>
+                        <th style={thStyle}>Category</th>
+                        <th style={thStyle}>Purchase Price</th>
+                        <th style={thStyle}>Sale Price</th>
+                        <th style={thStyle}>Stock</th>
+                        <th style={thStyle}>Unit</th>
+                        <th style={{ ...thStyle, textAlign: 'center' }}>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {list.map(p => (
-                        <tr key={p.id}>
-                            <td style={thTdStyle}>{p.name}</td>
-                            <td style={thTdStyle}>{p.sku}</td>
-                            <td style={thTdStyle}>{p.category_name}</td>
-                            <td style={thTdStyle}>{p.purchase_price}</td>
-                            <td style={thTdStyle}>{p.sale_price}</td>
-                            <td style={thTdStyle}>{p.quantity_in_stock}</td>
-                            <td style={thTdStyle}>{p.unit}</td>
-                            <td style={thTdStyle}>
-                                <button onClick={() => setEditProduct(p)}>✏️</button>
-                                <button onClick={() => deleteProduct(p.id)}>🗑</button>
+                    {list.map((p, index) => (
+                        <tr key={p.id} style={tableRowStyle(index)}>
+                            <td style={{ ...tdStyle, textAlign: 'left' }}>{p.name}</td>
+                            <td style={tdStyle}>{p.sku}</td>
+                            <td style={tdStyle}>{p.category_name}</td>
+                            <td style={tdStyle}>{p.purchase_price.toFixed(2)}</td>
+                            <td style={tdStyle}>{p.sale_price.toFixed(2)}</td>
+                            <td style={{ ...tdStyle, color: p.quantity_in_stock < 10 ? '#F56565' : 'inherit', fontWeight: p.quantity_in_stock < 10 ? 'bold' : 'normal' }}>{p.quantity_in_stock}</td>
+                            <td style={tdStyle}>{p.unit}</td>
+                            <td style={{ ...tdStyle, textAlign: 'center' }}>
+                                <button onClick={() => setEditProduct(p)} style={editButtonStyle}>✏️ Edit</button>
+                                <button onClick={() => deleteProduct(p.id)} style={deleteButtonStyle}>🗑️ Delete</button>
                             </td>
                         </tr>
                     ))}
@@ -87,30 +87,45 @@ const ProductList = ({ refresh }) => {
             {editProduct && (
                 <div style={modalOverlay}>
                     <div style={modalBox}>
-                        <h3>Edit Product</h3>
+                        <h3 style={modalHeaderStyle}>Edit Product</h3>
                         <form onSubmit={handleEditSubmit} style={formStyle}>
-                            <input name="name" value={editProduct.name} onChange={handleChange} placeholder="Name" style={inputStyle} />
-                            <input name="sku" value={editProduct.sku} onChange={handleChange} placeholder="SKU" style={inputStyle} />
-                            <select
-                                name="category_id"
-                                value={editProduct.category_id}
-                                onChange={handleChange}
-                                style={inputStyle}
-                            >
-                                <option value="">Select Category</option>
-                                {categories.map(cat => (
-                                    <option key={cat.id} value={cat.id}>
-                                        {cat.name}
-                                    </option>
-                                ))}
-                            </select>
+                            <div style={inputGroupStyle}>
+                                <label style={labelStyle}>Name</label>
+                                <input name="name" value={editProduct.name} onChange={handleChange} placeholder="Name" style={inputStyle} />
+                            </div>
+                            <div style={inputGroupStyle}>
+                                <label style={labelStyle}>SKU</label>
+                                <input name="sku" value={editProduct.sku} onChange={handleChange} placeholder="SKU" style={inputStyle} />
+                            </div>
+                            <div style={inputGroupStyle}>
+                                <label style={labelStyle}>Category</label>
+                                <select name="category_id" value={editProduct.category_id} onChange={handleChange} style={inputStyle}>
+                                    <option value="">Select Category</option>
+                                    {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
+                                </select>
+                            </div>
+                            <div style={inputGroupStyle}>
+                                <label style={labelStyle}>Unit</label>
+                                <input name="unit" value={editProduct.unit} onChange={handleChange} placeholder="Unit" style={inputStyle} />
+                            </div>
+                            <div style={{ ...inputGroupStyle, gridColumn: '1 / span 2' }}>
+                                <label style={labelStyle}>Description</label>
+                                <textarea name="description" value={editProduct.description} onChange={handleChange} placeholder="Description" style={{ ...inputStyle, height: '60px', resize: 'vertical' }} />
+                            </div>
+                            <div style={inputGroupStyle}>
+                                <label style={labelStyle}>Purchase Price</label>
+                                <input type="number" name="purchase_price" value={editProduct.purchase_price} onChange={handleChange} placeholder="Purchase Price" style={inputStyle} />
+                            </div>
+                            <div style={inputGroupStyle}>
+                                <label style={labelStyle}>Sale Price</label>
+                                <input type="number" name="sale_price" value={editProduct.sale_price} onChange={handleChange} placeholder="Sale Price" style={inputStyle} />
+                            </div>
+                            <div style={inputGroupStyle}>
+                                <label style={labelStyle}>Stock</label>
+                                <input type="number" name="quantity_in_stock" value={editProduct.quantity_in_stock} onChange={handleChange} placeholder="Stock" style={inputStyle} />
+                            </div>
 
-                            <input name="description" value={editProduct.description} onChange={handleChange} placeholder="Description" style={inputStyle} />
-                            <input name="purchase_price" value={editProduct.purchase_price} onChange={handleChange} placeholder="Purchase Price" style={inputStyle} />
-                            <input name="sale_price" value={editProduct.sale_price} onChange={handleChange} placeholder="Sale Price" style={inputStyle} />
-                            <input name="quantity_in_stock" value={editProduct.quantity_in_stock} onChange={handleChange} placeholder="Stock" style={inputStyle} />
-                            <input name="unit" value={editProduct.unit} onChange={handleChange} placeholder="Unit" style={inputStyle} />
-                            <div style={{ gridColumn: '1 / span 2', display: 'flex', gap: '10px' }}>
+                            <div style={{ gridColumn: '1 / span 2', display: 'flex', gap: '10px', marginTop: '10px' }}>
                                 <button type="submit" style={buttonStyle}>💾 Update</button>
                                 <button type="button" onClick={() => setEditProduct(null)} style={cancelButtonStyle}>❌ Cancel</button>
                             </div>
@@ -132,22 +147,60 @@ const cardStyle = {
 
 const tableStyle = {
     width: '100%',
+    marginTop: '20px',
     borderCollapse: 'collapse',
-    marginTop: '10px',
-    backgroundColor: '#575F6D',
-    color: '#fff'
+    borderRadius: '8px',
+    overflow: 'hidden',
 };
 
-const thTdStyle = {
-    padding: '10px 15px',
-    borderBottom: '1px solid #000000',
-    textAlign: 'left',
+const tableHeaderStyle = {
+    backgroundColor: '#4A5568',
+    color: '#fff',
+};
+
+const thStyle = {
+    padding: '12px 15px',
+    textAlign: 'right',
+    borderBottom: '1px solid #2D3748',
+    textTransform: 'uppercase',
+    fontSize: '12px',
+};
+
+const tableRowStyle = (index) => ({
+    backgroundColor: index % 2 === 0 ? '#575F6D' : '#4A5568',
+    borderBottom: '1px solid #2D3748',
+});
+
+const tdStyle = {
+    padding: '12px 15px',
+    textAlign: 'right',
+};
+
+const editButtonStyle = {
+    padding: '8px 12px',
+    backgroundColor: '#2B6CB0',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '5px',
+    cursor: 'pointer',
+    marginRight: '5px',
+    transition: 'background-color 0.3s ease',
+};
+
+const deleteButtonStyle = {
+    padding: '8px 12px',
+    backgroundColor: '#C53030',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '5px',
+    cursor: 'pointer',
+    transition: 'background-color 0.3s ease',
 };
 
 const modalOverlay = {
     position: 'fixed',
     top: 0, left: 0, right: 0, bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
@@ -155,33 +208,57 @@ const modalOverlay = {
 };
 
 const modalBox = {
-    background: '#fff',
+    background: '#2D3748',
     padding: '30px',
     borderRadius: '10px',
-    minWidth: '400px',
-    color: '#000'
+    width: 'clamp(400px, 50vw, 600px)',
+    color: '#fff',
+    boxShadow: '0 5px 15px rgba(0,0,0,0.3)',
+};
+
+const modalHeaderStyle = {
+    textAlign: 'center',
+    marginBottom: '20px',
+    fontSize: '22px',
 };
 
 const formStyle = {
     display: 'grid',
     gridTemplateColumns: '1fr 1fr',
-    gap: '10px',
-    marginTop: '10px'
+    gap: '15px',
+};
+
+const inputGroupStyle = {
+    display: 'flex',
+    flexDirection: 'column',
+};
+
+const labelStyle = {
+    marginBottom: '5px',
+    fontSize: '14px',
+    color: '#A0AEC0',
 };
 
 const inputStyle = {
     padding: '10px',
     borderRadius: '5px',
-    border: '1px solid #ccc',
+    border: '1px solid #A0AEC0',
+    backgroundColor: '#fff',
+    color: '#333',
+    fontSize: '14px',
 };
 
 const buttonStyle = {
-    padding: '10px',
+    flex: 1,
+    padding: '12px',
     backgroundColor: '#27ae60',
     color: '#fff',
     border: 'none',
     borderRadius: '5px',
-    cursor: 'pointer'
+    cursor: 'pointer',
+    fontSize: '16px',
+    fontWeight: 'bold',
+    transition: 'background-color 0.3s ease',
 };
 
 const cancelButtonStyle = {
