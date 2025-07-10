@@ -49,7 +49,7 @@ function InvoicePrint() {
     };
 
     return (
-        <div id="invoice-a4" style={{ padding: '40px', maxWidth: '800px', margin: '0 auto', fontFamily: 'Arial' }}>
+        <div id="invoice-a4" style={{ padding: '40px', maxWidth: '800px', margin: '0 auto', fontFamily: 'Arial', color: '#333' }}>
             <h2 style={{ textAlign: 'center' }}>Moto POS Invoice</h2>
             <p><strong>Invoice ID:</strong> {invoice.id}</p>
             <p><strong>Date:</strong> {invoice.created_at}</p>
