@@ -163,13 +163,19 @@ const CreateInvoice = () => {
                     <option value="Rahim">Rahim</option>
                 </select>
 
-                <input placeholder="Discount" value={discount} onChange={(e) => setDiscount(e.target.value)} style={inputStyle} />
-                <input placeholder="Tax" value={tax} onChange={(e) => setTax(e.target.value)} style={inputStyle} />
+                <div style={{ display: 'flex', gap: '10px' }}>
+                    <input placeholder="Discount" value={discount} onChange={(e) => setDiscount(e.target.value)} style={{ ...inputStyle, flex: 1 }} />
+                    <input placeholder="Tax" value={tax} onChange={(e) => setTax(e.target.value)} style={{ ...inputStyle, flex: 1 }} />
+                </div>
+
                 <input placeholder="Paid" value={paid} onChange={(e) => setPaid(e.target.value)} style={inputStyle} />
                 <p><strong>Total:</strong> {total.toFixed(2)}</p>
                 <p><strong>Due:</strong> {due.toFixed(2)}</p>
-                <button style={buttonStyle} onClick={() => handleSave(false)}>💾 Save</button>
-                <button style={buttonStyle} onClick={() => handleSave(true)}>🖨️ Save & Print</button>
+
+                <div style={{ display: 'flex', gap: '10px' }}>
+                    <button style={{ ...buttonStyle, flex: 1 }} onClick={() => handleSave(false)}>💾 Save</button>
+                    <button style={{ ...buttonStyle, flex: 1 }} onClick={() => handleSave(true)}>🖨️ Save & Print</button>
+                </div>
             </div>
         </div>
     );
@@ -208,6 +214,7 @@ const inputStyle = {
     border: 'none',
     backgroundColor: '#eeeeee',
     color: '#333',
+    boxSizing: 'border-box'
 };
 
 const buttonStyle = {
