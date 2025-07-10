@@ -21,28 +21,30 @@ const InvoiceList = () => {
         <div style={cardStyle}>
             <h2>🧾 Invoice List</h2>
             <table style={tableStyle}>
-                <thead>
+                <thead style={tableHeaderStyle}>
                     <tr>
-                        <th style={thTdStyle}>ID</th>
-                        <th style={thTdStyle}>Customer</th>
-                        <th style={thTdStyle}>Total</th>
-                        <th style={thTdStyle}>Paid</th>
-                        <th style={thTdStyle}>Due</th>
-                        <th style={thTdStyle}>Date</th>
-                        <th style={thTdStyle}>Actions</th>
+                        <th style={{ ...thStyle, textAlign: 'left' }}>ID</th>
+                        <th style={{ ...thStyle, textAlign: 'left' }}>Customer</th>
+                        <th style={thStyle}>Total</th>
+                        <th style={thStyle}>Paid</th>
+                        <th style={thStyle}>Due</th>
+                        <th style={{ ...thStyle, textAlign: 'left' }}>Date</th>
+                        <th style={{ ...thStyle, textAlign: 'center' }}>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {invoices.map(inv => (
-                        <tr key={inv.id}>
-                            <td style={thTdStyle}>{inv.id}</td>
-                            <td style={thTdStyle}>{inv.customer_name}</td>
-                            <td style={thTdStyle}>{inv.total}</td>
-                            <td style={thTdStyle}>{inv.paid}</td>
-                            <td style={thTdStyle}>{inv.due}</td>
-                            <td style={thTdStyle}>{new Date(inv.created_at).toLocaleString()}</td>
-                            <td style={thTdStyle}>
-                                <button onClick={() => handlePrint(inv.id)}>🖨️ View</button>
+                    {invoices.map((inv, index) => (
+                        <tr key={inv.id} style={tableRowStyle(index)}>
+                            <td style={{ ...tdStyle, textAlign: 'left' }}>#{inv.id}</td>
+                            <td style={{ ...tdStyle, textAlign: 'left' }}>{inv.customer_name || 'Walk-in Customer'}</td>
+                            <td style={tdStyle}>{inv.total.toFixed(2)}</td>
+                            <td style={tdStyle}>{inv.paid.toFixed(2)}</td>
+                            <td style={{...tdStyle, color: inv.due > 0 ? '#E53E3E' : '#48BB78', fontWeight: 'bold'}}>{inv.due.toFixed(2)}</td>
+                            <td style={{ ...tdStyle, textAlign: 'left' }}>{new Date(inv.created_at).toLocaleDateString()}</td>
+                            <td style={{ ...tdStyle, textAlign: 'center' }}>
+                                <button onClick={() => handlePrint(inv.id)} style={viewButtonStyle}>
+                                    🖨️ View
+                                </button>
                             </td>
                         </tr>
                     ))}
@@ -62,16 +64,44 @@ const cardStyle = {
 
 const tableStyle = {
     width: '100%',
+    marginTop: '20px',
     borderCollapse: 'collapse',
-    backgroundColor: '#575F6D',
-    color: '#fff',
-    marginTop: '10px'
+    borderRadius: '8px',
+    overflow: 'hidden',
 };
 
-const thTdStyle = {
-    padding: '10px 15px',
-    borderBottom: '1px solid #000000',
-    textAlign: 'left',
+const tableHeaderStyle = {
+    backgroundColor: '#4A5568',
+    color: '#fff',
 };
+
+const thStyle = {
+    padding: '12px 15px',
+    textAlign: 'right',
+    borderBottom: '1px solid #2D3748',
+    textTransform: 'uppercase',
+    fontSize: '12px',
+};
+
+const tableRowStyle = (index) => ({
+    backgroundColor: index % 2 === 0 ? '#575F6D' : '#4A5568',
+});
+
+const tdStyle = {
+    padding: '12px 15px',
+    textAlign: 'right',
+    borderBottom: '1px solid #2D3748',
+};
+
+const viewButtonStyle = {
+    padding: '8px 12px',
+    backgroundColor: '#3182CE',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '5px',
+    cursor: 'pointer',
+    transition: 'background-color 0.3s ease',
+};
+
 
 export default InvoiceList;
