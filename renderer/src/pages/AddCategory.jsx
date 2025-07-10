@@ -65,23 +65,21 @@ const AddCategory = () => {
             </form>
 
             <table style={tableStyle}>
-                <thead>
+                <thead style={tableHeaderStyle}>
                     <tr>
-                        <th style={thTdStyle}>#</th>
-                        <th style={thTdStyle}>Name</th>
-                        <th style={thTdStyle}>🛠️ Actions</th>
+                        <th style={{ ...thStyle, width: '50px' }}>#</th>
+                        <th style={thStyle}>Name</th>
+                        <th style={{ ...thStyle, textAlign: 'center' }}>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {list.map((cat, index) => (
-                        <tr key={cat.id}>
-                            <td style={thTdStyle}>{index + 1}</td>
-                            <td style={thTdStyle}>{cat.name}</td>
-                            <td style={{ ...thTdStyle }}>
-                                <div style={actionButtonStyle}>
-                                    <button onClick={() => handleEdit(cat)}>✏️</button>
-                                    <button onClick={() => handleDelete(cat.id)}>🗑</button>
-                                </div>
+                        <tr key={cat.id} style={tableRowStyle(index)}>
+                            <td style={tdStyle}>{index + 1}</td>
+                            <td style={tdStyle}>{cat.name}</td>
+                            <td style={{ ...tdStyle, textAlign: 'center' }}>
+                                <button onClick={() => handleEdit(cat)} style={editButtonStyle}>✏️ Edit</button>
+                                <button onClick={() => handleDelete(cat.id)} style={deleteButtonStyle}>🗑️ Delete</button>
                             </td>
                         </tr>
                     ))}
@@ -133,20 +131,52 @@ const cancelButtonStyle = {
 
 const tableStyle = {
     width: '100%',
+    marginTop: '20px',
     borderCollapse: 'collapse',
-    backgroundColor: '#575F6D',
+    borderRadius: '8px',
+    overflow: 'hidden',
+};
+
+const tableHeaderStyle = {
+    backgroundColor: '#4A5568',
     color: '#fff',
-    marginTop: '10px'
 };
 
-const thTdStyle = {
-    padding: '10px 15px',
-    borderBottom: '1px solid #000000',
+const thStyle = {
+    padding: '12px 15px',
     textAlign: 'left',
+    borderBottom: '1px solid #2D3748',
+    textTransform: 'uppercase',
+    fontSize: '12px',
 };
 
-const actionButtonStyle = {
-    display: 'flex',
-    gap: '10px',
+const tableRowStyle = (index) => ({
+    backgroundColor: index % 2 === 0 ? '#575F6D' : '#4A5568',
+});
+
+const tdStyle = {
+    padding: '12px 15px',
+    borderBottom: '1px solid #2D3748',
+};
+
+const editButtonStyle = {
+    padding: '8px 12px',
+    backgroundColor: '#2B6CB0',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '5px',
+    cursor: 'pointer',
+    marginRight: '5px',
+    transition: 'background-color 0.3s ease',
+};
+
+const deleteButtonStyle = {
+    padding: '8px 12px',
+    backgroundColor: '#C53030',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '5px',
+    cursor: 'pointer',
+    transition: 'background-color 0.3s ease',
 };
 
