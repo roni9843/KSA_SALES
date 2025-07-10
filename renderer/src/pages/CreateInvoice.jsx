@@ -100,53 +100,63 @@ const CreateInvoice = () => {
         <div style={formContainer}>
             <div style={leftCol}>
                 <h3>🧾 Create Invoice</h3>
-
-                <input
-                    type="text"
-                    value={searchText}
-                    onChange={e => setSearchText(e.target.value)}
-                    placeholder="Search product..."
-                    style={inputStyle}
-                />
-
-                <select value={selectedId} onChange={(e) => setSelectedId(e.target.value)} style={inputStyle}>
-                    <option value="">Select Product</option>
-                    {products
-                        .filter(p => p.name.toLowerCase().includes(searchText.toLowerCase()))
-                        .map(p => (
-                            <option key={p.id} value={p.id}>{p.name}</option>
-                        ))}
-                </select>
-
-                <input type="number" value={qty} onChange={e => setQty(e.target.value)} style={inputStyle} placeholder="Qty" />
+                <div>
+                    <label style={labelStyle}>Search Product</label>
+                    <input
+                        type="text"
+                        value={searchText}
+                        onChange={e => setSearchText(e.target.value)}
+                        placeholder="Search product..."
+                        style={inputStyle}
+                    />
+                </div>
+                <div>
+                    <label style={labelStyle}>Select Product</label>
+                    <select value={selectedId} onChange={(e) => setSelectedId(e.target.value)} style={inputStyle}>
+                        <option value="">Select Product</option>
+                        {products
+                            .filter(p => p.name.toLowerCase().includes(searchText.toLowerCase()))
+                            .map(p => (
+                                <option key={p.id} value={p.id}>{p.name}</option>
+                            ))}
+                    </select>
+                </div>
+                <div>
+                    <label style={labelStyle}>Quantity</label>
+                    <input type="number" value={qty} onChange={e => setQty(e.target.value)} style={inputStyle} placeholder="Qty" />
+                </div>
                 <button onClick={addToInvoice} style={buttonStyle}>➕ Add</button>
 
                 <table style={tableStyle}>
-                    <thead>
+                    <thead style={tableHeaderStyle}>
                         <tr>
-                            <th style={thTdStyle}>Product</th>
-                            <th style={thTdStyle}>Qty</th>
-                            <th style={thTdStyle}>Rate</th>
-                            <th style={thTdStyle}>Total</th>
-                            <th style={thTdStyle}>❌</th>
+                            <th style={{ ...thStyle, textAlign: 'left' }}>Product</th>
+                            <th style={{ ...thStyle, textAlign: 'center' }}>Qty</th>
+                            <th style={thStyle}>Rate</th>
+                            <th style={thStyle}>Total</th>
+                            <th style={{...thStyle, textAlign: 'center'}}>Action</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {invoiceItems.map(i => (
-                            <tr key={i.id}>
-                                <td style={thTdStyle}>{i.name}</td>
-                                <td style={thTdStyle}>
+                        {invoiceItems.map((i, index) => (
+                            <tr key={i.id} style={tableRowStyle(index)}>
+                                <td style={{ ...tdStyle, textAlign: 'left' }}>{i.name}</td>
+                                <td style={{...tdStyle, textAlign: 'center'}}>
                                     <input
                                         type="number"
                                         value={i.quantity}
                                         min="1"
                                         onChange={(e) => updateQty(i.id, e.target.value)}
-                                        style={{ width: '60px', backgroundColor: '#eeeeee', color: '#333' }}
+                                        style={qtyInputStyle}
                                     />
                                 </td>
-                                <td style={thTdStyle}>{i.unit_price}</td>
-                                <td style={thTdStyle}>{i.total_price.toFixed(2)}</td>
-                                <td style={thTdStyle}><button onClick={() => removeItem(i.id)}>❌</button></td>
+                                <td style={tdStyle}>{i.unit_price.toFixed(2)}</td>
+                                <td style={tdStyle}>{i.total_price.toFixed(2)}</td>
+                                <td style={{...tdStyle, textAlign: 'center'}}>
+                                    <button onClick={() => removeItem(i.id)} style={removeButtonStyle}>
+                                        ❌
+                                    </button>
+                                </td>
                             </tr>
                         ))}
                     </tbody>
@@ -155,20 +165,34 @@ const CreateInvoice = () => {
 
             <div style={rightCol}>
                 <h4>🧾 Summary</h4>
-                <input type="date" value={invoiceDate} onChange={e => setInvoiceDate(e.target.value)} style={inputStyle} />
-
-                <select value={customerName} onChange={(e) => setCustomerName(e.target.value)} style={inputStyle}>
-                    <option value="">Walk-in Customer</option>
-                    <option value="Karim">Karim</option>
-                    <option value="Rahim">Rahim</option>
-                </select>
-
-                <div style={{ display: 'flex', gap: '10px' }}>
-                    <input placeholder="Discount" value={discount} onChange={(e) => setDiscount(e.target.value)} style={{ ...inputStyle, flex: 1 }} />
-                    <input placeholder="Tax" value={tax} onChange={(e) => setTax(e.target.value)} style={{ ...inputStyle, flex: 1 }} />
+                <div>
+                    <label style={labelStyle}>Invoice Date</label>
+                    <input type="date" value={invoiceDate} onChange={e => setInvoiceDate(e.target.value)} style={inputStyle} />
+                </div>
+                <div>
+                    <label style={labelStyle}>Customer</label>
+                    <select value={customerName} onChange={(e) => setCustomerName(e.target.value)} style={inputStyle}>
+                        <option value="">Walk-in Customer</option>
+                        <option value="Karim">Karim</option>
+                        <option value="Rahim">Rahim</option>
+                    </select>
                 </div>
 
-                <input placeholder="Paid" value={paid} onChange={(e) => setPaid(e.target.value)} style={inputStyle} />
+                <div style={{ display: 'flex', gap: '10px' }}>
+                    <div style={{ flex: 1 }}>
+                        <label style={labelStyle}>Discount</label>
+                        <input placeholder="Discount" value={discount} onChange={(e) => setDiscount(e.target.value)} style={inputStyle} />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                        <label style={labelStyle}>Tax</label>
+                        <input placeholder="Tax" value={tax} onChange={(e) => setTax(e.target.value)} style={inputStyle} />
+                    </div>
+                </div>
+
+                <div>
+                    <label style={labelStyle}>Paid Amount</label>
+                    <input placeholder="Paid" value={paid} onChange={(e) => setPaid(e.target.value)} style={inputStyle} />
+                </div>
                 <p><strong>Total:</strong> {total.toFixed(2)}</p>
                 <p><strong>Due:</strong> {due.toFixed(2)}</p>
 
@@ -206,6 +230,11 @@ const rightCol = {
     borderRadius: '10px'
 };
 
+const labelStyle = {
+    marginBottom: '5px',
+    display: 'block',
+};
+
 const inputStyle = {
     width: '100%',
     padding: '10px',
@@ -229,10 +258,49 @@ const buttonStyle = {
 
 const tableStyle = {
     width: '100%',
-    marginTop: '15px',
-    backgroundColor: '#575F6D',
+    marginTop: '20px',
+    borderCollapse: 'collapse',
+    borderRadius: '8px',
+    overflow: 'hidden',
+};
+
+const tableHeaderStyle = {
+    backgroundColor: '#4A5568',
     color: '#fff',
-    borderCollapse: 'collapse'
+};
+
+const thStyle = {
+    padding: '12px 15px',
+    textAlign: 'right',
+    borderBottom: '1px solid #2D3748',
+};
+
+const tableRowStyle = (index) => ({
+    backgroundColor: index % 2 === 0 ? '#575F6D' : '#4A5568',
+});
+
+const tdStyle = {
+    padding: '12px 15px',
+    textAlign: 'right',
+    borderBottom: '1px solid #2D3748',
+};
+
+const qtyInputStyle = {
+    width: '60px',
+    padding: '5px',
+    borderRadius: '5px',
+    border: '1px solid #A0AEC0',
+    backgroundColor: '#E2E8F0',
+    color: '#2D3748',
+    textAlign: 'center',
+};
+
+const removeButtonStyle = {
+    background: 'transparent',
+    border: 'none',
+    color: '#E53E3E',
+    cursor: 'pointer',
+    fontSize: '16px',
 };
 
 export default CreateInvoice;
