@@ -34,6 +34,27 @@ db.serialize(() => {
   `);
 });
 
+// ✅ tax column যোগ করা
+db.all("PRAGMA table_info(product)", (err, columns) => {
+  if (err) return console.error("PRAGMA error:", err.message);
+
+  const columnExists = columns.some(col => col.name === 'tax');
+
+  if (!columnExists) {
+    db.run(`ALTER TABLE product ADD COLUMN tax REAL DEFAULT 0`, (err) => {
+      if (err) {
+        console.error("Error adding tax column:", err.message);
+      } else {
+        console.log("✅ 'tax' column added to product table");
+      }
+    });
+  } else {
+    console.log("ℹ️ 'tax' column already exists");
+  }
+});
+
+
+
 // ✅ invoices টেবিল
 db.run(`
   CREATE TABLE IF NOT EXISTS invoice (

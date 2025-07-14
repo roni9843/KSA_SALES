@@ -1,19 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
-
 function InvoicePrint() {
     const { id } = useParams();
     const [invoice, setInvoice] = useState(null);
     const [details, setDetails] = useState([]);
-
     const navigate = useNavigate();
 
     useEffect(() => {
         async function fetchData() {
             try {
                 const res = await window.electron.ipcRenderer.invoke('get-invoice', parseInt(id));
-                console.log('Invoice Response:', res);
                 setInvoice(res.invoice);
                 setDetails(res.details);
             } catch (e) {
@@ -23,72 +20,124 @@ function InvoicePrint() {
         fetchData();
     }, [id]);
 
-
-    useEffect(() => {
-        async function testIPC() {
-            try {
-                const res = await window.electron.ipcRenderer.invoke('ping');
-                console.log('Ping response:', res);
-            } catch (e) {
-                console.error('Ping error:', e);
-            }
-        }
-        testIPC();
-    }, []);
-
-
-    if (!invoice) return <p>Loading...</p>;
-
     const handlePrint = () => {
         window.print();
-
-        // Delay করে redirect (1s পর)
         setTimeout(() => {
             navigate('/');
         }, 1000);
     };
 
-    return (
-        <div id="invoice-a4" style={{ padding: '40px', maxWidth: '800px', margin: '0 auto', fontFamily: 'Arial', color: '#333' }}>
-            <h2 style={{ textAlign: 'center' }}>Moto POS Invoice</h2>
-            <p><strong>Invoice ID:</strong> {invoice.id}</p>
-            <p><strong>Date:</strong> {invoice.created_at}</p>
-            <p><strong>Customer:</strong> {invoice.customer_name}</p>
+    if (!invoice) return <div style={{ padding: '20px' }}>Loading...</div>;
 
-            <table width="100%" border="1" cellPadding="6" style={{ marginTop: '20px', borderCollapse: 'collapse' }}>
+    const subtotal = details.reduce((acc, item) => acc + item.total_price, 0);
+    const dueDate = new Date(invoice.created_at);
+    dueDate.setDate(dueDate.getDate() + 7); // Assuming due date is 7 days after issue
+
+    return (
+        <div style={{ maxWidth: '800px', margin: 'auto', padding: '20px', fontFamily: 'sans-serif', color: '#333' }}>
+            {/* Header */}
+            <div style={{ backgroundColor: '#003366', color: 'white', padding: '40px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div style={{ flex: 1 }}>
+                    <h1 style={{ fontSize: '48px', margin: 0 }}>Invoice</h1>
+                    <div style={{ border: '1px solid white', padding: '20px', marginTop: '20px', width: '150px', textAlign: 'center' }}>
+                        Your Company Logo
+                    </div>
+                </div>
+                <div style={{ textAlign: 'right', flex: 1 }}>
+                    <h2>Business Name</h2>
+                    <p>Street Address Line 01</p>
+                    <p>Street Address Line 02</p>
+                    <p>+1 (999)-999-9999</p>
+                    <p>Email Address</p>
+                    <p>Website</p>
+                </div>
+            </div>
+
+            {/* Invoice Details & Bill To */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '20px 0', borderBottom: '1px solid #ccc' }}>
+                <div>
+                    <h3 style={{ margin: '0 0 10px 0' }}>INVOICE DETAILS:</h3>
+                    <p><strong>Invoice #:</strong> {invoice.id}</p>
+                    <p><strong>Date of Issue:</strong> {new Date(invoice.created_at).toLocaleDateString()}</p>
+                    <p><strong>Due Date:</strong> {dueDate.toLocaleDateString()}</p>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                    <h3 style={{ margin: '0 0 10px 0' }}>BILL TO:</h3>
+                    <p>{invoice.customer_name}</p>
+                    {/* Add address fields if available */}
+                </div>
+            </div>
+
+            {/* Items Table */}
+            <table width="100%" style={{ marginTop: '20px', borderCollapse: 'collapse' }}>
                 <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Product</th>
-                        <th>Qty</th>
-                        <th>Rate</th>
-                        <th>Total</th>
+                    <tr style={{ borderBottom: '2px solid #333' }}>
+                        <th style={{ textAlign: 'left', padding: '8px' }}>ITEM/SERVICE</th>
+                        <th style={{ textAlign: 'right', padding: '8px' }}>QTY/HRS</th>
+                        <th style={{ textAlign: 'right', padding: '8px' }}>RATE</th>
+                        <th style={{ textAlign: 'right', padding: '8px' }}>AMOUNT</th>
                     </tr>
                 </thead>
                 <tbody>
                     {details.map((item, i) => (
-                        <tr key={i}>
-                            <td>{i + 1}</td>
-                            <td>{item.product_name}</td>
-                            <td>{item.quantity}</td>
-                            <td>{item.unit_price}</td>
-                            <td>{item.total_price.toFixed(2)}</td>
+                        <tr key={i} style={{ borderBottom: '1px solid #ccc' }}>
+                            <td style={{ padding: '8px' }}>{item.product_name}</td>
+                            <td style={{ textAlign: 'right', padding: '8px' }}>{item.quantity}</td>
+                            <td style={{ textAlign: 'right', padding: '8px' }}>{item.unit_price.toFixed(2)}</td>
+                            <td style={{ textAlign: 'right', padding: '8px' }}>{item.total_price.toFixed(2)}</td>
                         </tr>
                     ))}
                 </tbody>
             </table>
 
-            <div style={{ marginTop: '20px', textAlign: 'right' }}>
-                <p>Tax: {invoice.tax.toFixed(2)}</p>
-                <p>Discount: {invoice.discount.toFixed(2)}</p>
-                <p><strong>Total: {invoice.total.toFixed(2)}</strong></p>
-                <p>Paid: {invoice.paid.toFixed(2)}</p>
-                <p><strong>Due: {(invoice.total - invoice.paid).toFixed(2)}</strong></p>
+            {/* Totals Section */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
+                <div style={{ width: '250px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}>
+                        <span>Subtotal</span>
+                        <span>{subtotal.toFixed(2)}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}>
+                        <span>Discount</span>
+                        <span>-{invoice.discount.toFixed(2)}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}>
+                        <span>Tax</span>
+                        <span>{invoice.tax.toFixed(2)}</span>
+                    </div>
+                    <div style={{ borderTop: '2px solid #333', marginTop: '10px', paddingTop: '10px', display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '18px' }}>
+                        <span>TOTAL</span>
+                        <span>{invoice.total.toFixed(2)}</span>
+                    </div>
+                     <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}>
+                        <span>Paid</span>
+                        <span>{invoice.paid.toFixed(2)}</span>
+                    </div>
+                     <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', fontWeight: 'bold' }}>
+                        <span>Due</span>
+                        <span>{(invoice.total - invoice.paid).toFixed(2)}</span>
+                    </div>
+                </div>
             </div>
 
-            <button onClick={handlePrint}>🖨️ Print</button>
+            {/* Footer */}
+            <div style={{ marginTop: '40px' }}>
+                <h3>TERMS</h3>
+                <p>Please pay the invoice by the due date.</p>
+                <h3>CONDITIONS/INSTRUCTIONS</h3>
+                <p>Payment can be made via bank transfer or cash.</p>
+            </div>
+
+            <div style={{ marginTop: '20px', textAlign: 'center' }}>
+                <button onClick={handlePrint} style={{ padding: '10px 20px', cursor: 'pointer', border: 'none', backgroundColor: '#007bff', color: 'white', fontSize: '16px' }}>
+                    🖨️ Print
+                </button>
+            </div>
+
+            <div style={{ position: 'fixed', bottom: '0', left: '0', right: '0', backgroundColor: '#003366', height: '40px' }}></div>
         </div>
     );
 }
 
 export default InvoicePrint;
+

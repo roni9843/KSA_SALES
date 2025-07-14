@@ -9,7 +9,8 @@ const AddProduct = ({ onAdded }) => {
         purchase_price: '',
         sale_price: '',
         quantity_in_stock: '',
-        unit: ''
+        unit: '',
+        tax: ''
     });
 
     const [categories, setCategories] = useState([]);
@@ -38,7 +39,8 @@ const AddProduct = ({ onAdded }) => {
             purchase_price: '',
             sale_price: '',
             quantity_in_stock: '',
-            unit: ''
+            unit: '',
+            tax: ''
         });
     };
 
@@ -46,51 +48,82 @@ const AddProduct = ({ onAdded }) => {
         <div style={cardStyle}>
             <h3 style={headerStyle}>Add New Product</h3>
             <form onSubmit={handleSubmit} style={formStyle}>
-                <div style={inputGroupStyle}>
-                    <label style={labelStyle}>Product Name</label>
-                    <input name="name" placeholder="Enter product name" value={form.name} onChange={handleChange} required style={inputStyle} />
-                </div>
+                <fieldset style={fieldsetStyle}>
+                    <legend style={legendStyle}>Product Details</legend>
+                    <div style={detailsGridStyle}>
+                        <div style={inputGroupStyle}>
+                            <label style={labelStyle}>Product Name</label>
+                            <input name="name" placeholder="Enter product name" value={form.name} onChange={handleChange} required style={inputStyle} />
+                        </div>
 
-                <div style={inputGroupStyle}>
-                    <label style={labelStyle}>SKU</label>
-                    <input name="sku" placeholder="Enter SKU" value={form.sku} onChange={handleChange} required style={inputStyle} />
-                </div>
+                        <div style={inputGroupStyle}>
+                            <label style={labelStyle}>SKU</label>
+                            <input name="sku" placeholder="Enter SKU" value={form.sku} onChange={handleChange} required style={inputStyle} />
+                        </div>
 
-                <div style={inputGroupStyle}>
-                    <label style={labelStyle}>Category</label>
-                    <select name="category_id" value={form.category_id} onChange={handleChange} required style={inputStyle}>
-                        <option value="">Select Category</option>
-                        {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                    </select>
-                </div>
+                        <div style={inputGroupStyle}>
+                            <label style={labelStyle}>Category</label>
+                            <select name="category_id" value={form.category_id} onChange={handleChange} required style={inputStyle}>
+                                <option value="">Select Category</option>
+                                {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                            </select>
+                        </div>
 
-                <div style={inputGroupStyle}>
-                    <label style={labelStyle}>Unit</label>
-                    <input name="unit" placeholder="e.g., pcs, box" value={form.unit} onChange={handleChange} style={inputStyle} />
-                </div>
+                        <div style={inputGroupStyle}>
+                            <label style={labelStyle}>Unit</label>
+                            <input name="unit" placeholder="e.g., pcs, box" value={form.unit} onChange={handleChange} style={inputStyle} />
+                        </div>
 
-                <div style={{ ...inputGroupStyle, gridColumn: '1 / span 2' }}>
-                    <label style={labelStyle}>Description</label>
-                    <textarea name="description" placeholder="Product Description" value={form.description} onChange={handleChange} style={{ ...inputStyle, height: '80px', resize: 'vertical' }} />
-                </div>
+                        <div style={{ ...inputGroupStyle, gridColumn: '1 / span 2' }}>
+                            <label style={labelStyle}>Description</label>
+                            <textarea name="description" placeholder="Product Description" value={form.description} onChange={handleChange} style={{ ...inputStyle, height: '80px', resize: 'vertical' }} />
+                        </div>
+                    </div>
+                </fieldset>
 
-                <div style={inputGroupStyle}>
-                    <label style={labelStyle}>Purchase Price</label>
-                    <input type="number" name="purchase_price" placeholder="0.00" value={form.purchase_price} onChange={handleChange} style={inputStyle} />
-                </div>
+                <fieldset style={fieldsetStyle}>
+                    <legend style={legendStyle}>Price & Tax</legend>
+                    <div style={priceGridStyle}>
+                        <div style={inputGroupStyle}>
+                            <label style={labelStyle}>Purchase Price</label>
+                            <input type="number" name="purchase_price" placeholder="0.00" value={form.purchase_price} onChange={handleChange} style={inputStyle} />
+                        </div>
 
-                <div style={inputGroupStyle}>
-                    <label style={labelStyle}>Sale Price</label>
-                    <input type="number" name="sale_price" placeholder="0.00" value={form.sale_price} onChange={handleChange} style={inputStyle} />
-                </div>
+                        <div style={inputGroupStyle}>
+                            <label style={labelStyle}>Tax (%)</label>
+                            <input type="number" name="tax" placeholder="e.g., 5" value={form.tax} onChange={handleChange} style={inputStyle} />
+                        </div>
 
-                <div style={inputGroupStyle}>
-                    <label style={labelStyle}>Stock Quantity</label>
-                    <input type="number" name="quantity_in_stock" placeholder="0" value={form.quantity_in_stock} onChange={handleChange} style={inputStyle} />
-                </div>
+                        <div style={inputGroupStyle}>
+                            <label style={labelStyle}>Total Cost</label>
+                            <input
+                                type="number"
+                                name="total_cost"
+                                placeholder="0.00"
+                                value={
+                                    (form.purchase_price && form.tax)
+                                    ? (parseFloat(form.purchase_price) + (parseFloat(form.purchase_price) * parseFloat(form.tax) / 100)).toFixed(2)
+                                    : form.purchase_price
+                                }
+                                disabled
+                                style={{...inputStyle, backgroundColor: '#E2E8F0'}}
+                            />
+                        </div>
 
-                <button 
-                    type="submit" 
+                        <div style={inputGroupStyle}>
+                            <label style={labelStyle}>Sale Price</label>
+                            <input type="number" name="sale_price" placeholder="0.00" value={form.sale_price} onChange={handleChange} style={inputStyle} />
+                        </div>
+
+                        <div style={inputGroupStyle}>
+                            <label style={labelStyle}>Stock Quantity</label>
+                            <input type="number" name="quantity_in_stock" placeholder="0" value={form.quantity_in_stock} onChange={handleChange} style={inputStyle} />
+                        </div>
+                    </div>
+                </fieldset>
+
+                <button
+                    type="submit"
                     style={buttonStyle}
                     onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#2ecc71'}
                     onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#27ae60'}
@@ -122,7 +155,34 @@ const headerStyle = {
 
 const formStyle = {
     display: 'grid',
+    gridTemplateColumns: '1fr',
+    gap: '10px', 
+};
+
+const fieldsetStyle = {
+    border: '1px solid #4A5568',
+    borderRadius: '8px',
+    padding: '20px',
+    margin: '0', 
+};
+
+const legendStyle = {
+    padding: '0 10px',
+    color: '#E2E8F0',
+    fontWeight: 'bold',
+    fontSize: '18px',
+    marginLeft: '10px',
+};
+
+const detailsGridStyle = {
+    display: 'grid',
     gridTemplateColumns: '1fr 1fr',
+    gap: '20px',
+};
+
+const priceGridStyle = {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr 1fr 1fr',
     gap: '20px',
 };
 
@@ -149,7 +209,6 @@ const inputStyle = {
 };
 
 const buttonStyle = {
-    gridColumn: '1 / span 2',
     padding: '15px',
     backgroundColor: '#27ae60',
     color: '#fff',
