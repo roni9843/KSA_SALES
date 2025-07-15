@@ -209,9 +209,47 @@ ipcMain.handle('get-invoices', async () => {
 });
 
 
+// IPC for add-tax
+ipcMain.handle('add-tax', async (event, tax) => {
+    return new Promise((resolve, reject) => {
+        const sql = `
+      INSERT INTO tax
+      (tax_label, tax_percentage)
+      VALUES (?, ?)
+    `;
+        const params = [
+            tax.tax_label,
+            tax.tax_percentage,
+        ];
+        db.run(sql, params, function (err) {
+            if (err) {
+                console.error(err.message);
+                reject('Error adding tax');
+            } else {
+                resolve({ success: true, id: this.lastID });
+            }
+        });
+    });
+});
+
 
 ipcMain.handle('ping', () => {
     return 'pong';
+});
+
+// IPC for get-taxes
+ipcMain.handle('get-taxes', async () => {
+    return new Promise((resolve, reject) => {
+        const sql = `SELECT * FROM tax ORDER BY id DESC`;
+        db.all(sql, [], (err, rows) => {
+            if (err) {
+                console.error(err.message);
+                reject('Error loading taxes');
+            } else {
+                resolve(rows);
+            }
+        });
+    });
 });
 
 require('./ipc/product');

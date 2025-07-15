@@ -83,4 +83,13 @@ db.run(`
   )
 `);
 
+// tax table
+db.run(`
+  CREATE TABLE IF NOT EXISTS tax (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    tax_label TEXT NOT NULL,
+    tax_percentage REAL NOT NULL
+  )
+`);
+
 module.exports = db;
