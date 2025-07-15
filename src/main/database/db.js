@@ -92,4 +92,19 @@ db.run(`
   )
 `);
 
+// customers table
+db.run(`
+  CREATE TABLE IF NOT EXISTS customers (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    customer_tax_no TEXT,
+    address TEXT,
+    zip_code TEXT,
+    city TEXT,
+    state TEXT,
+    phone TEXT NOT NULL,
+    email TEXT
+  )
+`);
+
 module.exports = db;

@@ -1,9 +1,10 @@
 import React from 'react';
+import AddCustomer from '../components/AddCustomer';
 
 const Customers = () => {
     return (
         <div>
-            <h1>Customers</h1>
+            <AddCustomer onAdded={() => {}} />
         </div>
     );
 };

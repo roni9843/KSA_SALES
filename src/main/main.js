@@ -254,6 +254,35 @@ ipcMain.handle('get-taxes', async () => {
 
 require('./ipc/product');
 
+// IPC for add-customer
+ipcMain.handle('add-customer', async (event, customer) => {
+    return new Promise((resolve, reject) => {
+        const sql = `
+      INSERT INTO customers
+      (name, customer_tax_no, address, zip_code, city, state, phone, email)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+        const params = [
+            customer.name,
+            customer.customer_tax_no,
+            customer.address,
+            customer.zip_code,
+            customer.city,
+            customer.state,
+            customer.phone,
+            customer.email,
+        ];
+        db.run(sql, params, function (err) {
+            if (err) {
+                console.error(err.message);
+                reject('Error adding customer');
+            } else {
+                resolve({ success: true, id: this.lastID });
+            }
+        });
+    });
+});
+
 // IPC for update-tax
 ipcMain.handle('update-tax', async (event, tax) => {
     return new Promise((resolve, reject) => {
