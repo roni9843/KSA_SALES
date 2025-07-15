@@ -8,7 +8,12 @@ const Sidebar = () => {
         { path: '/category', label: '📁 Category' },
         { path: '/products', label: '📦 Products' },
         { path: '/create-invoice', label: '🧾 Invoice' },
-        { path: '/invoices', label: '📋 Invoices' }
+        { path: '/invoices', label: '📋 Invoices' },
+        { path: '/customers', label: '👥 Customers' },
+        { path: '/suppliers', label: '🚚 Suppliers' },
+        { path: '/reporting', label: '📊 Reporting' },
+        { path: '/tax-rates', label: '💰 Tax Rates' },
+        { path: '/my-company', label: '🏢 My Company' }
     ];
 
     return (

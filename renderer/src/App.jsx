@@ -9,6 +9,11 @@ import CreateInvoice from './pages/CreateInvoice';
 import InvoicePrint from './pages/InvoicePrint';
 import InvoiceList from './pages/InvoiceList';
 import ProductPage from './pages/ProductPage';
+import Customers from './pages/Customers';
+import Suppliers from './pages/Suppliers';
+import Reporting from './pages/Reporting';
+import TaxRates from './pages/TaxRates';
+import MyCompany from './pages/MyCompany';
 
 
 function App() {
@@ -34,6 +39,11 @@ function App() {
           <Route path="/create-invoice" element={<CreateInvoice />} />
           <Route path="/invoice/:id" element={<InvoicePrint />} />
           <Route path="/invoices" element={<InvoiceList />} />
+          <Route path="/customers" element={<Customers />} />
+          <Route path="/suppliers" element={<Suppliers />} />
+          <Route path="/reporting" element={<Reporting />} />
+          <Route path="/tax-rates" element={<TaxRates />} />
+          <Route path="/my-company" element={<MyCompany />} />
           <Route path="*" element={<p>404 Not Found</p>} />
         </Routes>
       </Layout>
