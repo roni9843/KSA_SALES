@@ -254,6 +254,37 @@ ipcMain.handle('get-taxes', async () => {
 
 require('./ipc/product');
 
+// IPC for update-tax
+ipcMain.handle('update-tax', async (event, tax) => {
+    return new Promise((resolve, reject) => {
+        const sql = `UPDATE tax SET tax_label = ?, tax_percentage = ? WHERE id = ?`;
+        const params = [tax.tax_label, tax.tax_percentage, tax.id];
+        db.run(sql, params, function (err) {
+            if (err) {
+                console.error(err.message);
+                reject('Error updating tax');
+            } else {
+                resolve({ success: true });
+            }
+        });
+    });
+});
+
+// IPC for delete-tax
+ipcMain.handle('delete-tax', async (event, id) => {
+    return new Promise((resolve, reject) => {
+        const sql = `DELETE FROM tax WHERE id = ?`;
+        db.run(sql, [id], function (err) {
+            if (err) {
+                console.error(err.message);
+                reject('Error deleting tax');
+            } else {
+                resolve({ success: true });
+            }
+        });
+    });
+});
+
 
 
 
