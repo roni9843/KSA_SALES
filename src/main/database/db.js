@@ -107,4 +107,16 @@ db.run(`
   )
 `);
 
+// suppliers table
+db.run(`
+  CREATE TABLE IF NOT EXISTS suppliers (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    phone TEXT NOT NULL,
+    email TEXT,
+    address TEXT,
+    status INTEGER DEFAULT 1
+  )
+`);
+
 module.exports = db;
