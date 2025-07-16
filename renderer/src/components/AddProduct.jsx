@@ -1,5 +1,53 @@
 import { useEffect, useState } from 'react';
 
+const Switch = ({ checked, onChange, name }) => {
+    const switchStyle = {
+        position: 'relative',
+        display: 'inline-block',
+        width: '60px',
+        height: '24px',
+    };
+
+    const inputStyle = {
+        opacity: 0,
+        width: 0,
+        height: 0,
+    };
+
+    const sliderStyle = {
+        position: 'absolute',
+        cursor: 'pointer',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: checked ? '#27ae60' : '#ccc',
+        transition: '.4s',
+        borderRadius: '24px',
+    };
+
+    const knobStyle = {
+        position: 'absolute',
+        height: '18px',
+        width: '18px',
+        left: '3px',
+        bottom: '3px',
+        backgroundColor: 'white',
+        transition: '.4s',
+        borderRadius: '50%',
+        transform: checked ? 'translateX(36px)' : 'translateX(0)',
+    };
+
+    return (
+        <label style={switchStyle}>
+            <input type="checkbox" name={name} checked={checked} onChange={onChange} style={inputStyle} />
+            <span style={sliderStyle}>
+                <span style={knobStyle}></span>
+            </span>
+        </label>
+    );
+};
+
 const AddProduct = ({ onAdded }) => {
     const [form, setForm] = useState({
         name: '',
@@ -10,7 +58,11 @@ const AddProduct = ({ onAdded }) => {
         sale_price: '',
         quantity_in_stock: '',
         unit: '',
-        tax: ''
+        tax: '',
+        code: '',
+        barcode: '',
+        active: true,
+        default_quantity: false
     });
 
     const [categories, setCategories] = useState([]);
@@ -24,7 +76,8 @@ const AddProduct = ({ onAdded }) => {
     }, []);
 
     const handleChange = (e) => {
-        setForm({ ...form, [e.target.name]: e.target.value });
+        const { name, value, type, checked } = e.target;
+        setForm({ ...form, [name]: type === 'checkbox' ? checked : value });
     };
 
     const handleSubmit = async (e) => {
@@ -40,7 +93,11 @@ const AddProduct = ({ onAdded }) => {
             sale_price: '',
             quantity_in_stock: '',
             unit: '',
-            tax: ''
+            tax: '',
+            code: '',
+            barcode: '',
+            active: true,
+            default_quantity: false
         });
     };
 
@@ -74,6 +131,26 @@ const AddProduct = ({ onAdded }) => {
                             <input name="unit" placeholder="e.g., pcs, box" value={form.unit} onChange={handleChange} style={inputStyle} />
                         </div>
 
+                        <div style={inputGroupStyle}>
+                            <label style={labelStyle}>Code</label>
+                            <input name="code" placeholder="Enter product code" value={form.code} onChange={handleChange} style={inputStyle} />
+                        </div>
+
+                        <div style={inputGroupStyle}>
+                            <label style={labelStyle}>Barcode</label>
+                            <input name="barcode" placeholder="Enter barcode" value={form.barcode} onChange={handleChange} style={inputStyle} />
+                        </div>
+
+                        <div style={inputGroupStyle}>
+                            <label style={labelStyle}>Active</label>
+                            <Switch name="active" checked={form.active} onChange={handleChange} />
+                        </div>
+
+                        <div style={inputGroupStyle}>
+                            <label style={labelStyle}>Default Quantity</label>
+                            <Switch name="default_quantity" checked={form.default_quantity} onChange={handleChange} />
+                        </div>
+
                         <div style={{ ...inputGroupStyle, gridColumn: '1 / span 2' }}>
                             <label style={labelStyle}>Description</label>
                             <textarea name="description" placeholder="Product Description" value={form.description} onChange={handleChange} style={{ ...inputStyle, height: '80px', resize: 'vertical' }} />
@@ -95,18 +172,18 @@ const AddProduct = ({ onAdded }) => {
                         </div>
 
                         <div style={inputGroupStyle}>
-                            <label style={labelStyle}>Total Cost</label>
+                            <label style={labelStyle}>Markup (%)</label>
                             <input
-                                type="number"
-                                name="total_cost"
+                                type="text"
+                                name="markup"
                                 placeholder="0.00"
                                 value={
-                                    (form.purchase_price && form.tax)
-                                    ? (parseFloat(form.purchase_price) + (parseFloat(form.purchase_price) * parseFloat(form.tax) / 100)).toFixed(2)
-                                    : form.purchase_price
+                                    (form.purchase_price && form.sale_price && parseFloat(form.purchase_price) > 0)
+                                        ? (((parseFloat(form.sale_price) - parseFloat(form.purchase_price)) / parseFloat(form.purchase_price)) * 100).toFixed(2)
+                                        : ''
                                 }
                                 disabled
-                                style={{...inputStyle, backgroundColor: '#E2E8F0'}}
+                                style={{ ...inputStyle, backgroundColor: '#E2E8F0' }}
                             />
                         </div>
 
@@ -124,7 +201,7 @@ const AddProduct = ({ onAdded }) => {
 
                 <button
                     type="submit"
-                    style={{...buttonStyle, gridColumn: '1 / -1'}}
+                    style={{ ...buttonStyle, gridColumn: '1 / -1' }}
                     onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#2ecc71'}
                     onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#27ae60'}
                 >
@@ -154,14 +231,14 @@ const headerStyle = {
 const formStyle = {
     display: 'grid',
     gridTemplateColumns: '1fr 1fr',
-    gap: '20px', 
+    gap: '20px',
 };
 
 const fieldsetStyle = {
     border: '1px solid #4A5568',
     borderRadius: '8px',
     padding: '20px',
-    margin: '0', 
+    margin: '0',
 };
 
 const legendStyle = {

@@ -9,7 +9,7 @@ const ProductPage = () => {
 
     return (
         <div style={{ padding: '20px' }}>
-            <h2 style={{ color: '#333' }}>🛒 Product Management</h2>
+            {/* <h2 style={{ color: '#333' }}>🛒 Product Management</h2> */}
             <AddProduct onAdded={refreshData} />
             <ProductList refresh={refresh} />
         </div>
