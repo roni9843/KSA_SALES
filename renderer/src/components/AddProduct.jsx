@@ -124,7 +124,7 @@ const AddProduct = ({ onAdded }) => {
 
                 <button
                     type="submit"
-                    style={buttonStyle}
+                    style={{...buttonStyle, gridColumn: '1 / -1'}}
                     onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#2ecc71'}
                     onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#27ae60'}
                 >
@@ -141,8 +141,6 @@ const cardStyle = {
     borderRadius: '10px',
     color: '#fff',
     boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
-    maxWidth: '700px',
-    margin: 'auto',
     marginBottom: '30px'
 };
 
@@ -155,8 +153,8 @@ const headerStyle = {
 
 const formStyle = {
     display: 'grid',
-    gridTemplateColumns: '1fr',
-    gap: '10px', 
+    gridTemplateColumns: '1fr 1fr',
+    gap: '20px', 
 };
 
 const fieldsetStyle = {
@@ -182,7 +180,7 @@ const detailsGridStyle = {
 
 const priceGridStyle = {
     display: 'grid',
-    gridTemplateColumns: '1fr 1fr 1fr 1fr',
+    gridTemplateColumns: '1fr 1fr',
     gap: '20px',
 };
 

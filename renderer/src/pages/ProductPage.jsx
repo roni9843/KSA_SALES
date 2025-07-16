@@ -8,7 +8,7 @@ const ProductPage = () => {
     const refreshData = () => setRefresh(!refresh);
 
     return (
-        <div style={{ padding: '20px', width: '100%' }}>
+        <div style={{ padding: '20px' }}>
             <h2 style={{ color: '#333' }}>🛒 Product Management</h2>
             <AddProduct onAdded={refreshData} />
             <ProductList refresh={refresh} />
