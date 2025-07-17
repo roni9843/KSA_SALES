@@ -158,10 +158,7 @@ ipcMain.handle('get-products', async () => {
     return new Promise((resolve, reject) => {
         const sql = `
       SELECT
-        p.id, p.name, p.sku, p.description,
-        p.purchase_price, p.sale_price,
-        p.quantity_in_stock, p.unit,
-        p.created_at,
+        p.*,
         c.name as category_name
       FROM product p
       LEFT JOIN product_category c ON p.category_id = c.id

@@ -1,5 +1,54 @@
 import { useEffect, useState } from 'react';
 
+const Switch = ({ checked, onChange, name }) => {
+    const switchStyle = {
+        position: 'relative',
+        display: 'inline-block',
+        width: '60px',
+        height: '24px',
+    };
+
+    const inputStyle = {
+        opacity: 0,
+        width: 0,
+        height: 0,
+    };
+
+    const sliderStyle = {
+        position: 'absolute',
+        cursor: 'pointer',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: checked ? '#27ae60' : '#ccc',
+        transition: '.4s',
+        borderRadius: '24px',
+    };
+
+    const knobStyle = {
+        position: 'absolute',
+        height: '18px',
+        width: '18px',
+        left: '3px',
+        bottom: '3px',
+        backgroundColor: 'white',
+        transition: '.4s',
+        borderRadius: '50%',
+        transform: checked ? 'translateX(36px)' : 'translateX(0)',
+    };
+
+    return (
+        <label style={switchStyle}>
+            <input type="checkbox" name={name} checked={checked} onChange={onChange} style={inputStyle} />
+            <span style={sliderStyle}>
+                <span style={knobStyle}></span>
+            </span>
+        </label>
+    );
+};
+
+
 const ProductList = ({ refresh }) => {
     const [list, setList] = useState([]);
     const [editProduct, setEditProduct] = useState(null);
@@ -39,13 +88,8 @@ const ProductList = ({ refresh }) => {
     };
 
     const handleChange = (e) => {
-        const { name, value } = e.target;
-
-        // category_id হলে সংখ্যা করে দাও
-        setEditProduct({
-            ...editProduct,
-            [name]: name === 'category_id' ? parseInt(value) : value
-        });
+        const { name, value, type, checked } = e.target;
+        setEditProduct({ ...editProduct, [name]: type === 'checkbox' ? checked : value });
     };
 
 
@@ -89,41 +133,99 @@ const ProductList = ({ refresh }) => {
                     <div style={modalBox}>
                         <h3 style={modalHeaderStyle}>Edit Product</h3>
                         <form onSubmit={handleEditSubmit} style={formStyle}>
-                            <div style={inputGroupStyle}>
-                                <label style={labelStyle}>Name</label>
-                                <input name="name" value={editProduct.name} onChange={handleChange} placeholder="Name" style={inputStyle} />
-                            </div>
-                            <div style={inputGroupStyle}>
-                                <label style={labelStyle}>SKU</label>
-                                <input name="sku" value={editProduct.sku} onChange={handleChange} placeholder="SKU" style={inputStyle} />
-                            </div>
-                            <div style={inputGroupStyle}>
-                                <label style={labelStyle}>Category</label>
-                                <select name="category_id" value={editProduct.category_id} onChange={handleChange} style={inputStyle}>
-                                    <option value="">Select Category</option>
-                                    {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
-                                </select>
-                            </div>
-                            <div style={inputGroupStyle}>
-                                <label style={labelStyle}>Unit</label>
-                                <input name="unit" value={editProduct.unit} onChange={handleChange} placeholder="Unit" style={inputStyle} />
-                            </div>
-                            <div style={{ ...inputGroupStyle, gridColumn: '1 / span 2' }}>
-                                <label style={labelStyle}>Description</label>
-                                <textarea name="description" value={editProduct.description} onChange={handleChange} placeholder="Description" style={{ ...inputStyle, height: '60px', resize: 'vertical' }} />
-                            </div>
-                            <div style={inputGroupStyle}>
-                                <label style={labelStyle}>Purchase Price</label>
-                                <input type="number" name="purchase_price" value={editProduct.purchase_price} onChange={handleChange} placeholder="Purchase Price" style={inputStyle} />
-                            </div>
-                            <div style={inputGroupStyle}>
-                                <label style={labelStyle}>Sale Price</label>
-                                <input type="number" name="sale_price" value={editProduct.sale_price} onChange={handleChange} placeholder="Sale Price" style={inputStyle} />
-                            </div>
-                            <div style={inputGroupStyle}>
-                                <label style={labelStyle}>Stock</label>
-                                <input type="number" name="quantity_in_stock" value={editProduct.quantity_in_stock} onChange={handleChange} placeholder="Stock" style={inputStyle} />
-                            </div>
+                            <fieldset style={fieldsetStyle}>
+                                <legend style={legendStyle}>Product Details</legend>
+                                <div style={detailsGridStyle}>
+                                    <div style={inputGroupStyle}>
+                                        <label style={labelStyle}>Product Name</label>
+                                        <input name="name" placeholder="Enter product name" value={editProduct.name} onChange={handleChange} required style={inputStyle} />
+                                    </div>
+
+                                    <div style={inputGroupStyle}>
+                                        <label style={labelStyle}>SKU</label>
+                                        <input name="sku" placeholder="Enter SKU" value={editProduct.sku} onChange={handleChange} required style={inputStyle} />
+                                    </div>
+
+                                    <div style={inputGroupStyle}>
+                                        <label style={labelStyle}>Category</label>
+                                        <select name="category_id" value={editProduct.category_id} onChange={handleChange} required style={inputStyle}>
+                                            <option value="">Select Category</option>
+                                            {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                                        </select>
+                                    </div>
+
+                                    <div style={inputGroupStyle}>
+                                        <label style={labelStyle}>Unit</label>
+                                        <input name="unit" placeholder="e.g., pcs, box" value={editProduct.unit} onChange={handleChange} style={inputStyle} />
+                                    </div>
+
+                                    <div style={inputGroupStyle}>
+                                        <label style={labelStyle}>Code</label>
+                                        <input name="code" placeholder="Enter product code" value={editProduct.code} onChange={handleChange} style={inputStyle} />
+                                    </div>
+
+                                    <div style={inputGroupStyle}>
+                                        <label style={labelStyle}>Barcode</label>
+                                        <input name="barcode" placeholder="Enter barcode" value={editProduct.barcode} onChange={handleChange} style={inputStyle} />
+                                    </div>
+
+                                    <div style={inputGroupStyle}>
+                                        <label style={labelStyle}>Active</label>
+                                        <Switch name="active" checked={editProduct.active} onChange={handleChange} />
+                                    </div>
+
+                                    <div style={inputGroupStyle}>
+                                        <label style={labelStyle}>Default Quantity</label>
+                                        <Switch name="default_quantity" checked={editProduct.default_quantity} onChange={handleChange} />
+                                    </div>
+
+                                    <div style={{ ...inputGroupStyle, gridColumn: '1 / span 2' }}>
+                                        <label style={labelStyle}>Description</label>
+                                        <textarea name="description" placeholder="Product Description" value={editProduct.description} onChange={handleChange} style={{ ...inputStyle, height: '80px', resize: 'vertical' }} />
+                                    </div>
+                                </div>
+                            </fieldset>
+
+                            <fieldset style={fieldsetStyle}>
+                                <legend style={legendStyle}>Price & Tax</legend>
+                                <div style={priceGridStyle}>
+                                    <div style={inputGroupStyle}>
+                                        <label style={labelStyle}>Purchase Price</label>
+                                        <input type="number" name="purchase_price" placeholder="0.00" value={editProduct.purchase_price} onChange={handleChange} style={inputStyle} />
+                                    </div>
+
+                                    <div style={inputGroupStyle}>
+                                        <label style={labelStyle}>Tax (%)</label>
+                                        <input type="number" name="tax" placeholder="e.g., 5" value={editProduct.tax} onChange={handleChange} style={inputStyle} />
+                                    </div>
+
+                                    <div style={inputGroupStyle}>
+                                        <label style={labelStyle}>Markup (%)</label>
+                                        <input
+                                            type="text"
+                                            name="markup"
+                                            placeholder="0.00"
+                                            value={
+                                                (editProduct.purchase_price && editProduct.sale_price && parseFloat(editProduct.purchase_price) > 0)
+                                                    ? (((parseFloat(editProduct.sale_price) - parseFloat(editProduct.purchase_price)) / parseFloat(editProduct.purchase_price)) * 100).toFixed(2)
+                                                    : ''
+                                            }
+                                            disabled
+                                            style={{ ...inputStyle, backgroundColor: '#E2E8F0' }}
+                                        />
+                                    </div>
+
+                                    <div style={inputGroupStyle}>
+                                        <label style={labelStyle}>Sale Price</label>
+                                        <input type="number" name="sale_price" placeholder="0.00" value={editProduct.sale_price} onChange={handleChange} style={inputStyle} />
+                                    </div>
+
+                                    <div style={inputGroupStyle}>
+                                        <label style={labelStyle}>Stock Quantity</label>
+                                        <input type="number" name="quantity_in_stock" placeholder="0" value={editProduct.quantity_in_stock} onChange={handleChange} style={inputStyle} />
+                                    </div>
+                                </div>
+                            </fieldset>
 
                             <div style={{ gridColumn: '1 / span 2', display: 'flex', gap: '10px', marginTop: '10px' }}>
                                 <button type="submit" style={buttonStyle}>💾 Update</button>
@@ -211,7 +313,7 @@ const modalBox = {
     background: '#2D3748',
     padding: '30px',
     borderRadius: '10px',
-    width: 'clamp(400px, 50vw, 600px)',
+    width: 'clamp(800px, 70vw, 1000px)',
     color: '#fff',
     boxShadow: '0 5px 15px rgba(0,0,0,0.3)',
 };
@@ -225,7 +327,34 @@ const modalHeaderStyle = {
 const formStyle = {
     display: 'grid',
     gridTemplateColumns: '1fr 1fr',
-    gap: '15px',
+    gap: '20px',
+};
+
+const fieldsetStyle = {
+    border: '1px solid #4A5568',
+    borderRadius: '8px',
+    padding: '20px',
+    margin: '0',
+};
+
+const legendStyle = {
+    padding: '0 10px',
+    color: '#E2E8F0',
+    fontWeight: 'bold',
+    fontSize: '18px',
+    marginLeft: '10px',
+};
+
+const detailsGridStyle = {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '20px',
+};
+
+const priceGridStyle = {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '20px',
 };
 
 const inputGroupStyle = {
@@ -234,18 +363,20 @@ const inputGroupStyle = {
 };
 
 const labelStyle = {
-    marginBottom: '5px',
+    marginBottom: '8px',
     fontSize: '14px',
     color: '#A0AEC0',
 };
 
 const inputStyle = {
-    padding: '10px',
+    width: '100%',
+    padding: '12px',
     borderRadius: '5px',
     border: '1px solid #A0AEC0',
     backgroundColor: '#fff',
     color: '#333',
     fontSize: '14px',
+    boxSizing: 'border-box',
 };
 
 const buttonStyle = {
