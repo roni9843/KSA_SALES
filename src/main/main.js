@@ -74,8 +74,8 @@ ipcMain.handle('add-product', async (event, product) => {
     return new Promise((resolve, reject) => {
         const sql = `
       INSERT INTO product
-      (name, sku, category_id, description, purchase_price, sale_price, quantity_in_stock, unit)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      (name, sku, category_id, description, purchase_price, sale_price, quantity_in_stock, unit, tax, markup, code, barcode, active, default_quantity)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
         const params = [
             product.name,
@@ -86,6 +86,12 @@ ipcMain.handle('add-product', async (event, product) => {
             product.sale_price,
             product.quantity_in_stock,
             product.unit,
+            product.tax,
+            product.markup,
+            product.code,
+            product.barcode,
+            product.active,
+            product.default_quantity
         ];
         db.run(sql, params, function (err) {
             if (err) {
@@ -93,6 +99,55 @@ ipcMain.handle('add-product', async (event, product) => {
                 reject('Error adding product');
             } else {
                 resolve({ success: true, id: this.lastID });
+            }
+        });
+    });
+});
+
+// IPC for update-product
+ipcMain.handle('update-product', async (event, product) => {
+    return new Promise((resolve, reject) => {
+        const sql = `
+      UPDATE product SET
+        name = ?,
+        sku = ?,
+        category_id = ?,
+        description = ?,
+        purchase_price = ?,
+        sale_price = ?,
+        quantity_in_stock = ?,
+        unit = ?,
+        tax = ?,
+        markup = ?,
+        code = ?,
+        barcode = ?,
+        active = ?,
+        default_quantity = ?
+      WHERE id = ?
+    `;
+        const params = [
+            product.name,
+            product.sku,
+            product.category_id,
+            product.description,
+            product.purchase_price,
+            product.sale_price,
+            product.quantity_in_stock,
+            product.unit,
+            product.tax,
+            product.markup,
+            product.code,
+            product.barcode,
+            product.active,
+            product.default_quantity,
+            product.id
+        ];
+        db.run(sql, params, function (err) {
+            if (err) {
+                console.error(err.message);
+                reject('Error updating product');
+            } else {
+                resolve({ success: true });
             }
         });
     });

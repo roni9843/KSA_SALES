@@ -28,30 +28,51 @@ db.serialize(() => {
       sale_price REAL,
       quantity_in_stock INTEGER DEFAULT 0,
       unit TEXT,
+      tax REAL DEFAULT 0,
+      markup REAL,
+      code TEXT,
+      barcode TEXT,
+      active INTEGER DEFAULT 1,
+      default_quantity INTEGER DEFAULT 0,
       created_at TEXT DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (category_id) REFERENCES product_category(id)
     )
   `);
 });
 
-// ✅ tax column যোগ করা
-db.all("PRAGMA table_info(product)", (err, columns) => {
-  if (err) return console.error("PRAGMA error:", err.message);
 
-  const columnExists = columns.some(col => col.name === 'tax');
+// ✅ New columns for product table
+// const newProductColumns = [
+//   { name: 'markup', type: 'REAL' },
+//   { name: 'code', type: 'TEXT' },
+//   { name: 'barcode', type: 'TEXT' },
+//   { name: 'active', type: 'INTEGER', default: 1 },
+//   { name: 'default_quantity', type: 'INTEGER', default: 0 }
+// ];
 
-  if (!columnExists) {
-    db.run(`ALTER TABLE product ADD COLUMN tax REAL DEFAULT 0`, (err) => {
-      if (err) {
-        console.error("Error adding tax column:", err.message);
-      } else {
-        console.log("✅ 'tax' column added to product table");
-      }
-    });
-  } else {
-    console.log("ℹ️ 'tax' column already exists");
-  }
-});
+// db.all("PRAGMA table_info(product)", (err, columns) => {
+//   if (err) return console.error("PRAGMA error:", err.message);
+
+//   const existingColumns = columns.map(c => c.name);
+
+//   newProductColumns.forEach(col => {
+//     if (!existingColumns.includes(col.name)) {
+//       let query = `ALTER TABLE product ADD COLUMN ${col.name} ${col.type}`;
+//       if (col.default !== undefined) {
+//         query += ` DEFAULT ${col.default}`;
+//       }
+//       db.run(query, (err) => {
+//         if (err) {
+//           console.error(`Error adding ${col.name} column:`, err.message);
+//         } else {
+//           console.log(`✅ '${col.name}' column added to product table`);
+//         }
+//       });
+//     } else {
+//       console.log(`ℹ️ '${col.name}' column already exists`);
+//     }
+//   });
+// });
 
 
 
