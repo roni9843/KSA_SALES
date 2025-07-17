@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 
 const Switch = ({ checked, onChange, name }) => {
     const switchStyle = {
@@ -82,23 +83,28 @@ const AddProduct = ({ onAdded }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        await window.electron.ipcRenderer.invoke('add-product', form);
-        onAdded();
-        setForm({
-            name: '',
-            sku: '',
-            category_id: '',
-            description: '',
-            purchase_price: '',
-            sale_price: '',
-            quantity_in_stock: '',
-            unit: '',
-            tax: '',
-            code: '',
-            barcode: '',
-            active: true,
-            default_quantity: false
-        });
+        try {
+            await window.electron.ipcRenderer.invoke('add-product', form);
+            toast.success('Product added successfully');
+            onAdded();
+            setForm({
+                name: '',
+                sku: '',
+                category_id: '',
+                description: '',
+                purchase_price: '',
+                sale_price: '',
+                quantity_in_stock: '',
+                unit: '',
+                tax: '',
+                code: '',
+                barcode: '',
+                active: true,
+                default_quantity: false
+            });
+        } catch (err) {
+            toast.error(err.message || 'An error occurred while adding the product.');
+        }
     };
 
     return (

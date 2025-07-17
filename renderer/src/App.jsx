@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 import Layout from './components/Layout';
+import Toast from './components/common/Toast';
 
 import Home from './pages/Home';
 import AddCategory from './pages/AddCategory';
@@ -47,6 +48,7 @@ function App() {
           <Route path="*" element={<p>404 Not Found</p>} />
         </Routes>
       </Layout>
+      <Toast />
     </Router>
   );
 }

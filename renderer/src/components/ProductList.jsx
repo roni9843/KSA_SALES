@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 
 const Switch = ({ checked, onChange, name }) => {
     const switchStyle = {
@@ -64,8 +65,13 @@ const ProductList = ({ refresh }) => {
 
     const deleteProduct = async (id) => {
         if (confirm('Delete this product?')) {
-            await window.electron.ipcRenderer.invoke('delete-product', id);
-            fetch();
+            try {
+                await window.electron.ipcRenderer.invoke('delete-product', id);
+                toast.success('Product deleted successfully');
+                fetch();
+            } catch (err) {
+                toast.error(err.message || 'An error occurred while deleting the product.');
+            }
         }
     };
 
@@ -82,9 +88,14 @@ const ProductList = ({ refresh }) => {
 
     const handleEditSubmit = async (e) => {
         e.preventDefault();
-        await window.electron.ipcRenderer.invoke('update-product', editProduct);
-        setEditProduct(null);
-        fetch();
+        try {
+            await window.electron.ipcRenderer.invoke('update-product', editProduct);
+            toast.success('Product updated successfully');
+            setEditProduct(null);
+            fetch();
+        } catch (err) {
+            toast.error(err.message || 'An error occurred while updating the product.');
+        }
     };
 
     const handleChange = (e) => {
