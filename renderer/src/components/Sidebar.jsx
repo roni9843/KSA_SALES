@@ -14,7 +14,8 @@ const Sidebar = () => {
         { path: '/reporting', label: '📊 Reporting' },
         { path: '/tax-rates', label: '💰 Tax Rates' },
         { path: '/my-company', label: '🏢 My Company' },
-        { path: '/product-purchase', label: '🛒 Product Purchase' }
+        { path: '/product-purchase', label: '🛒 Product Purchase' },
+        { path: '/purchase-list', label: '📋 Purchase List' }
     ];
 
     return (

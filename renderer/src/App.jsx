@@ -16,6 +16,7 @@ import Reporting from './pages/Reporting';
 import TaxRates from './pages/TaxRates';
 import MyCompany from './pages/MyCompany';
 import ProductPurchase from './pages/ProductPurchase';
+import PurchaseList from './components/PurchaseList';
 
 
 function App() {
@@ -47,6 +48,7 @@ function App() {
           <Route path="/tax-rates" element={<TaxRates />} />
           <Route path="/my-company" element={<MyCompany />} />
           <Route path="/product-purchase" element={<ProductPurchase />} />
+          <Route path="/purchase-list" element={<PurchaseList />} />
           <Route path="*" element={<p>404 Not Found</p>} />
         </Routes>
       </Layout>
