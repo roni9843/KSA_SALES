@@ -1,13 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import { FaPlus, FaTrash } from 'react-icons/fa';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import toast from 'react-hot-toast';
+
+const CustomDatePickerInput = React.forwardRef(({
+  value,
+  onClick,
+  style
+}, ref) => (
+  <input
+    type="text"
+    className="example-custom-input"
+    onClick={onClick}
+    value={value}
+    ref={ref}
+    style={style}
+  />
+));
 
 const ProductPurchase = () => {
   const [suppliers, setSuppliers] = useState([]);
   const [products, setProducts] = useState([]);
   const [purchaseId, setPurchaseId] = useState('');
   const [supplierInvoiceNo, setSupplierInvoiceNo] = useState('');
-  const [supplierInvoiceDate, setSupplierInvoiceDate] = useState('');
-  const [purchaseDate, setPurchaseDate] = useState('');
+  const [supplierInvoiceDate, setSupplierInvoiceDate] = useState(null);
+  const [purchaseDate, setPurchaseDate] = useState(null);
   const [selectedSupplier, setSelectedSupplier] = useState('');
   const [purchaseItems, setPurchaseItems] = useState([
     { productId: '', quantity: 1, priceBeforeTax: 0, tax: 0, price: 0, discountPercentage: 0, totalBeforeTax: 0, total: 0 },
@@ -94,13 +112,13 @@ const ProductPurchase = () => {
     return calculateTotalBeforeTax() + calculateTotalTax() - calculateTotalDiscount();
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const purchaseData = {
       purchase_id: purchaseId,
       supplier_invoice_no: supplierInvoiceNo,
-      supplier_invoice_date: supplierInvoiceDate,
-      purchase_date: purchaseDate,
+      supplier_invoice_date: supplierInvoiceDate ? supplierInvoiceDate.toISOString().slice(0, 10) : '',
+      purchase_date: purchaseDate ? purchaseDate.toISOString().slice(0, 10) : '',
       supplier_id: selectedSupplier,
       grand_total: calculateGrandTotal(),
       grand_total_before_tax: calculateTotalBeforeTax(),
@@ -117,7 +135,22 @@ const ProductPurchase = () => {
       })),
     };
     console.log(purchaseData);
-    // window.electron.ipcRenderer.invoke('add-purchase', purchaseData);
+    try {
+      await window.electron.ipcRenderer.invoke('add-purchase', purchaseData);
+      toast.success('Purchase added successfully');
+      // Clear form after successful submission
+      setPurchaseId('');
+      setSupplierInvoiceNo('');
+      setSupplierInvoiceDate(null);
+      setPurchaseDate(null);
+      setSelectedSupplier('');
+      setPurchaseItems([
+        { productId: '', quantity: 1, priceBeforeTax: 0, tax: 0, price: 0, discountPercentage: 0, totalBeforeTax: 0, total: 0 },
+      ]);
+      setTotalDiscount(0);
+    } catch (err) {
+      toast.error(err.message || 'An error occurred while adding the purchase.');
+    }
   };
 
   return (
@@ -144,13 +177,17 @@ const ProductPurchase = () => {
               <label htmlFor="purchaseDate" style={labelStyle}>
                 Purchase Date
               </label>
-              <input
-                type="date"
+              <DatePicker
                 id="purchaseDate"
                 name="purchaseDate"
-                value={purchaseDate}
-                onChange={(e) => setPurchaseDate(e.target.value)}
-                style={inputStyle}
+                selected={purchaseDate}
+                onChange={(date) => setPurchaseDate(date)}
+                dateFormat="yyyy-MM-dd"
+                customInput={<CustomDatePickerInput style={inputStyle} />}
+                peekNextMonth
+                showMonthDropdown
+                showYearDropdown
+                dropdownMode="select"
               />
             </div>
             <div style={inputGroupStyle}>
@@ -170,13 +207,17 @@ const ProductPurchase = () => {
               <label htmlFor="supplierInvoiceDate" style={labelStyle}>
                 Supplier Invoice Date
               </label>
-              <input
-                type="date"
+              <DatePicker
                 id="supplierInvoiceDate"
                 name="supplierInvoiceDate"
-                value={supplierInvoiceDate}
-                onChange={(e) => setSupplierInvoiceDate(e.target.value)}
-                style={inputStyle}
+                selected={supplierInvoiceDate}
+                onChange={(date) => setSupplierInvoiceDate(date)}
+                dateFormat="yyyy-MM-dd"
+                customInput={<CustomDatePickerInput style={inputStyle} />}
+                peekNextMonth
+                showMonthDropdown
+                showYearDropdown
+                dropdownMode="select"
               />
             </div>
             <div style={inputGroupStyle}>
@@ -198,18 +239,7 @@ const ProductPurchase = () => {
                 ))}
               </select>
             </div>
-            <div style={inputGroupStyle}>
-              <label htmlFor="searchProduct" style={labelStyle}>
-                Search Product
-              </label>
-              <input
-                type="text"
-                id="searchProduct"
-                name="searchProduct"
-                style={inputStyle}
-                placeholder="Type to search products..."
-              />
-            </div>
+
           </div>
         </fieldset>
 
@@ -219,21 +249,21 @@ const ProductPurchase = () => {
             <table style={tableStyle}>
               <thead style={tableHeaderStyle}>
                 <tr>
-                  <th style={thStyle}>Product Name</th>
-                  <th style={thStyle}>Quantity</th>
-                  <th style={thStyle}>Price before tax</th>
-                  <th style={thStyle}>Tax (%)</th>
-                  <th style={thStyle}>Price</th>
-                  <th style={thStyle}>Discount (%)</th>
-                  <th style={thStyle}>Total before Tax</th>
-                  <th style={thStyle}>Total</th>
-                  <th style={thStyle}>Action</th>
+                  <th style={{ ...thStyle, width: '25%' }}>Product Name</th>
+                  <th style={{ ...thStyle, width: '10%' }}>Quantity</th>
+                  <th style={{ ...thStyle, width: '12%', textAlign: 'right' }}>Price before tax</th>
+                  <th style={{ ...thStyle, width: '8%' }}>Tax (%)</th>
+                  <th style={{ ...thStyle, width: '10%', textAlign: 'right' }}>Price</th>
+                  <th style={{ ...thStyle, width: '10%' }}>Discount (%)</th>
+                  <th style={{ ...thStyle, width: '12%', textAlign: 'right' }}>Total before Tax</th>
+                  <th style={{ ...thStyle, width: '10%', textAlign: 'right' }}>Total</th>
+                  <th style={{ ...thStyle, width: '3%' }}>Action</th>
                 </tr>
               </thead>
               <tbody>
                 {purchaseItems.map((item, index) => (
                   <tr key={index} style={tableRowStyle(index)}>
-                    <td style={tdStyle}>
+                    <td style={{ ...tdStyle, width: '25%' }}>
                       <select
                         value={item.productId}
                         onChange={(e) => handleItemChange(index, 'productId', e.target.value)}
@@ -247,7 +277,7 @@ const ProductPurchase = () => {
                         ))}
                       </select>
                     </td>
-                    <td style={tdStyle}>
+                    <td style={{ ...tdStyle, width: '10%' }}>
                       <input
                         type="number"
                         value={item.quantity}
@@ -255,15 +285,15 @@ const ProductPurchase = () => {
                         style={inputStyle}
                       />
                     </td>
-                    <td style={tdStyle}>
+                    <td style={{ ...tdStyle, width: '12%', textAlign: 'right' }}>
                       <input
                         type="number"
                         value={item.priceBeforeTax.toFixed(2)}
                         readOnly
-                        style={{ ...inputStyle, backgroundColor: '#E2E8F0' }}
+                        style={{ ...inputStyle, backgroundColor: '#E2E8F0', textAlign: 'right' }}
                       />
                     </td>
-                    <td style={tdStyle}>
+                    <td style={{ ...tdStyle, width: '8%' }}>
                       <input
                         type="number"
                         value={item.tax}
@@ -271,15 +301,15 @@ const ProductPurchase = () => {
                         style={inputStyle}
                       />
                     </td>
-                    <td style={tdStyle}>
+                    <td style={{ ...tdStyle, width: '10%', textAlign: 'right' }}>
                       <input
                         type="number"
                         value={item.price.toFixed(2)}
                         readOnly
-                        style={{ ...inputStyle, backgroundColor: '#E2E8F0' }}
+                        style={{ ...inputStyle, backgroundColor: '#E2E8F0', textAlign: 'right' }}
                       />
                     </td>
-                    <td style={tdStyle}>
+                    <td style={{ ...tdStyle, width: '10%' }}>
                       <input
                         type="number"
                         value={item.discountPercentage}
@@ -287,13 +317,13 @@ const ProductPurchase = () => {
                         style={inputStyle}
                       />
                     </td>
-                    <td style={tdStyle}>
+                    <td style={{ ...tdStyle, width: '12%', textAlign: 'right' }}>
                       {item.totalBeforeTax.toFixed(2)}
                     </td>
-                    <td style={tdStyle}>
+                    <td style={{ ...tdStyle, width: '10%', textAlign: 'right' }}>
                       {item.total.toFixed(2)}
                     </td>
-                    <td style={tdStyle}>
+                    <td style={{ ...tdStyle, width: '3%' }}>
                       <button type="button" onClick={() => removeItem(index)} style={deleteButtonStyle}>
                         <FaTrash />
                       </button>

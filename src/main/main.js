@@ -304,7 +304,7 @@ ipcMain.handle('get-taxes', async () => {
     });
 });
 
-require('./ipc/product');
+// require('./ipc/product')(ipcMain);
 require('./ipc/purchase');
 
 // IPC for add-supplier
