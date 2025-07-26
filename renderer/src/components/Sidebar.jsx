@@ -13,7 +13,8 @@ const Sidebar = () => {
         { path: '/suppliers', label: '🚚 Suppliers' },
         { path: '/reporting', label: '📊 Reporting' },
         { path: '/tax-rates', label: '💰 Tax Rates' },
-        { path: '/my-company', label: '🏢 My Company' }
+        { path: '/my-company', label: '🏢 My Company' },
+        { path: '/product-purchase', label: '🛒 Product Purchase' }
     ];
 
     return (

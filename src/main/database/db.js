@@ -140,4 +140,38 @@ db.run(`
   )
 `);
 
+// product_purchase table
+db.run(`
+  CREATE TABLE IF NOT EXISTS product_purchase (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    purchase_id TEXT NOT NULL,
+    supplier_invoice_no TEXT,
+    supplier_invoice_date TEXT NOT NULL,
+    purchase_date TEXT NOT NULL,
+    supplier_id INTEGER NOT NULL,
+    grand_total REAL NOT NULL,
+    grand_total_before_tax REAL NOT NULL,
+    tax_amount REAL NOT NULL,
+    discount_amount REAL NOT NULL,
+    FOREIGN KEY (supplier_id) REFERENCES suppliers(id)
+  )
+`);
+
+// product_purchase_item table
+db.run(`
+  CREATE TABLE IF NOT EXISTS product_purchase_item (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    product_purchase_id INTEGER NOT NULL,
+    product_id INTEGER NOT NULL,
+    quantity INTEGER NOT NULL,
+    tax_percentage REAL DEFAULT 0,
+    price REAL NOT NULL,
+    discount_percentage REAL DEFAULT 0,
+    total_before_tax REAL NOT NULL,
+    total REAL NOT NULL,
+    FOREIGN KEY (product_purchase_id) REFERENCES product_purchase(id),
+    FOREIGN KEY (product_id) REFERENCES product(id)
+  )
+`);
+
 module.exports = db;
