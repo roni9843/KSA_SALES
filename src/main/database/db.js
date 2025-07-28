@@ -113,18 +113,36 @@ db.run(`
   )
 `);
 
+// db.run(`DROP TABLE IF EXISTS customers`, (err) => {
+//   if (err) {
+//     console.error("Error dropping customers table:", err.message);
+//   } else {
+//     console.log("✅ customers table dropped successfully (if it existed)");
+//   }
+// });
+
+// db.run(`DROP TABLE IF EXISTS suppliers`, (err) => {
+//   if (err) {
+//     console.error("Error dropping suppliers table:", err.message);
+//   } else {
+//     console.log("✅ suppliers table dropped successfully (if it existed)");
+//   }
+// });
+
 // customers table
 db.run(`
   CREATE TABLE IF NOT EXISTS customers (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
-    customer_tax_no TEXT,
+    code TEXT,
+    phone TEXT NOT NULL,
+    email TEXT,
     address TEXT,
     zip_code TEXT,
     city TEXT,
-    state TEXT,
-    phone TEXT NOT NULL,
-    email TEXT
+    country TEXT,
+    tax_number TEXT,
+    status INTEGER DEFAULT 1
   )
 `);
 
@@ -133,9 +151,14 @@ db.run(`
   CREATE TABLE IF NOT EXISTS suppliers (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
+    code TEXT,
     phone TEXT NOT NULL,
     email TEXT,
     address TEXT,
+    zip_code TEXT,
+    city TEXT,
+    country TEXT,
+    tax_number TEXT,
     status INTEGER DEFAULT 1
   )
 `);

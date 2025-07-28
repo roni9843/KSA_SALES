@@ -312,14 +312,20 @@ ipcMain.handle('add-supplier', async (event, supplier) => {
     return new Promise((resolve, reject) => {
         const sql = `
       INSERT INTO suppliers
-      (name, phone, email, address)
-      VALUES (?, ?, ?, ?)
+      (name, code, phone, email, address, zip_code, city, country, tax_number, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
         const params = [
             supplier.name,
+            supplier.code,
             supplier.phone,
             supplier.email,
             supplier.address,
+            supplier.zip_code,
+            supplier.city,
+            supplier.country,
+            supplier.tax_number,
+            supplier.status
         ];
         db.run(sql, params, function (err) {
             if (err) {
@@ -350,8 +356,8 @@ ipcMain.handle('get-suppliers', async () => {
 // IPC for update-supplier
 ipcMain.handle('update-supplier', async (event, supplier) => {
     return new Promise((resolve, reject) => {
-        const sql = `UPDATE suppliers SET name = ?, phone = ?, email = ?, address = ? WHERE id = ?`;
-        const params = [supplier.name, supplier.phone, supplier.email, supplier.address, supplier.id];
+        const sql = `UPDATE suppliers SET name = ?, code = ?, phone = ?, email = ?, address = ?, zip_code = ?, city = ?, country = ?, tax_number = ?, status = ? WHERE id = ?`;
+        const params = [supplier.name, supplier.code, supplier.phone, supplier.email, supplier.address, supplier.zip_code, supplier.city, supplier.country, supplier.tax_number, supplier.status, supplier.id];
         db.run(sql, params, function (err) {
             if (err) {
                 console.error(err.message);
@@ -396,8 +402,8 @@ ipcMain.handle('get-customers', async () => {
 // IPC for update-customer
 ipcMain.handle('update-customer', async (event, customer) => {
     return new Promise((resolve, reject) => {
-        const sql = `UPDATE customers SET name = ?, customer_tax_no = ?, address = ?, zip_code = ?, city = ?, state = ?, phone = ?, email = ? WHERE id = ?`;
-        const params = [customer.name, customer.customer_tax_no, customer.address, customer.zip_code, customer.city, customer.state, customer.phone, customer.email, customer.id];
+        const sql = `UPDATE customers SET name = ?, code = ?, phone = ?, email = ?, address = ?, zip_code = ?, city = ?, country = ?, tax_number = ?, status = ? WHERE id = ?`;
+        const params = [customer.name, customer.code, customer.phone, customer.email, customer.address, customer.zip_code, customer.city, customer.country, customer.tax_number, customer.status, customer.id];
         db.run(sql, params, function (err) {
             if (err) {
                 console.error(err.message);
@@ -429,18 +435,20 @@ ipcMain.handle('add-customer', async (event, customer) => {
     return new Promise((resolve, reject) => {
         const sql = `
       INSERT INTO customers
-      (name, customer_tax_no, address, zip_code, city, state, phone, email)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      (name, code, phone, email, address, zip_code, city, country, tax_number, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
         const params = [
             customer.name,
-            customer.customer_tax_no,
+            customer.code,
+            customer.phone,
+            customer.email,
             customer.address,
             customer.zip_code,
             customer.city,
-            customer.state,
-            customer.phone,
-            customer.email,
+            customer.country,
+            customer.tax_number,
+            customer.status
         ];
         db.run(sql, params, function (err) {
             if (err) {

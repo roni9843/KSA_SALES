@@ -69,6 +69,10 @@ const SupplierList = ({ refresh }) => {
                                 <input name="name" value={editSupplier.name} onChange={handleChange} placeholder="Name" required style={inputStyle} />
                             </div>
                             <div style={inputGroupStyle}>
+                                <label style={labelStyle}>Code</label>
+                                <input name="code" value={editSupplier.code} onChange={handleChange} placeholder="Code" style={inputStyle} />
+                            </div>
+                            <div style={inputGroupStyle}>
                                 <label style={labelStyle}>Phone <span style={{color: 'red'}}>*</span></label>
                                 <input name="phone" value={editSupplier.phone} onChange={handleChange} placeholder="Phone" required style={inputStyle} />
                             </div>
@@ -76,9 +80,37 @@ const SupplierList = ({ refresh }) => {
                                 <label style={labelStyle}>Email</label>
                                 <input type="email" name="email" value={editSupplier.email} onChange={handleChange} placeholder="Email" style={inputStyle} />
                             </div>
-                            <div style={{ ...inputGroupStyle, gridColumn: '1 / span 2' }}>
+                            <div style={inputGroupStyle}>
                                 <label style={labelStyle}>Address</label>
-                                <textarea name="address" value={editSupplier.address} onChange={handleChange} placeholder="Address" style={{ ...inputStyle, height: '80px', resize: 'vertical' }} />
+                                <input name="address" value={editSupplier.address} onChange={handleChange} placeholder="Address" style={inputStyle} />
+                            </div>
+                            <div style={inputGroupStyle}>
+                                <label style={labelStyle}>Zip Code</label>
+                                <input name="zip_code" value={editSupplier.zip_code} onChange={handleChange} placeholder="Zip Code" style={inputStyle} />
+                            </div>
+                            <div style={inputGroupStyle}>
+                                <label style={labelStyle}>City</label>
+                                <input name="city" value={editSupplier.city} onChange={handleChange} placeholder="City" style={inputStyle} />
+                            </div>
+                            <div style={inputGroupStyle}>
+                                <label style={labelStyle}>Country</label>
+                                <input name="country" value={editSupplier.country} onChange={handleChange} placeholder="Country" style={inputStyle} />
+                            </div>
+                            <div style={inputGroupStyle}>
+                                <label style={labelStyle}>Tax Number</label>
+                                <input name="tax_number" value={editSupplier.tax_number} onChange={handleChange} placeholder="Tax Number" style={inputStyle} />
+                            </div>
+                            <div style={inputGroupStyle}>
+                                <label style={labelStyle}>City</label>
+                                <input name="city" value={editSupplier.city} onChange={handleChange} placeholder="City" style={inputStyle} />
+                            </div>
+                            <div style={inputGroupStyle}>
+                                <label style={labelStyle}>State</label>
+                                <input name="state" value={editSupplier.state} onChange={handleChange} placeholder="State" style={inputStyle} />
+                            </div>
+                            <div style={inputGroupStyle}>
+                                <label style={labelStyle}>Tax Number</label>
+                                <input name="tax_number" value={editSupplier.tax_number} onChange={handleChange} placeholder="Tax Number" style={inputStyle} />
                             </div>
 
                             <div style={{ gridColumn: '1 / span 2', display: 'flex', gap: '10px', marginTop: '10px' }}>

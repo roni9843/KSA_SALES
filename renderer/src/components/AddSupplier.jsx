@@ -1,15 +1,23 @@
 import { useState } from 'react';
+import Switch from './common/Switch';
 
 const AddSupplier = ({ onAdded }) => {
     const [form, setForm] = useState({
         name: '',
+        code: '',
         phone: '',
         email: '',
-        address: ''
+        address: '',
+        zip_code: '',
+        city: '',
+        country: '',
+        tax_number: '',
+        status: 1
     });
 
     const handleChange = (e) => {
-        setForm({ ...form, [e.target.name]: e.target.value });
+        const { name, value, type, checked } = e.target;
+        setForm({ ...form, [name]: type === 'checkbox' ? checked : value });
     };
 
     const handleSubmit = async (e) => {
@@ -32,23 +40,44 @@ const AddSupplier = ({ onAdded }) => {
                     <legend style={legendStyle}>Supplier Details</legend>
                     <div style={detailsGridStyle}>
                         <div style={inputGroupStyle}>
-                            <label style={labelStyle}>Name <span style={{color: 'red'}}>*</span></label>
+                            <label style={labelStyle}>Name <span style={{ color: 'red' }}>*</span></label>
                             <input name="name" placeholder="Enter supplier name" value={form.name} onChange={handleChange} required style={inputStyle} />
                         </div>
-
                         <div style={inputGroupStyle}>
-                            <label style={labelStyle}>Phone <span style={{color: 'red'}}>*</span></label>
+                            <label style={labelStyle}>Code</label>
+                            <input name="code" placeholder="Enter supplier code" value={form.code} onChange={handleChange} style={inputStyle} />
+                        </div>
+                        <div style={inputGroupStyle}>
+                            <label style={labelStyle}>Phone <span style={{ color: 'red' }}>*</span></label>
                             <input name="phone" placeholder="Enter phone number" value={form.phone} onChange={handleChange} required style={inputStyle} />
                         </div>
-
                         <div style={inputGroupStyle}>
                             <label style={labelStyle}>Email</label>
                             <input type="email" name="email" placeholder="Enter email" value={form.email} onChange={handleChange} style={inputStyle} />
                         </div>
-
-                        <div style={{ ...inputGroupStyle, gridColumn: '1 / span 2' }}>
+                        <div style={inputGroupStyle}>
                             <label style={labelStyle}>Address</label>
-                            <textarea name="address" placeholder="Supplier Address" value={form.address} onChange={handleChange} style={{ ...inputStyle, height: '80px', resize: 'vertical' }} />
+                            <input name="address" placeholder="Enter address" value={form.address} onChange={handleChange} style={inputStyle} />
+                        </div>
+                        <div style={inputGroupStyle}>
+                            <label style={labelStyle}>Zip Code</label>
+                            <input name="zip_code" placeholder="Enter zip code" value={form.zip_code} onChange={handleChange} style={inputStyle} />
+                        </div>
+                        <div style={inputGroupStyle}>
+                            <label style={labelStyle}>City</label>
+                            <input name="city" placeholder="Enter city" value={form.city} onChange={handleChange} style={inputStyle} />
+                        </div>
+                        <div style={inputGroupStyle}>
+                            <label style={labelStyle}>Country</label>
+                            <input name="country" placeholder="Enter country" value={form.country} onChange={handleChange} style={inputStyle} />
+                        </div>
+                        <div style={inputGroupStyle}>
+                            <label style={labelStyle}>Tax Number</label>
+                            <input name="tax_number" placeholder="Enter tax number" value={form.tax_number} onChange={handleChange} style={inputStyle} />
+                        </div>
+                        <div style={inputGroupStyle}>
+                            <label style={labelStyle}>Status</label>
+                            <Switch name="status" checked={form.status} onChange={handleChange} />
                         </div>
                     </div>
                 </fieldset>
@@ -87,14 +116,14 @@ const headerStyle = {
 const formStyle = {
     display: 'grid',
     gridTemplateColumns: '1fr',
-    gap: '10px', 
+    gap: '10px',
 };
 
 const fieldsetStyle = {
     border: '1px solid #4A5568',
     borderRadius: '8px',
     padding: '20px',
-    margin: '0', 
+    margin: '0',
 };
 
 const legendStyle = {

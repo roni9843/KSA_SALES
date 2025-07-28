@@ -69,8 +69,16 @@ const CustomerList = ({ refresh }) => {
                                 <input name="name" value={editCustomer.name} onChange={handleChange} placeholder="Name" required style={inputStyle} />
                             </div>
                             <div style={inputGroupStyle}>
-                                <label style={labelStyle}>Customer Tax No</label>
-                                <input name="customer_tax_no" value={editCustomer.customer_tax_no} onChange={handleChange} placeholder="Customer Tax No" style={inputStyle} />
+                                <label style={labelStyle}>Code</label>
+                                <input name="code" value={editCustomer.code} onChange={handleChange} placeholder="Code" style={inputStyle} />
+                            </div>
+                            <div style={inputGroupStyle}>
+                                <label style={labelStyle}>Phone <span style={{color: 'red'}}>*</span></label>
+                                <input name="phone" value={editCustomer.phone} onChange={handleChange} placeholder="Phone" required style={inputStyle} />
+                            </div>
+                            <div style={inputGroupStyle}>
+                                <label style={labelStyle}>Email</label>
+                                <input type="email" name="email" value={editCustomer.email} onChange={handleChange} placeholder="Email" style={inputStyle} />
                             </div>
                             <div style={inputGroupStyle}>
                                 <label style={labelStyle}>Address</label>
@@ -85,16 +93,12 @@ const CustomerList = ({ refresh }) => {
                                 <input name="city" value={editCustomer.city} onChange={handleChange} placeholder="City" style={inputStyle} />
                             </div>
                             <div style={inputGroupStyle}>
-                                <label style={labelStyle}>State</label>
-                                <input name="state" value={editCustomer.state} onChange={handleChange} placeholder="State" style={inputStyle} />
+                                <label style={labelStyle}>Country</label>
+                                <input name="country" value={editCustomer.country} onChange={handleChange} placeholder="Country" style={inputStyle} />
                             </div>
                             <div style={inputGroupStyle}>
-                                <label style={labelStyle}>Phone <span style={{color: 'red'}}>*</span></label>
-                                <input name="phone" value={editCustomer.phone} onChange={handleChange} placeholder="Phone" required style={inputStyle} />
-                            </div>
-                            <div style={inputGroupStyle}>
-                                <label style={labelStyle}>Email</label>
-                                <input type="email" name="email" value={editCustomer.email} onChange={handleChange} placeholder="Email" style={inputStyle} />
+                                <label style={labelStyle}>Tax Number</label>
+                                <input name="tax_number" value={editCustomer.tax_number} onChange={handleChange} placeholder="Tax Number" style={inputStyle} />
                             </div>
 
                             <div style={{ gridColumn: '1 / span 2', display: 'flex', gap: '10px', marginTop: '10px' }}>
