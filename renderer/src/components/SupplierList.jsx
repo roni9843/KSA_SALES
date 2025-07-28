@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import Switch from './common/Switch';
 
 const SupplierList = ({ refresh }) => {
     const [list, setList] = useState([]);
@@ -28,8 +29,8 @@ const SupplierList = ({ refresh }) => {
     };
 
     const handleChange = (e) => {
-        const { name, value } = e.target;
-        setEditSupplier({ ...editSupplier, [name]: value });
+        const { name, value, type, checked } = e.target;
+        setEditSupplier({ ...editSupplier, [name]: type === 'checkbox' ? checked : value });
     };
 
     return (
@@ -65,7 +66,7 @@ const SupplierList = ({ refresh }) => {
                         <h3 style={modalHeaderStyle}>Edit Supplier</h3>
                         <form onSubmit={handleEditSubmit} style={formStyle}>
                             <div style={inputGroupStyle}>
-                                <label style={labelStyle}>Name <span style={{color: 'red'}}>*</span></label>
+                                <label style={labelStyle}>Name <span style={{ color: 'red' }}>*</span></label>
                                 <input name="name" value={editSupplier.name} onChange={handleChange} placeholder="Name" required style={inputStyle} />
                             </div>
                             <div style={inputGroupStyle}>
@@ -73,7 +74,7 @@ const SupplierList = ({ refresh }) => {
                                 <input name="code" value={editSupplier.code} onChange={handleChange} placeholder="Code" style={inputStyle} />
                             </div>
                             <div style={inputGroupStyle}>
-                                <label style={labelStyle}>Phone <span style={{color: 'red'}}>*</span></label>
+                                <label style={labelStyle}>Phone <span style={{ color: 'red' }}>*</span></label>
                                 <input name="phone" value={editSupplier.phone} onChange={handleChange} placeholder="Phone" required style={inputStyle} />
                             </div>
                             <div style={inputGroupStyle}>
@@ -101,16 +102,8 @@ const SupplierList = ({ refresh }) => {
                                 <input name="tax_number" value={editSupplier.tax_number} onChange={handleChange} placeholder="Tax Number" style={inputStyle} />
                             </div>
                             <div style={inputGroupStyle}>
-                                <label style={labelStyle}>City</label>
-                                <input name="city" value={editSupplier.city} onChange={handleChange} placeholder="City" style={inputStyle} />
-                            </div>
-                            <div style={inputGroupStyle}>
-                                <label style={labelStyle}>State</label>
-                                <input name="state" value={editSupplier.state} onChange={handleChange} placeholder="State" style={inputStyle} />
-                            </div>
-                            <div style={inputGroupStyle}>
-                                <label style={labelStyle}>Tax Number</label>
-                                <input name="tax_number" value={editSupplier.tax_number} onChange={handleChange} placeholder="Tax Number" style={inputStyle} />
+                                <label style={labelStyle}>Status</label>
+                                <Switch name="status" checked={editSupplier.status} onChange={handleChange} />
                             </div>
 
                             <div style={{ gridColumn: '1 / span 2', display: 'flex', gap: '10px', marginTop: '10px' }}>

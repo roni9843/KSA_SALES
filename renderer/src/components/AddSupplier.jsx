@@ -101,9 +101,8 @@ const cardStyle = {
     borderRadius: '10px',
     color: '#fff',
     boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
-    maxWidth: '700px',
-    margin: 'auto',
-    marginBottom: '30px'
+    width: '90%', // Adjusted for full width
+    margin: '30px auto', // Centered with top/bottom margin
 };
 
 const headerStyle = {
@@ -136,7 +135,7 @@ const legendStyle = {
 
 const detailsGridStyle = {
     display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
     gap: '20px',
 };
 
