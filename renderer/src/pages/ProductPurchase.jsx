@@ -163,6 +163,13 @@ const ProductPurchase = () => {
       return;
     }
 
+    for (const item of purchaseItems) {
+      if (!item.quantity || parseFloat(item.quantity) <= 0) {
+        toast.error(`Quantity for ${item.name} must be greater than zero.`);
+        return;
+      }
+    }
+
     const purchaseData = {
       purchase_id: purchaseId,
       supplier_invoice_no: supplierInvoiceNo,
@@ -222,7 +229,7 @@ const ProductPurchase = () => {
             </div>
             <div style={inputGroupStyle}>
               <label htmlFor="purchaseDate" style={labelStyle}>
-                Purchase Date
+                Purchase Date <span style={{ color: 'red' }}>*</span>
               </label>
               <DatePicker
                 id="purchaseDate"
@@ -269,7 +276,7 @@ const ProductPurchase = () => {
             </div>
             <div style={inputGroupStyle}>
               <label htmlFor="supplier" style={labelStyle}>
-                Supplier
+                Supplier <span style={{ color: 'red' }}>*</span>
               </label>
               <select
                 id="supplier"
@@ -311,7 +318,7 @@ const ProductPurchase = () => {
               <thead style={tableHeaderStyle}>
                 <tr>
                   <th style={{ ...thStyle, width: '25%' }}>Product Name</th>
-                  <th style={{ ...thStyle, width: '10%' }}>Quantity</th>
+                  <th style={{ ...thStyle, width: '10%' }}>Quantity <span style={{ color: 'red' }}>*</span></th>
                   <th style={{ ...thStyle, width: '12%', textAlign: 'right' }}>Price before tax</th>
                   <th style={{ ...thStyle, width: '8%' }}>Tax (%)</th>
                   <th style={{ ...thStyle, width: '10%', textAlign: 'right' }}>Price</th>
