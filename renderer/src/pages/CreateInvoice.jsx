@@ -134,14 +134,14 @@ const CreateInvoice = () => {
                             <th style={{ ...thStyle, textAlign: 'center' }}>Qty</th>
                             <th style={thStyle}>Rate</th>
                             <th style={thStyle}>Total</th>
-                            <th style={{...thStyle, textAlign: 'center'}}>Action</th>
+                            <th style={{ ...thStyle, textAlign: 'center' }}>Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         {invoiceItems.map((i, index) => (
                             <tr key={i.id} style={tableRowStyle(index)}>
                                 <td style={{ ...tdStyle, textAlign: 'left' }}>{i.name}</td>
-                                <td style={{...tdStyle, textAlign: 'center'}}>
+                                <td style={{ ...tdStyle, textAlign: 'center' }}>
                                     <input
                                         type="number"
                                         value={i.quantity}
@@ -152,7 +152,7 @@ const CreateInvoice = () => {
                                 </td>
                                 <td style={tdStyle}>{i.unit_price.toFixed(2)}</td>
                                 <td style={tdStyle}>{i.total_price.toFixed(2)}</td>
-                                <td style={{...tdStyle, textAlign: 'center'}}>
+                                <td style={{ ...tdStyle, textAlign: 'center' }}>
                                     <button onClick={() => removeItem(i.id)} style={removeButtonStyle}>
                                         ❌
                                     </button>
@@ -213,7 +213,7 @@ const formContainer = {
     background: '#2D3748',
     color: '#fff',
     padding: '20px',
-    borderRadius: '10px'
+    borderRadius: '4px'
 };
 
 const thTdStyle = {
@@ -227,7 +227,7 @@ const rightCol = {
     flex: 1,
     background: '#575F6D',
     padding: '15px',
-    borderRadius: '10px'
+    borderRadius: '5px'
 };
 
 const labelStyle = {

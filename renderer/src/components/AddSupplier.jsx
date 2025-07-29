@@ -97,12 +97,10 @@ const AddSupplier = ({ onAdded }) => {
 
 const cardStyle = {
     background: '#2D3748',
-    padding: '30px',
-    borderRadius: '10px',
+    padding: '20px',
+    borderRadius: '4px',
     color: '#fff',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
-    width: '90%', // Adjusted for full width
-    margin: '30px auto', // Centered with top/bottom margin
+    marginTop: '20px'
 };
 
 const headerStyle = {

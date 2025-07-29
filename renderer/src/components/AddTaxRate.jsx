@@ -54,13 +54,10 @@ const AddTaxRate = ({ onAdded }) => {
 
 const cardStyle = {
     background: '#2D3748',
-    padding: '30px',
-    borderRadius: '10px',
+    padding: '20px',
+    borderRadius: '4px',
     color: '#fff',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
-    maxWidth: '700px',
-    margin: 'auto',
-    marginBottom: '30px'
+    marginTop: '20px'
 };
 
 const headerStyle = {
@@ -73,14 +70,14 @@ const headerStyle = {
 const formStyle = {
     display: 'grid',
     gridTemplateColumns: '1fr',
-    gap: '10px', 
+    gap: '10px',
 };
 
 const fieldsetStyle = {
     border: '1px solid #4A5568',
     borderRadius: '8px',
     padding: '20px',
-    margin: '0', 
+    margin: '0',
 };
 
 const legendStyle = {

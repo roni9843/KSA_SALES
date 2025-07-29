@@ -134,7 +134,7 @@ const PurchaseList = ({ refresh }) => {
 const cardStyle = {
     background: '#2D3748',
     padding: '20px',
-    borderRadius: '10px',
+    borderRadius: '4px',
     color: '#fff',
     marginTop: '20px'
 };
@@ -196,7 +196,7 @@ const modalOverlay = {
 const modalBox = {
     background: '#2D3748',
     padding: '30px',
-    borderRadius: '10px',
+    borderRadius: '5px',
     width: 'clamp(800px, 70vw, 1000px)',
     color: '#fff',
     boxShadow: '0 5px 15px rgba(0,0,0,0.3)',

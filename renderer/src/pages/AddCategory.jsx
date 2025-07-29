@@ -96,7 +96,7 @@ export default AddCategory;
 const cardStyle = {
     background: '#2D3748',
     padding: '20px',
-    borderRadius: '10px',
+    borderRadius: '4px',
     color: '#fff',
     marginTop: '20px'
 };

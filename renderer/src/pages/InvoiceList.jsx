@@ -39,7 +39,7 @@ const InvoiceList = () => {
                             <td style={{ ...tdStyle, textAlign: 'left' }}>{inv.customer_name || 'Walk-in Customer'}</td>
                             <td style={tdStyle}>{inv.total.toFixed(2)}</td>
                             <td style={tdStyle}>{inv.paid.toFixed(2)}</td>
-                            <td style={{...tdStyle, color: inv.due > 0 ? '#E53E3E' : '#48BB78', fontWeight: 'bold'}}>{inv.due.toFixed(2)}</td>
+                            <td style={{ ...tdStyle, color: inv.due > 0 ? '#E53E3E' : '#48BB78', fontWeight: 'bold' }}>{inv.due.toFixed(2)}</td>
                             <td style={{ ...tdStyle, textAlign: 'left' }}>{new Date(inv.created_at).toLocaleDateString()}</td>
                             <td style={{ ...tdStyle, textAlign: 'center' }}>
                                 <button onClick={() => handlePrint(inv.id)} style={viewButtonStyle}>
@@ -57,7 +57,7 @@ const InvoiceList = () => {
 const cardStyle = {
     background: '#2D3748',
     padding: '20px',
-    borderRadius: '10px',
+    borderRadius: '4px',
     color: '#fff',
     marginTop: '20px'
 };

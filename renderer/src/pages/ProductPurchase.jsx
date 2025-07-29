@@ -430,11 +430,10 @@ const ProductPurchase = () => {
 
 const cardStyle = {
   background: '#2D3748',
-  padding: '30px',
-  borderRadius: '10px',
+  padding: '20px',
+  borderRadius: '4px',
   color: '#fff',
-  boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
-  marginBottom: '30px'
+  marginTop: '20px'
 };
 
 const headerStyle = {
@@ -485,7 +484,7 @@ const labelStyle = {
 const inputStyle = {
   width: '100%',
   padding: '12px',
-  borderRadius: '5px',
+  borderRadius: '4px',
   border: '1px solid #A0AEC0',
   backgroundColor: '#fff',
   color: '#333',
