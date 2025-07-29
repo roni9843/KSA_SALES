@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import Switch from './common/Switch';
+import { FaEdit, FaTrash } from 'react-icons/fa';
 
 const SupplierList = ({ refresh }) => {
     const [list, setList] = useState([]);
@@ -52,8 +53,8 @@ const SupplierList = ({ refresh }) => {
                             <td style={tdStyle}>{s.phone}</td>
                             <td style={tdStyle}>{s.email}</td>
                             <td style={{ ...tdStyle, textAlign: 'center' }}>
-                                <button onClick={() => setEditSupplier(s)} style={editButtonStyle}>✏️ Edit</button>
-                                <button onClick={() => deleteSupplier(s.id)} style={deleteButtonStyle}>🗑️ Delete</button>
+                                <button onClick={() => setEditSupplier(s)} style={iconButtonStyle}><FaEdit /></button>
+                                <button onClick={() => deleteSupplier(s.id)} style={iconButtonStyle}><FaTrash /></button>
                             </td>
                         </tr>
                     ))}
@@ -157,25 +158,33 @@ const tdStyle = {
     textAlign: 'right',
 };
 
-const editButtonStyle = {
-    padding: '8px 12px',
-    backgroundColor: '#2B6CB0',
-    color: '#fff',
-    border: 'none',
+const iconButtonStyle = {
+    background: 'none',
+    border: '1px solid',
     borderRadius: '5px',
+    padding: '8px 12px',
     cursor: 'pointer',
     marginRight: '5px',
-    transition: 'background-color 0.3s ease',
+    transition: 'all 0.3s ease',
+    color: '#fff',
+};
+
+const editButtonStyle = {
+    ...iconButtonStyle,
+    borderColor: '#2B6CB0',
+    '&:hover': {
+        backgroundColor: '#2B6CB0',
+        color: '#fff',
+    },
 };
 
 const deleteButtonStyle = {
-    padding: '8px 12px',
-    backgroundColor: '#C53030',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '5px',
-    cursor: 'pointer',
-    transition: 'background-color 0.3s ease',
+    ...iconButtonStyle,
+    borderColor: '#C53030',
+    '&:hover': {
+        backgroundColor: '#C53030',
+        color: '#fff',
+    },
 };
 
 const modalOverlay = {

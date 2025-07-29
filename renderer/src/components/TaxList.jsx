@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { FaEdit, FaTrash } from 'react-icons/fa';
 
 const TaxList = ({ refresh }) => {
     const [list, setList] = useState([]);
@@ -49,8 +50,8 @@ const TaxList = ({ refresh }) => {
                             <td style={{ ...tdStyle, textAlign: 'left' }}>{t.tax_label}</td>
                             <td style={tdStyle}>{t.tax_percentage}%</td>
                             <td style={{ ...tdStyle, textAlign: 'center' }}>
-                                <button onClick={() => setEditTax(t)} style={editButtonStyle}>✏️ Edit</button>
-                                <button onClick={() => deleteTax(t.id)} style={deleteButtonStyle}>🗑️ Delete</button>
+                                <button onClick={() => setEditTax(t)} style={iconButtonStyle}><FaEdit /></button>
+                                <button onClick={() => deleteTax(t.id)} style={iconButtonStyle}><FaTrash /></button>
                             </td>
                         </tr>
                     ))}
@@ -122,25 +123,15 @@ const tdStyle = {
     textAlign: 'right',
 };
 
-const editButtonStyle = {
-    padding: '8px 12px',
-    backgroundColor: '#2B6CB0',
-    color: '#fff',
-    border: 'none',
+const iconButtonStyle = {
+    background: 'none',
+    border: '1px solid',
     borderRadius: '5px',
+    padding: '8px 12px',
     cursor: 'pointer',
     marginRight: '5px',
-    transition: 'background-color 0.3s ease',
-};
-
-const deleteButtonStyle = {
-    padding: '8px 12px',
-    backgroundColor: '#C53030',
+    transition: 'all 0.3s ease',
     color: '#fff',
-    border: 'none',
-    borderRadius: '5px',
-    cursor: 'pointer',
-    transition: 'background-color 0.3s ease',
 };
 
 const modalOverlay = {
