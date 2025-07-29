@@ -381,7 +381,7 @@ const ProductPurchase = () => {
                       {item.total.toFixed(2)}
                     </td>
                     <td style={{ ...tdStyle, width: '3%' }}>
-                      <button type="button" onClick={() => removeItem(index)} style={deleteButtonStyle}>
+                      <button type="button" onClick={() => removeItem(index)} style={iconButtonStyle}>
                         <FaTrash />
                       </button>
                     </td>
@@ -416,9 +416,10 @@ const ProductPurchase = () => {
 
         <button
           type="submit"
-          style={{ ...buttonStyle, gridColumn: '1 / -1' }}
-          onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#2ecc71'}
-          onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#27ae60'}
+          // style={{ ...buttonStyle, gridColumn: '1 / -1' }}
+          style={iconButtonStyle}
+          onMouseOver={(e) => e.currentTarget.style.border = '1px solid #90A1B9'}
+          onMouseOut={(e) => e.currentTarget.style.border = '1px solid #fff'}
         >
           Save Purchase
         </button>
@@ -541,14 +542,15 @@ const tdStyle = {
   whiteSpace: 'nowrap',
 };
 
-const deleteButtonStyle = {
-  backgroundColor: '#e74c3c',
-  color: '#fff',
-  border: 'none',
+const iconButtonStyle = {
+  background: 'none',
+  border: '1px solid',
   borderRadius: '5px',
   padding: '8px 12px',
   cursor: 'pointer',
-  transition: 'background-color 0.3s ease',
+  marginRight: '5px',
+  transition: 'all 0.3s ease',
+  color: '#fff',
 };
 
 const summaryGridStyle = {

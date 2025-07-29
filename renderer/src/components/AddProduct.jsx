@@ -161,9 +161,9 @@ const AddProduct = ({ onAdded }) => {
 
                 <button
                     type="submit"
-                    style={{ ...buttonStyle, gridColumn: '1 / -1' }}
-                    onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#2ecc71'}
-                    onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#27ae60'}
+                    style={iconButtonStyle}
+                    onMouseOver={(e) => e.currentTarget.style.border = '1px solid #90A1B9'}
+                    onMouseOut={(e) => e.currentTarget.style.border = '1px solid #fff'}
                 >
                     Add Product
                 </button>
@@ -179,6 +179,18 @@ const cardStyle = {
     color: '#fff',
     boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
     marginBottom: '30px'
+};
+
+const iconButtonStyle = {
+    background: 'none',
+    border: '1px solid',
+    borderRadius: '5px',
+    padding: '8px 12px',
+    cursor: 'pointer',
+    marginRight: '5px',
+    transition: 'all 0.3s ease',
+    color: '#fff',
+    gridColumn: '1 / -1'
 };
 
 const headerStyle = {

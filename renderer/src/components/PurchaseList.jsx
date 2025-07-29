@@ -84,7 +84,7 @@ const PurchaseList = ({ refresh }) => {
                         <form onSubmit={handleEditSubmit} style={formStyle}>
                             <div style={inputGroupStyle}>
                                 <label style={labelStyle}>Purchase ID</label>
-                                <input name="purchase_id" value={editPurchase.purchase_id} onChange={handleChange} readOnly style={{...inputStyle, backgroundColor: '#E2E8F0'}} />
+                                <input name="purchase_id" value={editPurchase.purchase_id} onChange={handleChange} readOnly style={{ ...inputStyle, backgroundColor: '#E2E8F0' }} />
                             </div>
                             <div style={inputGroupStyle}>
                                 <label style={labelStyle}>Supplier Invoice No</label>
@@ -181,23 +181,7 @@ const iconButtonStyle = {
     color: '#fff',
 };
 
-const editButtonStyle = {
-    ...iconButtonStyle,
-    borderColor: '#2B6CB0',
-    '&:hover': {
-        backgroundColor: '#2B6CB0',
-        color: '#fff',
-    },
-};
 
-const deleteButtonStyle = {
-    ...iconButtonStyle,
-    borderColor: '#C53030',
-    '&:hover': {
-        backgroundColor: '#C53030',
-        color: '#fff',
-    },
-};
 
 const modalOverlay = {
     position: 'fixed',
