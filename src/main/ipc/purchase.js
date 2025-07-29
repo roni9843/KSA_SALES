@@ -13,32 +13,52 @@ ipcMain.handle('add-purchase', async (event, purchaseData) => {
   const purchaseId = `P${today.replace(/-/g, '')}`;
 
   return new Promise((resolve, reject) => {
-    db.run(purchaseSql, [purchaseId, supplier_id, supplier_invoice_no, supplier_invoice_date, purchase_date, grand_total, grand_total_before_tax, tax_amount, discount_amount], function (err) {
-      if (err) {
-        reject(err);
-      } else {
+    db.serialize(() => {
+      db.run('BEGIN TRANSACTION');
+
+      db.run(purchaseSql, [purchaseId, supplier_id, supplier_invoice_no, supplier_invoice_date, purchase_date, grand_total, grand_total_before_tax, tax_amount, discount_amount], function (err) {
+        if (err) {
+          db.run('ROLLBACK');
+          return reject(err);
+        }
+
         const purchase_id = this.lastID;
         const itemSql = `
           INSERT INTO product_purchase_item (product_purchase_id, product_id, quantity, price, tax_percentage, discount_percentage, total_before_tax, total)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `;
+        const updateProductSql = `
+          UPDATE product
+          SET quantity_in_stock = quantity_in_stock + ?
+          WHERE id = ?
         `;
 
         const itemPromises = items.map(item => {
           return new Promise((resolve, reject) => {
             db.run(itemSql, [purchase_id, item.product_id, item.quantity, item.price, item.tax_percentage, item.discount_percentage, item.total_before_tax, item.total], (err) => {
               if (err) {
-                reject(err);
-              } else {
-                resolve();
+                return reject(err);
               }
+              db.run(updateProductSql, [item.quantity, item.product_id], (err) => {
+                if (err) {
+                  return reject(err);
+                }
+                resolve();
+              });
             });
           });
         });
 
         Promise.all(itemPromises)
-          .then(() => resolve({ success: true }))
-          .catch(err => reject(err));
-      }
+          .then(() => {
+            db.run('COMMIT');
+            resolve({ success: true });
+          })
+          .catch(err => {
+            db.run('ROLLBACK');
+            reject(err);
+          });
+      });
     });
   });
 });
