@@ -32,16 +32,18 @@ const ProductPurchase = () => {
   const selectRef = useRef(null);
 
   useEffect(() => {
-    const fetchSuppliers = async () => {
+    const fetchInitialData = async () => {
       try {
         const suppliersData = await window.electron.ipcRenderer.invoke('get-suppliers');
         setSuppliers(suppliersData);
+        const generatedPurchaseId = await window.electron.ipcRenderer.invoke('generate-purchase-id');
+        setPurchaseId(generatedPurchaseId);
       } catch (error) {
-        console.error('Error fetching suppliers:', error);
-        toast.error('Failed to fetch suppliers.');
+        console.error('Error fetching initial data:', error);
+        toast.error('Failed to fetch initial data.');
       }
     };
-    fetchSuppliers();
+    fetchInitialData();
   }, []);
 
   const loadProductOptions = async (inputValue) => {
@@ -94,6 +96,11 @@ const ProductPurchase = () => {
   const handleItemChange = (index, field, value) => {
     const updatedItems = [...purchaseItems];
     const item = updatedItems[index];
+
+    if (field === 'quantity' && parseFloat(value) < 0) {
+      toast.error('Quantity cannot be negative.');
+      return;
+    }
 
     item[field] = value;
 
@@ -181,7 +188,8 @@ const ProductPurchase = () => {
       await window.electron.ipcRenderer.invoke('add-purchase', purchaseData);
       toast.success('Purchase added successfully');
       // Clear form after successful submission
-      setPurchaseId('');
+      const generatedPurchaseId = await window.electron.ipcRenderer.invoke('generate-purchase-id');
+      setPurchaseId(generatedPurchaseId);
       setSupplierInvoiceNo('');
       setSupplierInvoiceDate(null);
       setPurchaseDate(null);
@@ -208,8 +216,8 @@ const ProductPurchase = () => {
                 id="purchaseId"
                 name="purchaseId"
                 value={purchaseId}
-                onChange={(e) => setPurchaseId(e.target.value)}
-                style={inputStyle}
+                readOnly
+                style={{ ...inputStyle, backgroundColor: '#E2E8F0' }}
               />
             </div>
             <div style={inputGroupStyle}>
