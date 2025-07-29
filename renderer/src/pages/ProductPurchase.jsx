@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { FaPlus, FaTrash } from 'react-icons/fa';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import toast from 'react-hot-toast';
+import AsyncSelect from 'react-select/async';
 
 const CustomDatePickerInput = React.forwardRef(({
   value,
@@ -21,44 +22,78 @@ const CustomDatePickerInput = React.forwardRef(({
 
 const ProductPurchase = () => {
   const [suppliers, setSuppliers] = useState([]);
-  const [products, setProducts] = useState([]);
   const [purchaseId, setPurchaseId] = useState('');
   const [supplierInvoiceNo, setSupplierInvoiceNo] = useState('');
   const [supplierInvoiceDate, setSupplierInvoiceDate] = useState(null);
   const [purchaseDate, setPurchaseDate] = useState(null);
   const [selectedSupplier, setSelectedSupplier] = useState('');
-  const [purchaseItems, setPurchaseItems] = useState([
-    { productId: '', quantity: 1, priceBeforeTax: 0, tax: 0, price: 0, discountPercentage: 0, totalBeforeTax: 0, total: 0 },
-  ]);
-  const [totalDiscount, setTotalDiscount] = useState(0);
+  const [purchaseItems, setPurchaseItems] = useState([]);
+  const [selectKey, setSelectKey] = useState(0);
+  const selectRef = useRef(null);
 
   useEffect(() => {
-    const fetchInitialData = async () => {
+    const fetchSuppliers = async () => {
       try {
         const suppliersData = await window.electron.ipcRenderer.invoke('get-suppliers');
         setSuppliers(suppliersData);
-        const productsData = await window.electron.ipcRenderer.invoke('get-products');
-        setProducts(productsData);
       } catch (error) {
-        console.error('Error fetching initial data:', error);
+        console.error('Error fetching suppliers:', error);
+        toast.error('Failed to fetch suppliers.');
       }
     };
-
-    fetchInitialData();
+    fetchSuppliers();
   }, []);
+
+  const loadProductOptions = async (inputValue) => {
+    if (inputValue.length < 2) return [];
+    try {
+      const results = await window.electron.ipcRenderer.invoke('search-products', inputValue);
+      return results.map(p => ({
+        value: p.id,
+        label: `${p.name} (SKU: ${p.sku})`,
+        product: p
+      }));
+    } catch (error) {
+      console.error('Error searching products:', error);
+      toast.error('Failed to search for products.');
+      return [];
+    }
+  };
+
+  const handleProductSelect = (selectedOption) => {
+    if (!selectedOption) return;
+
+    const product = selectedOption.product;
+    const existingItem = purchaseItems.find(item => item.productId === product.id);
+
+    if (existingItem) {
+      toast.error('Product already added.');
+      return;
+    }
+
+    const newItem = {
+      productId: product.id,
+      name: product.name,
+      quantity: 1,
+      priceBeforeTax: product.purchase_price || 0,
+      tax: product.tax || 0,
+      price: (product.purchase_price || 0) * (1 + (product.tax || 0) / 100),
+      discountPercentage: 0,
+      totalBeforeTax: product.purchase_price || 0,
+      total: (product.purchase_price || 0) * (1 + (product.tax || 0) / 100),
+    };
+
+    setPurchaseItems([...purchaseItems, newItem]);
+    setSelectKey(prevKey => prevKey + 1);
+    if (selectRef.current) {
+      selectRef.current.clearValue();
+    }
+  };
+
 
   const handleItemChange = (index, field, value) => {
     const updatedItems = [...purchaseItems];
     const item = updatedItems[index];
-
-    if (field === 'productId') {
-      const product = products.find(p => p.id === parseInt(value));
-      if (product) {
-        item.priceBeforeTax = product.purchase_price || 0;
-        item.tax = product.tax || 0;
-        item.price = product.purchase_price * (1 + (product.tax || 0) / 100); // Price with tax
-      }
-    }
 
     item[field] = value;
 
@@ -73,13 +108,6 @@ const ProductPurchase = () => {
     item.total = item.totalBeforeTax * (1 + tax / 100) * (1 - discountPercentage / 100);
 
     setPurchaseItems(updatedItems);
-  };
-
-  const addNewItem = () => {
-    setPurchaseItems([
-      ...purchaseItems,
-      { productId: '', quantity: 1, priceBeforeTax: 0, tax: 0, price: 0, discountPercentage: 0, totalBeforeTax: 0, total: 0 },
-    ]);
   };
 
   const removeItem = (index) => {
@@ -144,10 +172,7 @@ const ProductPurchase = () => {
       setSupplierInvoiceDate(null);
       setPurchaseDate(null);
       setSelectedSupplier('');
-      setPurchaseItems([
-        { productId: '', quantity: 1, priceBeforeTax: 0, tax: 0, price: 0, discountPercentage: 0, totalBeforeTax: 0, total: 0 },
-      ]);
-      setTotalDiscount(0);
+      setPurchaseItems([]);
     } catch (err) {
       toast.error(err.message || 'An error occurred while adding the purchase.');
     }
@@ -245,6 +270,20 @@ const ProductPurchase = () => {
 
         <fieldset style={fieldsetStyle}>
           <legend style={legendStyle}>Purchase Items</legend>
+          <div style={{ marginBottom: '20px' }}>
+            <label style={labelStyle}>Search and Add Product</label>
+            <AsyncSelect
+              key={selectKey}
+              ref={selectRef}
+              cacheOptions
+              defaultOptions
+              loadOptions={loadProductOptions}
+              onChange={handleProductSelect}
+              placeholder="Type to search for a product..."
+              isClearable
+              styles={selectStyles}
+            />
+          </div>
           <div style={tableContainerStyle}>
             <table style={tableStyle}>
               <thead style={tableHeaderStyle}>
@@ -264,18 +303,7 @@ const ProductPurchase = () => {
                 {purchaseItems.map((item, index) => (
                   <tr key={index} style={tableRowStyle(index)}>
                     <td style={{ ...tdStyle, width: '25%' }}>
-                      <select
-                        value={item.productId}
-                        onChange={(e) => handleItemChange(index, 'productId', e.target.value)}
-                        style={inputStyle}
-                      >
-                        <option value="">Select Product</option>
-                        {products.map((product) => (
-                          <option key={product.id} value={product.id}>
-                            {product.name}
-                          </option>
-                        ))}
-                      </select>
+                      {item.name}
                     </td>
                     <td style={{ ...tdStyle, width: '10%' }}>
                       <input
@@ -332,16 +360,6 @@ const ProductPurchase = () => {
                 ))}
               </tbody>
             </table>
-          </div>
-
-          <div style={addButtonStyle}>
-            <button
-              type="button"
-              onClick={addNewItem}
-              style={buttonStyle}
-            >
-              <FaPlus style={{ marginRight: '8px' }} /> Add Item
-            </button>
           </div>
         </fieldset>
 
@@ -504,12 +522,6 @@ const deleteButtonStyle = {
   transition: 'background-color 0.3s ease',
 };
 
-const addButtonStyle = {
-  display: 'flex',
-  justifyContent: 'flex-end',
-  marginTop: '20px',
-};
-
 const summaryGridStyle = {
   display: 'grid',
   gridTemplateColumns: '1fr 1fr',
@@ -533,5 +545,27 @@ const summaryValueStyle = {
   color: '#E2E8F0',
 };
 
-export default ProductPurchase;
+const selectStyles = {
+  control: (provided) => ({
+    ...provided,
+    backgroundColor: '#fff',
+    color: '#333',
+    border: '1px solid #A0AEC0',
+  }),
+  menu: (provided) => ({
+    ...provided,
+    backgroundColor: '#fff',
+    color: '#333',
+  }),
+  option: (provided, state) => ({
+    ...provided,
+    backgroundColor: state.isSelected ? '#27ae60' : state.isFocused ? '#f0f0f0' : '#fff',
+    color: state.isSelected ? '#fff' : '#333',
+  }),
+  singleValue: (provided) => ({
+    ...provided,
+    color: '#333',
+  }),
+};
 
+export default ProductPurchase;

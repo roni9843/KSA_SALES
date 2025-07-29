@@ -492,6 +492,28 @@ ipcMain.handle('delete-tax', async (event, id) => {
     });
 });
 
+// IPC for searching products
+ipcMain.handle('search-products', async (event, searchTerm) => {
+    return new Promise((resolve, reject) => {
+        const sql = `
+      SELECT * FROM product
+      WHERE (name LIKE ? OR sku LIKE ?)
+      AND quantity_in_stock > 0
+      AND active = 1
+      ORDER BY name
+    `;
+        const params = [`%${searchTerm}%`, `%${searchTerm}%`];
+        db.all(sql, params, (err, rows) => {
+            if (err) {
+                console.error(err.message);
+                reject('Error searching products');
+            } else {
+                resolve(rows);
+            }
+        });
+    });
+});
+
 
 
 
