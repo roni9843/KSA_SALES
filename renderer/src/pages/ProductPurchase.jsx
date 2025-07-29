@@ -142,6 +142,20 @@ const ProductPurchase = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!selectedSupplier) {
+      toast.error('Supplier is required.');
+      return;
+    }
+    if (!purchaseDate) {
+      toast.error('Purchase Date is required.');
+      return;
+    }
+    if (purchaseItems.length === 0) {
+      toast.error('Please add at least one product to the purchase.');
+      return;
+    }
+
     const purchaseData = {
       purchase_id: purchaseId,
       supplier_invoice_no: supplierInvoiceNo,

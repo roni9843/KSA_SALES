@@ -497,8 +497,7 @@ ipcMain.handle('search-products', async (event, searchTerm) => {
     return new Promise((resolve, reject) => {
         const sql = `
       SELECT * FROM product
-      WHERE (name LIKE ? OR sku LIKE ?)
-      AND quantity_in_stock > 0
+      WHERE (name LIKE ? OR sku LIKE ? OR barcode LIKE ?)
       AND active = 1
       ORDER BY name
     `;
