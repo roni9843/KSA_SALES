@@ -69,8 +69,8 @@ const PurchaseList = ({ refresh }) => {
                             <td style={tdStyle}>{p.tax_amount.toFixed(2)}</td>
                             <td style={tdStyle}>{p.discount_amount.toFixed(2)}</td>
                             <td style={{ ...tdStyle, textAlign: 'center' }}>
-                                <button onClick={() => setEditPurchase(p)} style={iconButtonStyle}><FaEdit /></button>
-                                <button onClick={() => deletePurchase(p.id)} style={iconButtonStyle}><FaTrash /></button>
+                                <button onClick={() => setEditPurchase(p)} className="action-button"><FaEdit /></button>
+                                <button onClick={() => deletePurchase(p.id)} className="action-button"><FaTrash /></button>
                             </td>
                         </tr>
                     ))}
@@ -120,8 +120,8 @@ const PurchaseList = ({ refresh }) => {
                             </div>
 
                             <div style={{ gridColumn: '1 / span 2', display: 'flex', gap: '10px', marginTop: '10px' }}>
-                                <button type="submit" style={buttonStyle}>💾 Update</button>
-                                <button type="button" onClick={() => setEditPurchase(null)} style={cancelButtonStyle}>❌ Cancel</button>
+                                <button type="submit" className="default-button">Update</button>
+                                <button type="button" onClick={() => setEditPurchase(null)} className="default-button">Cancel</button>
                             </div>
                         </form>
                     </div>
@@ -169,19 +169,6 @@ const tdStyle = {
     padding: '12px 15px',
     textAlign: 'right',
 };
-
-const iconButtonStyle = {
-    background: 'none',
-    border: '1px solid',
-    borderRadius: '5px',
-    padding: '8px 12px',
-    cursor: 'pointer',
-    marginRight: '5px',
-    transition: 'all 0.3s ease',
-    color: '#fff',
-};
-
-
 
 const modalOverlay = {
     position: 'fixed',
@@ -236,24 +223,6 @@ const inputStyle = {
     color: '#333',
     fontSize: '14px',
     boxSizing: 'border-box',
-};
-
-const buttonStyle = {
-    flex: 1,
-    padding: '12px',
-    backgroundColor: '#27ae60',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '5px',
-    cursor: 'pointer',
-    fontSize: '16px',
-    fontWeight: 'bold',
-    transition: 'background-color 0.3s ease',
-};
-
-const cancelButtonStyle = {
-    ...buttonStyle,
-    backgroundColor: '#e74c3c'
 };
 
 export default PurchaseList;

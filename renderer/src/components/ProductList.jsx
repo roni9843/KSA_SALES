@@ -132,8 +132,8 @@ const ProductList = ({ refresh }) => {
                             <td style={{ ...tdStyle, color: p.quantity_in_stock < 10 ? '#F56565' : 'inherit', fontWeight: p.quantity_in_stock < 10 ? 'bold' : 'normal' }}>{p.quantity_in_stock}</td>
                             <td style={tdStyle}>{p.unit}</td>
                             <td style={{ ...tdStyle, textAlign: 'center' }}>
-                                <button onClick={() => setEditProduct(p)} style={iconButtonStyle}><FaEdit /></button>
-                                <button onClick={() => deleteProduct(p.id)} style={iconButtonStyle}><FaTrash /></button>
+                                <button onClick={() => setEditProduct(p)} className="action-button"><FaEdit /></button>
+                                <button onClick={() => deleteProduct(p.id)} className="action-button"><FaTrash /></button>
                             </td>
                         </tr>
                     ))}
@@ -289,19 +289,6 @@ const tdStyle = {
     padding: '12px 15px',
     textAlign: 'right',
 };
-
-const iconButtonStyle = {
-    background: 'none',
-    border: '1px solid',
-    borderRadius: '5px',
-    padding: '8px 12px',
-    cursor: 'pointer',
-    marginRight: '5px',
-    transition: 'all 0.3s ease',
-    color: '#fff',
-};
-
-
 
 const modalOverlay = {
     position: 'fixed',

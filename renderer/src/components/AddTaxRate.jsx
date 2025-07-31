@@ -41,9 +41,7 @@ const AddTaxRate = ({ onAdded }) => {
 
                 <button
                     type="submit"
-                    style={buttonStyle}
-                    onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#2ecc71'}
-                    onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#27ae60'}
+                    className="default-button"
                 >
                     Add Tax Rate
                 </button>
@@ -114,19 +112,6 @@ const inputStyle = {
     color: '#333',
     fontSize: '14px',
     boxSizing: 'border-box',
-};
-
-const buttonStyle = {
-    padding: '15px',
-    backgroundColor: '#27ae60',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '5px',
-    cursor: 'pointer',
-    fontSize: '16px',
-    fontWeight: 'bold',
-    marginTop: '10px',
-    transition: 'background-color 0.3s ease',
 };
 
 

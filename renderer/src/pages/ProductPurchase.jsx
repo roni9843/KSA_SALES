@@ -4,6 +4,7 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import toast from 'react-hot-toast';
 import AsyncSelect from 'react-select/async';
+import '../App.css';
 
 const CustomDatePickerInput = React.forwardRef(({
   value,
@@ -381,7 +382,7 @@ const ProductPurchase = () => {
                       {item.total.toFixed(2)}
                     </td>
                     <td style={{ ...tdStyle, width: '3%' }}>
-                      <button type="button" onClick={() => removeItem(index)} style={iconButtonStyle}>
+                      <button type="button" onClick={() => removeItem(index)} className="action-button">
                         <FaTrash />
                       </button>
                     </td>
@@ -417,9 +418,7 @@ const ProductPurchase = () => {
         <button
           type="submit"
           // style={{ ...buttonStyle, gridColumn: '1 / -1' }}
-          style={iconButtonStyle}
-          onMouseOver={(e) => e.currentTarget.style.border = '1px solid #90A1B9'}
-          onMouseOut={(e) => e.currentTarget.style.border = '1px solid #fff'}
+          className="default-button"
         >
           Save Purchase
         </button>
@@ -528,17 +527,6 @@ const tdStyle = {
   padding: '12px 15px',
   textAlign: 'left',
   whiteSpace: 'nowrap',
-};
-
-const iconButtonStyle = {
-  background: 'none',
-  border: '1px solid',
-  borderRadius: '5px',
-  padding: '8px 12px',
-  cursor: 'pointer',
-  marginRight: '5px',
-  transition: 'all 0.3s ease',
-  color: '#fff',
 };
 
 const summaryGridStyle = {

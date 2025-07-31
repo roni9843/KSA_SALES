@@ -53,8 +53,8 @@ const SupplierList = ({ refresh }) => {
                             <td style={tdStyle}>{s.phone}</td>
                             <td style={tdStyle}>{s.email}</td>
                             <td style={{ ...tdStyle, textAlign: 'center' }}>
-                                <button onClick={() => setEditSupplier(s)} style={iconButtonStyle}><FaEdit /></button>
-                                <button onClick={() => deleteSupplier(s.id)} style={iconButtonStyle}><FaTrash /></button>
+                                <button onClick={() => setEditSupplier(s)} className="action-button"><FaEdit /></button>
+                                <button onClick={() => deleteSupplier(s.id)} className="action-button"><FaTrash /></button>
                             </td>
                         </tr>
                     ))}
@@ -108,8 +108,8 @@ const SupplierList = ({ refresh }) => {
                             </div>
 
                             <div style={{ gridColumn: '1 / span 2', display: 'flex', gap: '10px', marginTop: '10px' }}>
-                                <button type="submit" style={buttonStyle}>💾 Update</button>
-                                <button type="button" onClick={() => setEditSupplier(null)} style={cancelButtonStyle}>❌ Cancel</button>
+                                <button type="submit" className="default-button">Update</button>
+                                <button type="button" onClick={() => setEditSupplier(null)} className="default-button">Cancel</button>
                             </div>
                         </form>
                     </div>
@@ -157,19 +157,6 @@ const tdStyle = {
     padding: '12px 15px',
     textAlign: 'right',
 };
-
-const iconButtonStyle = {
-    background: 'none',
-    border: '1px solid',
-    borderRadius: '5px',
-    padding: '8px 12px',
-    cursor: 'pointer',
-    marginRight: '5px',
-    transition: 'all 0.3s ease',
-    color: '#fff',
-};
-
-
 
 const modalOverlay = {
     position: 'fixed',
@@ -220,24 +207,6 @@ const inputStyle = {
     backgroundColor: '#fff',
     color: '#333',
     fontSize: '14px',
-};
-
-const buttonStyle = {
-    flex: 1,
-    padding: '12px',
-    backgroundColor: '#27ae60',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '5px',
-    cursor: 'pointer',
-    fontSize: '16px',
-    fontWeight: 'bold',
-    transition: 'background-color 0.3s ease',
-};
-
-const cancelButtonStyle = {
-    ...buttonStyle,
-    backgroundColor: '#e74c3c'
 };
 
 export default SupplierList;

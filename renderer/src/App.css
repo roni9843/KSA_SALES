@@ -1,19 +1,14 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
-}
-
 .logo {
   height: 6em;
   padding: 1.5em;
   will-change: filter;
   transition: filter 300ms;
 }
+
 .logo:hover {
   filter: drop-shadow(0 0 2em #646cffaa);
 }
+
 .logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
@@ -22,6 +17,7 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
@@ -33,10 +29,37 @@
   }
 }
 
-.card {
-  padding: 2em;
+
+
+.default-button {
+  background: none;
+  color: white;
+  border: 1px solid;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  grid-column: 1 / -1;
+  font-size: 16px;
+  font-weight: bold;
+  flex: 1;
 }
 
-.read-the-docs {
-  color: #888;
+.default-button:hover {
+  border-color: #90A1B9;
+}
+
+.action-button {
+  background: none;
+  border: 1px solid;
+  border-radius: 5px;
+  padding: 8px 12px;
+  cursor: pointer;
+  margin-right: 5px;
+  transition: all 0.3s ease;
+  color: #fff;
+}
+
+.action-button:hover {
+  border-color: #90A1B9;
 }

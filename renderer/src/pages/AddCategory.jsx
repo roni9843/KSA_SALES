@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FaEdit, FaTrash } from 'react-icons/fa';
+import '../App.css';
 
 const AddCategory = () => {
     const [name, setName] = useState('');
@@ -45,7 +46,7 @@ const AddCategory = () => {
 
     return (
         <div style={cardStyle}>
-            <h2>📂 Category Management</h2>
+            <h2>Category Management</h2>
 
             <form onSubmit={handleSubmit} style={formStyle}>
                 <input
@@ -55,12 +56,12 @@ const AddCategory = () => {
                     onChange={(e) => setName(e.target.value)}
                     style={inputStyle}
                 />
-                <button type="submit" style={buttonStyle}>
-                    {editId ? '✏️ Update' : '➕ Add'}
+                <button type="submit" className="default-button">
+                    {editId ? 'Update' : 'Add'}
                 </button>
                 {editId && (
-                    <button type="button" onClick={() => { setEditId(null); setName(''); }} style={cancelButtonStyle}>
-                        ❌ Cancel
+                    <button type="button" onClick={() => { setEditId(null); setName(''); }} className="default-button">
+                        Cancel
                     </button>
                 )}
             </form>
@@ -79,8 +80,8 @@ const AddCategory = () => {
                             <td style={tdStyle}>{index + 1}</td>
                             <td style={tdStyle}>{cat.name}</td>
                             <td style={{ ...tdStyle, textAlign: 'center' }}>
-                                <button onClick={() => handleEdit(cat)} style={iconButtonStyle}><FaEdit /></button>
-                                <button onClick={() => handleDelete(cat.id)} style={iconButtonStyle}><FaTrash /></button>
+                                <button onClick={() => handleEdit(cat)} className="action-button"><FaEdit /></button>
+                                <button onClick={() => handleDelete(cat.id)} className="action-button"><FaTrash /></button>
                             </td>
                         </tr>
                     ))}
@@ -116,20 +117,6 @@ const inputStyle = {
     color: '#333',
 };
 
-const buttonStyle = {
-    padding: '10px 20px',
-    backgroundColor: '#3498db',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '5px',
-    cursor: 'pointer'
-};
-
-const cancelButtonStyle = {
-    ...buttonStyle,
-    backgroundColor: '#e74c3c'
-};
-
 const tableStyle = {
     width: '100%',
     marginTop: '20px',
@@ -160,15 +147,6 @@ const tdStyle = {
     borderBottom: '1px solid #2D3748',
 };
 
-const iconButtonStyle = {
-    background: 'none',
-    border: '1px solid',
-    borderRadius: '5px',
-    padding: '8px 12px',
-    cursor: 'pointer',
-    marginRight: '5px',
-    transition: 'all 0.3s ease',
-    color: '#fff',
-};
+
 
 
