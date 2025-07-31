@@ -301,23 +301,7 @@ const iconButtonStyle = {
     color: '#fff',
 };
 
-const editButtonStyle = {
-    ...iconButtonStyle,
-    borderColor: '#2B6CB0',
-    '&:hover': {
-        backgroundColor: '#2B6CB0',
-        color: '#fff',
-    },
-};
 
-const deleteButtonStyle = {
-    ...iconButtonStyle,
-    borderColor: '#C53030',
-    '&:hover': {
-        backgroundColor: '#C53030',
-        color: '#fff',
-    },
-};
 
 const modalOverlay = {
     position: 'fixed',

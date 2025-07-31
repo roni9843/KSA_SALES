@@ -492,18 +492,7 @@ const inputStyle = {
   boxSizing: 'border-box',
 };
 
-const buttonStyle = {
-  padding: '15px',
-  backgroundColor: '#27ae60',
-  color: '#fff',
-  border: 'none',
-  borderRadius: '5px',
-  cursor: 'pointer',
-  fontSize: '16px',
-  fontWeight: 'bold',
-  marginTop: '10px',
-  transition: 'background-color 0.3s ease',
-};
+
 
 const tableContainerStyle = {
   overflowX: 'auto',

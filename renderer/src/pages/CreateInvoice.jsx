@@ -216,11 +216,7 @@ const formContainer = {
     borderRadius: '4px'
 };
 
-const thTdStyle = {
-    padding: '10px 15px',
-    borderBottom: '1px solid #000000',
-    textAlign: 'left',
-};
+
 
 const leftCol = { flex: 2 };
 const rightCol = {

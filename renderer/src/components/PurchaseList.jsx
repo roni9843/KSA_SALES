@@ -214,32 +214,7 @@ const formStyle = {
     gap: '20px',
 };
 
-const fieldsetStyle = {
-    border: '1px solid #4A5568',
-    borderRadius: '8px',
-    padding: '20px',
-    margin: '0',
-};
 
-const legendStyle = {
-    padding: '0 10px',
-    color: '#E2E8F0',
-    fontWeight: 'bold',
-    fontSize: '18px',
-    marginLeft: '10px',
-};
-
-const detailsGridStyle = {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: '20px',
-};
-
-const priceGridStyle = {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: '20px',
-};
 
 const inputGroupStyle = {
     display: 'flex',

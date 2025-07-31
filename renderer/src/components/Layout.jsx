@@ -4,7 +4,7 @@ import Sidebar from './Sidebar';
 import { useTranslation } from 'react-i18next';
 
 const Layout = ({ children }) => {
-    const { t, i18n } = useTranslation();
+    const { t } = useTranslation();
     const [showSidebar, setShowSidebar] = useState(true);
 
     const toggleSidebar = () => setShowSidebar(!showSidebar);

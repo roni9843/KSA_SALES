@@ -20,7 +20,7 @@ import PurchaseList from './components/PurchaseList';
 
 
 function App() {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
 
   const changeLanguage = (lng) => i18n.changeLanguage(lng);
 
