@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { FaFileInvoice } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 
 const CreateInvoice = () => {
@@ -99,7 +100,7 @@ const CreateInvoice = () => {
     return (
         <div style={formContainer}>
             <div style={leftCol}>
-                <h3>🧾 Create Invoice</h3>
+                <h2><FaFileInvoice /> Create Invoice</h2>
                 <div>
                     <label style={labelStyle}>Search Product</label>
                     <input

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import Switch from './common/Switch';
-import { FaEdit, FaTrash } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaUsers } from 'react-icons/fa';
 
 const CustomerList = ({ refresh }) => {
     const [list, setList] = useState([]);
@@ -36,7 +36,7 @@ const CustomerList = ({ refresh }) => {
 
     return (
         <div style={cardStyle}>
-            <h3 style={{ textAlign: 'center', fontSize: '24px', marginBottom: '20px' }}>👥 Customer List</h3>
+            <h2><FaUsers /> Customer List</h2>
             <table style={tableStyle}>
                 <thead style={tableHeaderStyle}>
                     <tr>

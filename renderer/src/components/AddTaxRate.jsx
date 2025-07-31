@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { FaMoneyBillAlt } from 'react-icons/fa';
 
 const AddTaxRate = ({ onAdded }) => {
     const [form, setForm] = useState({
@@ -22,7 +23,7 @@ const AddTaxRate = ({ onAdded }) => {
 
     return (
         <div style={cardStyle}>
-            <h3 style={headerStyle}>Add New Tax Rate</h3>
+            <h2><FaMoneyBillAlt /> Add New Tax Rate</h2>
             <form onSubmit={handleSubmit} style={formStyle}>
                 <fieldset style={fieldsetStyle}>
                     <legend style={legendStyle}>Tax Rate Details</legend>

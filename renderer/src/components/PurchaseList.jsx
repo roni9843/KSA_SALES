@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { FaEdit, FaTrash } from 'react-icons/fa';
+import { FaClipboardList, FaEdit, FaTrash } from 'react-icons/fa';
 
 const PurchaseList = ({ refresh }) => {
     const [list, setList] = useState([]);
@@ -46,7 +46,7 @@ const PurchaseList = ({ refresh }) => {
 
     return (
         <div style={cardStyle}>
-            <h3 style={{ textAlign: 'center', fontSize: '24px', marginBottom: '20px' }}>🛒 Purchase List</h3>
+            <h2><FaClipboardList /> Purchase List</h2>
             <table style={tableStyle}>
                 <thead style={tableHeaderStyle}>
                     <tr>

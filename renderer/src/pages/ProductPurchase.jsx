@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FaPlus, FaTrash } from 'react-icons/fa';
+import { FaPlus, FaShoppingCart, FaTrash } from 'react-icons/fa';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import toast from 'react-hot-toast';
@@ -210,7 +210,7 @@ const ProductPurchase = () => {
 
   return (
     <div style={cardStyle}>
-      <h3 style={headerStyle}>Create Purchase</h3>
+      <h2><FaShoppingCart /> Create Purchase</h2>
       <form onSubmit={handleSubmit} style={formStyle}>
         <fieldset style={fieldsetStyle}>
           <legend style={legendStyle}>Purchase Details</legend>

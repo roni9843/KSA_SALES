@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import Switch from './common/Switch';
+import { FaUser } from 'react-icons/fa';
 
 const AddCustomer = ({ onAdded }) => {
     const [form, setForm] = useState({
@@ -40,7 +41,7 @@ const AddCustomer = ({ onAdded }) => {
 
     return (
         <div style={cardStyle}>
-            <h3 style={headerStyle}>Add New Customer</h3>
+            <h2><FaUser /> Add New Customer</h2>
             <form onSubmit={handleSubmit} style={formStyle}>
                 <fieldset style={fieldsetStyle}>
                     <legend style={legendStyle}>Customer Details</legend>

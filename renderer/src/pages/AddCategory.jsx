@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FaEdit, FaTrash } from 'react-icons/fa';
+import { FaEdit, FaFolder, FaTrash } from 'react-icons/fa';
 import '../App.css';
 
 const AddCategory = () => {
@@ -46,7 +46,7 @@ const AddCategory = () => {
 
     return (
         <div style={cardStyle}>
-            <h2>Category Management</h2>
+            <h2><FaFolder /> Category Management</h2>
 
             <form onSubmit={handleSubmit} style={formStyle}>
                 <input

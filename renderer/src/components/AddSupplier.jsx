@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import Switch from './common/Switch';
+import { FaTruck } from 'react-icons/fa';
 
 const AddSupplier = ({ onAdded }) => {
     const [form, setForm] = useState({
@@ -34,7 +35,7 @@ const AddSupplier = ({ onAdded }) => {
 
     return (
         <div style={cardStyle}>
-            <h3 style={headerStyle}>Add New Supplier</h3>
+            <h2><FaTruck /> Add New Supplier</h2>
             <form onSubmit={handleSubmit} style={formStyle}>
                 <fieldset style={fieldsetStyle}>
                     <legend style={legendStyle}>Supplier Details</legend>

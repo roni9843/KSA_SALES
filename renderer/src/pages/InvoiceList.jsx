@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FaClipboardList } from 'react-icons/fa';
 
 const InvoiceList = () => {
     const [invoices, setInvoices] = useState([]);
@@ -19,7 +20,7 @@ const InvoiceList = () => {
 
     return (
         <div style={cardStyle}>
-            <h2>🧾 Invoice List</h2>
+            <h2><FaClipboardList /> Invoice List</h2>
             <table style={tableStyle}>
                 <thead style={tableHeaderStyle}>
                     <tr>

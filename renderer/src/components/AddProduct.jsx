@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 
 import Switch from './common/Switch';
+import { FaBox } from 'react-icons/fa';
 
 const AddProduct = ({ onAdded }) => {
     const [form, setForm] = useState({
@@ -63,7 +64,7 @@ const AddProduct = ({ onAdded }) => {
 
     return (
         <div style={cardStyle}>
-            <h3 style={headerStyle}>Add New Product</h3>
+            <h2><FaBox /> Add New Product</h2>
             <form onSubmit={handleSubmit} style={formStyle}>
                 <fieldset style={fieldsetStyle}>
                     <legend style={legendStyle}>Product Details</legend>
