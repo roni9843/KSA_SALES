@@ -47,13 +47,15 @@ const Layout = ({ children }) => {
                         ☰
                     </button>
                     <h2 style={{ margin: 0 }}>{t('title')} </h2>
-                    <div style={{ marginBottom: '10px' }}>
-                        <select onChange={(e) => changeLanguage(e.target.value)} defaultValue={i18n.language}>
-                            <option value="en">English</option>
-                            <option value="bn">বাংলা</option>
-                            <option value="ar">العربية</option>
-                        </select>
-                    </div>
+                </div>
+
+                {/* Language Selector */}
+                <div >
+                    <select onChange={(e) => changeLanguage(e.target.value)} defaultValue={i18n.language}>
+                        <option value="en">English</option>
+                        <option value="bn">বাংলা</option>
+                        <option value="ar">العربية</option>
+                    </select>
                 </div>
             </header>
 
@@ -62,7 +64,7 @@ const Layout = ({ children }) => {
                 {/* 📂 Sidebar */}
                 <aside
                     style={{
-                        width: showSidebar ? '200px' : '0px',
+                        width: showSidebar ? '250px' : '0px',
                         background: '#282A35',
                         color: '#fff',
                         overflowX: 'hidden',
@@ -85,7 +87,7 @@ const Layout = ({ children }) => {
                         color: '#ecf0f1',
                         overflowY: 'auto',
                         transition: 'all 0.3s ease',
-                        width: showSidebar ? 'calc(100% - 200px)' : '100%',
+                        width: showSidebar ? 'calc(100% - 250px)' : '100%',
                     }}
                 >
                     {children}

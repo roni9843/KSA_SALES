@@ -107,13 +107,6 @@ const cardStyle = {
     color: '#fff',
 };
 
-const headerStyle = {
-    textAlign: 'center',
-    marginBottom: '25px',
-    fontSize: '24px',
-    color: '#E2E8F0',
-};
-
 const formStyle = {
     display: 'grid',
     gridTemplateColumns: '1fr',
