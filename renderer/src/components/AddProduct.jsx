@@ -175,7 +175,6 @@ const cardStyle = {
     padding: '20px',
     borderRadius: '4px',
     color: '#fff',
-    marginTop: '20px'
 };
 
 const headerStyle = {

@@ -98,8 +98,7 @@ const cardStyle = {
     background: '#2D3748',
     padding: '20px',
     borderRadius: '4px',
-    color: '#fff',
-    marginTop: '20px'
+    color: '#fff'
 };
 
 const formStyle = {

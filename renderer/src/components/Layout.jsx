@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import Sidebar from './Sidebar';
-
 import { useTranslation } from 'react-i18next';
 
 const Layout = ({ children }) => {
+    const { i18n } = useTranslation();
+    const changeLanguage = (lng) => i18n.changeLanguage(lng);
+
     const { t } = useTranslation();
     const [showSidebar, setShowSidebar] = useState(true);
 
@@ -45,6 +47,13 @@ const Layout = ({ children }) => {
                         ☰
                     </button>
                     <h2 style={{ margin: 0 }}>{t('title')} </h2>
+                    <div style={{ marginBottom: '10px' }}>
+                        <select onChange={(e) => changeLanguage(e.target.value)} defaultValue={i18n.language}>
+                            <option value="en">English</option>
+                            <option value="bn">বাংলা</option>
+                            <option value="ar">العربية</option>
+                        </select>
+                    </div>
                 </div>
             </header>
 

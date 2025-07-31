@@ -1,5 +1,4 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
 
 import Layout from './components/Layout';
 import Toast from './components/common/Toast';
@@ -20,20 +19,10 @@ import PurchaseList from './components/PurchaseList';
 
 
 function App() {
-  const { i18n } = useTranslation();
-
-  const changeLanguage = (lng) => i18n.changeLanguage(lng);
 
   return (
     <Router>
       <Layout>
-        <div style={{ marginBottom: '10px' }}>
-          <select onChange={(e) => changeLanguage(e.target.value)} defaultValue={i18n.language}>
-            <option value="en">English</option>
-            <option value="bn">বাংলা</option>
-            <option value="ar">العربية</option>
-          </select>
-        </div>
 
         <Routes>
           <Route path="/" element={<Home />} />

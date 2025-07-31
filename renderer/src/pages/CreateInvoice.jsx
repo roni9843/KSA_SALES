@@ -209,7 +209,6 @@ const formContainer = {
     display: 'flex',
     justifyContent: 'space-between',
     gap: '30px',
-    marginTop: '20px',
     background: '#2D3748',
     color: '#fff',
     padding: '20px',
