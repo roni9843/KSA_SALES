@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FaFileInvoice } from 'react-icons/fa';
+import { FaFileInvoice, FaTrash } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 
 const CreateInvoice = () => {
@@ -126,7 +126,7 @@ const CreateInvoice = () => {
                     <label style={labelStyle}>Quantity</label>
                     <input type="number" value={qty} onChange={e => setQty(e.target.value)} style={inputStyle} placeholder="Qty" />
                 </div>
-                <button onClick={addToInvoice} style={buttonStyle}>➕ Add</button>
+                <button onClick={addToInvoice} className="default-button" style={{ width: '100%' }}>Add</button>
 
                 <table style={tableStyle}>
                     <thead style={tableHeaderStyle}>
@@ -154,8 +154,8 @@ const CreateInvoice = () => {
                                 <td style={tdStyle}>{i.unit_price.toFixed(2)}</td>
                                 <td style={tdStyle}>{i.total_price.toFixed(2)}</td>
                                 <td style={{ ...tdStyle, textAlign: 'center' }}>
-                                    <button onClick={() => removeItem(i.id)} style={removeButtonStyle}>
-                                        ❌
+                                    <button onClick={() => removeItem(i.id)} className="action-button">
+                                        <FaTrash />
                                     </button>
                                 </td>
                             </tr>
@@ -198,8 +198,8 @@ const CreateInvoice = () => {
                 <p><strong>Due:</strong> {due.toFixed(2)}</p>
 
                 <div style={{ display: 'flex', gap: '10px' }}>
-                    <button style={{ ...buttonStyle, flex: 1 }} onClick={() => handleSave(false)}>💾 Save</button>
-                    <button style={{ ...buttonStyle, flex: 1 }} onClick={() => handleSave(true)}>🖨️ Save & Print</button>
+                    <button className="default-button" onClick={() => handleSave(false)}>Save</button>
+                    <button className="default-button" onClick={() => handleSave(true)}>Save & Print</button>
                 </div>
             </div>
         </div>
@@ -242,16 +242,6 @@ const inputStyle = {
     boxSizing: 'border-box'
 };
 
-const buttonStyle = {
-    width: '100%',
-    padding: '10px',
-    marginBottom: '10px',
-    backgroundColor: '#27ae60',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '5px'
-};
-
 const tableStyle = {
     width: '100%',
     marginTop: '20px',
@@ -289,14 +279,6 @@ const qtyInputStyle = {
     backgroundColor: '#E2E8F0',
     color: '#2D3748',
     textAlign: 'center',
-};
-
-const removeButtonStyle = {
-    background: 'transparent',
-    border: 'none',
-    color: '#E53E3E',
-    cursor: 'pointer',
-    fontSize: '16px',
 };
 
 export default CreateInvoice;

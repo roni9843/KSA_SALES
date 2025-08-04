@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaClipboardList } from 'react-icons/fa';
+import { FaClipboardList, FaEye } from 'react-icons/fa';
 
 const InvoiceList = () => {
     const [invoices, setInvoices] = useState([]);
@@ -43,8 +43,8 @@ const InvoiceList = () => {
                             <td style={{ ...tdStyle, color: inv.due > 0 ? '#E53E3E' : '#48BB78', fontWeight: 'bold' }}>{inv.due.toFixed(2)}</td>
                             <td style={{ ...tdStyle, textAlign: 'left' }}>{new Date(inv.created_at).toLocaleDateString()}</td>
                             <td style={{ ...tdStyle, textAlign: 'center' }}>
-                                <button onClick={() => handlePrint(inv.id)} style={viewButtonStyle}>
-                                    🖨️ View
+                                <button onClick={() => handlePrint(inv.id)} className="action-button">
+                                    <FaEye />
                                 </button>
                             </td>
                         </tr>
@@ -91,16 +91,6 @@ const tdStyle = {
     padding: '12px 15px',
     textAlign: 'right',
     borderBottom: '1px solid #2D3748',
-};
-
-const viewButtonStyle = {
-    padding: '8px 12px',
-    backgroundColor: '#3182CE',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '5px',
-    cursor: 'pointer',
-    transition: 'background-color 0.3s ease',
 };
 
 

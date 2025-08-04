@@ -32,9 +32,9 @@
 
 
 .default-button {
-  background: none;
-  color: white;
-  border: 1px solid;
+  background: #282A35;
+  color: #ffffff;
+  border: 1px solid #90A1B9;
   padding: 10px 20px;
   border-radius: 5px;
   cursor: pointer;
@@ -46,7 +46,7 @@
 }
 
 .default-button:hover {
-  border-color: #90A1B9;
+  border-color: #ffffff;
 }
 
 .action-button {

@@ -240,8 +240,8 @@ const ProductList = ({ refresh }) => {
                             </fieldset>
 
                             <div style={{ gridColumn: '1 / span 2', display: 'flex', gap: '10px', marginTop: '10px' }}>
-                                <button type="submit" style={buttonStyle}>💾 Update</button>
-                                <button type="button" onClick={() => setEditProduct(null)} style={cancelButtonStyle}>❌ Cancel</button>
+                                <button type="submit" className="default-button">Update</button>
+                                <button type="button" onClick={() => setEditProduct(null)} className="default-button">Cancel</button>
                             </div>
                         </form>
                     </div>
@@ -368,24 +368,6 @@ const inputStyle = {
     color: '#333',
     fontSize: '14px',
     boxSizing: 'border-box',
-};
-
-const buttonStyle = {
-    flex: 1,
-    padding: '12px',
-    backgroundColor: '#27ae60',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '5px',
-    cursor: 'pointer',
-    fontSize: '16px',
-    fontWeight: 'bold',
-    transition: 'background-color 0.3s ease',
-};
-
-const cancelButtonStyle = {
-    ...buttonStyle,
-    backgroundColor: '#e74c3c'
 };
 
 
