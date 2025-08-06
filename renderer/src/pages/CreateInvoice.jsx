@@ -70,6 +70,7 @@ const CreateInvoice = () => {
             id: product.id,
             name: product.name,
             quantity: 1,
+            quantity_in_stock: product.quantity_in_stock,
             sale_price: product.sale_price,
             tax: 0,
             discount: 0,
@@ -84,10 +85,23 @@ const CreateInvoice = () => {
     };
 
     const handleItemChange = (id, field, value) => {
+        const parsedValue = parseFloat(value) || 0;
+
+        if (field === 'tax' || field === 'discount') {
+            if (parsedValue < 0) {
+                toast.error(`${field.charAt(0).toUpperCase() + field.slice(1)} cannot be negative.`);
+                return;
+            }
+        }
+
         setInvoiceItems(items =>
             items.map(item => {
                 if (item.id === id) {
-                    const newItem = { ...item, [field]: parseFloat(value) || 0 };
+                    if (field === 'quantity' && parsedValue > item.quantity_in_stock) {
+                        toast.error(`Only ${item.quantity_in_stock} in stock.`);
+                        return item; // Keep the old value
+                    }
+                    const newItem = { ...item, [field]: parsedValue };
                     const priceAfterDiscount = newItem.sale_price * (1 - newItem.discount / 100);
                     newItem.total_price = priceAfterDiscount * (1 + newItem.tax / 100) * newItem.quantity;
                     return newItem;
