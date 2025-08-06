@@ -14,6 +14,12 @@ const CreateInvoice = () => {
     const [selectKey, setSelectKey] = useState(0);
     const selectRef = useRef(null);
 
+    useEffect(() => {
+        if (selectRef.current) {
+            selectRef.current.focus();
+        }
+    }, [selectKey]);
+
 
     const loadProductOptions = async (inputValue) => {
         if (inputValue.length < 2) return [];
