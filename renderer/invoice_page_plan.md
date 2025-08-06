@@ -1,0 +1,4 @@
+1. Auto complete product search: add a input field to search product which have `quantity_in_stock > 0` and `active = 1` from the database `product` table. This field will be auto complete like we did for @renderer/src/pages/ProductPurchase.jsx.
+2. When user select a product from the auto complete field, the product will be added to the Blew table. With Product Name, hidden product_id, hidden quantity_in_stock, sale_price, 
+3. This table will have Header: Product Name, Quantity, Sale Price, Tax, Discount, Total Price, Action. Here Quantity, Tax, Discount will be take value others are read only.
+4. I have a Summary Section for now keep this as it is. I we found any addition you can add this like payment option.

@@ -69,243 +69,10 @@ ipcMain.handle('delete-category', async (event, id) => {
     });
 });
 
-// 🟨 IPC for add-product
-ipcMain.handle('add-product', async (event, product) => {
-    return new Promise((resolve, reject) => {
-        const sql = `
-      INSERT INTO product
-      (name, sku, category_id, description, purchase_price, sale_price, quantity_in_stock, unit, tax, markup, code, barcode, active, default_quantity)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `;
-        const params = [
-            product.name,
-            product.sku,
-            product.category_id,
-            product.description,
-            product.purchase_price,
-            product.sale_price,
-            product.quantity_in_stock,
-            product.unit,
-            product.tax,
-            product.markup,
-            product.code,
-            product.barcode,
-            product.active,
-            product.default_quantity
-        ];
-        db.run(sql, params, function (err) {
-            if (err) {
-                console.error(err.message);
-                reject('Error adding product');
-            } else {
-                resolve({ success: true, id: this.lastID });
-            }
-        });
-    });
-});
 
-// IPC for update-product
-ipcMain.handle('update-product', async (event, product) => {
-    return new Promise((resolve, reject) => {
-        const sql = `
-      UPDATE product SET
-        name = ?,
-        sku = ?,
-        category_id = ?,
-        description = ?,
-        purchase_price = ?,
-        sale_price = ?,
-        quantity_in_stock = ?,
-        unit = ?,
-        tax = ?,
-        markup = ?,
-        code = ?,
-        barcode = ?,
-        active = ?,
-        default_quantity = ?
-      WHERE id = ?
-    `;
-        const params = [
-            product.name,
-            product.sku,
-            product.category_id,
-            product.description,
-            product.purchase_price,
-            product.sale_price,
-            product.quantity_in_stock,
-            product.unit,
-            product.tax,
-            product.markup,
-            product.code,
-            product.barcode,
-            product.active,
-            product.default_quantity,
-            product.id
-        ];
-        db.run(sql, params, function (err) {
-            if (err) {
-                console.error(err.message);
-                reject('Error updating product');
-            } else {
-                resolve({ success: true });
-            }
-        });
-    });
-});
-
-// সব প্রোডাক্ট লোড করার জন্য
-ipcMain.handle('get-products', async () => {
-    return new Promise((resolve, reject) => {
-        const sql = `
-      SELECT
-        p.*,
-        c.name as category_name
-      FROM product p
-      LEFT JOIN product_category c ON p.category_id = c.id
-      ORDER BY p.id DESC
-    `;
-        db.all(sql, [], (err, rows) => {
-            if (err) {
-                console.error(err.message);
-                reject('Error loading products');
-            } else {
-                resolve(rows);
-            }
-        });
-    });
-});
-
-
-// 🟨 IPC for create-invoice
-ipcMain.handle('create-invoice', async (event, data) => {
-    return new Promise((resolve, reject) => {
-        db.serialize(() => {
-            db.run('BEGIN TRANSACTION');
-
-            const invoice = data.invoice;
-            const items = data.details;
-
-            const stmt = `
-        INSERT INTO invoice (customer_name, total, discount, tax, paid, due)
-        VALUES (?, ?, ?, ?, ?, ?)
-      `;
-
-            const invoiceParams = [
-                invoice.customer_name,
-                invoice.total,
-                invoice.discount,
-                invoice.tax,
-                invoice.paid,
-                invoice.due
-            ];
-
-            db.run(stmt, invoiceParams, function (err) {
-                if (err) {
-                    db.run('ROLLBACK');
-                    return reject('Failed to create invoice');
-                }
-
-                const invoiceId = this.lastID;
-
-                for (const item of items) {
-                    db.run(`
-            INSERT INTO invoice_details (invoice_id, product_id, quantity, unit_price, total_price)
-            VALUES (?, ?, ?, ?, ?)
-          `, [invoiceId, item.product_id, item.quantity, item.unit_price, item.total_price]);
-
-                    db.run(`
-            UPDATE product
-            SET quantity_in_stock = quantity_in_stock - ?
-            WHERE id = ?
-          `, [item.quantity, item.product_id]);
-                }
-
-                db.run('COMMIT');
-                resolve(invoiceId);
-            });
-        });
-    });
-});
-
-
-// 🟨 IPC for get-invoice Single Invoice
-ipcMain.handle('get-invoice', async (event, invoiceId) => {
-    return new Promise((resolve, reject) => {
-        const sql1 = `SELECT * FROM invoice WHERE id = ?`;
-        const sql2 = `
-      SELECT d.*, p.name as product_name
-      FROM invoice_details d
-      JOIN product p ON d.product_id = p.id
-      WHERE d.invoice_id = ?
-    `;
-
-        db.get(sql1, [invoiceId], (err, invoice) => {
-            if (err) return reject(err);
-            db.all(sql2, [invoiceId], (err2, details) => {
-                if (err2) return reject(err2);
-                resolve({ invoice, details });
-            });
-        });
-    });
-});
-
-// 🟨 IPC for get-invoices All Invoices
-ipcMain.handle('get-invoices', async () => {
-    return new Promise((resolve, reject) => {
-        const sql = `SELECT * FROM invoice ORDER BY id DESC`;
-        db.all(sql, [], (err, rows) => {
-            if (err) reject(err);
-            else resolve(rows);
-        });
-    });
-});
-
-
-// IPC for add-tax
-ipcMain.handle('add-tax', async (event, tax) => {
-    return new Promise((resolve, reject) => {
-        const sql = `
-      INSERT INTO tax
-      (tax_label, tax_percentage)
-      VALUES (?, ?)
-    `;
-        const params = [
-            tax.tax_label,
-            tax.tax_percentage,
-        ];
-        db.run(sql, params, function (err) {
-            if (err) {
-                console.error(err.message);
-                reject('Error adding tax');
-            } else {
-                resolve({ success: true, id: this.lastID });
-            }
-        });
-    });
-});
-
-
-ipcMain.handle('ping', () => {
-    return 'pong';
-});
-
-// IPC for get-taxes
-ipcMain.handle('get-taxes', async () => {
-    return new Promise((resolve, reject) => {
-        const sql = `SELECT * FROM tax ORDER BY id DESC`;
-        db.all(sql, [], (err, rows) => {
-            if (err) {
-                console.error(err.message);
-                reject('Error loading taxes');
-            } else {
-                resolve(rows);
-            }
-        });
-    });
-});
-
-// require('./ipc/product')(ipcMain);
-require('./ipc/purchase');
+require('./ipc/product.js')(ipcMain);
+require('./ipc/purchase.js')(ipcMain);
+require('./ipc/invoice.js')(ipcMain);
 
 // IPC for add-supplier
 ipcMain.handle('add-supplier', async (event, supplier) => {
@@ -514,28 +281,28 @@ ipcMain.handle('search-products', async (event, searchTerm) => {
 });
 
 ipcMain.handle('generate-purchase-id', async () => {
-  return new Promise((resolve, reject) => {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    const datePrefix = `${year}${month}${day}`;
+    return new Promise((resolve, reject) => {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        const datePrefix = `${year}${month}${day}`;
 
-    const sql = `SELECT COUNT(*) as count FROM product_purchase WHERE purchase_id LIKE ?`;
-    db.get(sql, [`${datePrefix}%`], (err, row) => {
-      if (err) {
-        console.error(err.message);
-        return reject('Error generating purchase ID');
-      }
-      
-      const count = row.count + 1;
-      const sequence = String(count).padStart(4, '0');
-      const randomPart = Math.random().toString(36).substring(2, 6).toUpperCase();
-      const purchaseId = `${datePrefix}-${sequence}-${randomPart}`;
-      
-      resolve(purchaseId);
+        const sql = `SELECT COUNT(*) as count FROM product_purchase WHERE purchase_id LIKE ?`;
+        db.get(sql, [`${datePrefix}%`], (err, row) => {
+            if (err) {
+                console.error(err.message);
+                return reject('Error generating purchase ID');
+            }
+
+            const count = row.count + 1;
+            const sequence = String(count).padStart(4, '0');
+            const randomPart = Math.random().toString(36).substring(2, 6).toUpperCase();
+            const purchaseId = `${datePrefix}-${sequence}-${randomPart}`;
+
+            resolve(purchaseId);
+        });
     });
-  });
 });
 
 

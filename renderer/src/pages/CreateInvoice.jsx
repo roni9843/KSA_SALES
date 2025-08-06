@@ -1,66 +1,84 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { FaFileInvoice, FaTrash } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
+import AsyncSelect from 'react-select/async';
+import toast from 'react-hot-toast';
 
 const CreateInvoice = () => {
     const navigate = useNavigate();
-    const [products, setProducts] = useState([]);
-    const [searchText, setSearchText] = useState('');
-    const [selectedId, setSelectedId] = useState('');
-    const [qty, setQty] = useState(1);
     const [invoiceItems, setInvoiceItems] = useState([]);
-    const [discount, setDiscount] = useState(0);
-    const [tax, setTax] = useState(0);
     const [paid, setPaid] = useState(0);
     const [customerName, setCustomerName] = useState('');
     const [invoiceDate, setInvoiceDate] = useState(new Date().toISOString().split('T')[0]);
+    const [selectKey, setSelectKey] = useState(0);
+    const selectRef = useRef(null);
 
-    useEffect(() => {
-        async function fetchProducts() {
-            const list = await window.electron.ipcRenderer.invoke('get-products');
-            setProducts(list);
+
+    const loadProductOptions = async (inputValue) => {
+        if (inputValue.length < 2) return [];
+        try {
+            const results = await window.electron.ipcRenderer.invoke('search-products-for-invoice', inputValue);
+            return results.map(p => ({
+                value: p.id,
+                label: `${p.name} (Stock: ${p.quantity_in_stock})`,
+                product: p
+            }));
+        } catch (error) {
+            console.error('Error searching products:', error);
+            toast.error('Failed to search for products.');
+            return [];
         }
-        fetchProducts();
-    }, []);
-
-    const addToInvoice = () => {
-        const product = products.find(p => p.id === parseInt(selectedId));
-        if (!product) return;
-        if (product.quantity_in_stock < qty) return alert(`❌ Only ${product.quantity_in_stock} in stock`);
-        const exists = invoiceItems.find(i => i.id === product.id);
-        if (exists) return alert("Already added!");
-
-        setInvoiceItems([
-            ...invoiceItems,
-            {
-                id: product.id,
-                name: product.name,
-                unit_price: product.sale_price,
-                quantity: qty,
-                total_price: qty * product.sale_price
-            }
-        ]);
-        setQty(1);
-        setSelectedId('');
-        setSearchText('');
     };
 
-    const updateQty = (id, newQty) => {
+    const handleProductSelect = (selectedOption) => {
+        if (!selectedOption) return;
+
+        const product = selectedOption.product;
+        const existingItem = invoiceItems.find(item => item.id === product.id);
+
+        if (existingItem) {
+            toast.error('Product already added.');
+            return;
+        }
+
+        const newItem = {
+            id: product.id,
+            name: product.name,
+            quantity: 1,
+            sale_price: product.sale_price,
+            tax: 0,
+            discount: 0,
+            total_price: product.sale_price,
+        };
+
+        setInvoiceItems([...invoiceItems, newItem]);
+        setSelectKey(prevKey => prevKey + 1);
+        if (selectRef.current) {
+            selectRef.current.clearValue();
+        }
+    };
+
+    const handleItemChange = (id, field, value) => {
         setInvoiceItems(items =>
-            items.map(i => i.id === id ? {
-                ...i,
-                quantity: parseInt(newQty),
-                total_price: parseInt(newQty) * i.unit_price
-            } : i)
+            items.map(item => {
+                if (item.id === id) {
+                    const newItem = { ...item, [field]: parseFloat(value) || 0 };
+                    const priceAfterDiscount = newItem.sale_price * (1 - newItem.discount / 100);
+                    newItem.total_price = priceAfterDiscount * (1 + newItem.tax / 100) * newItem.quantity;
+                    return newItem;
+                }
+                return item;
+            })
         );
     };
+
 
     const removeItem = (id) => {
         setInvoiceItems(invoiceItems.filter(i => i.id !== id));
     };
 
     const total = invoiceItems.reduce((sum, i) => sum + i.total_price, 0);
-    const grandTotal = total + parseFloat(tax) - parseFloat(discount);
+    const grandTotal = total;
     const due = grandTotal - parseFloat(paid);
 
     const handleSave = async (print = false) => {
@@ -68,9 +86,9 @@ const CreateInvoice = () => {
 
         const invoice = {
             customer_name: customerName,
-            total,
-            tax,
-            discount,
+            total: grandTotal,
+            tax: 0, // Overall tax is no longer used
+            discount: 0, // Overall discount is no longer used
             paid,
             due,
             created_at: invoiceDate
@@ -79,7 +97,9 @@ const CreateInvoice = () => {
         const details = invoiceItems.map(item => ({
             product_id: item.id,
             quantity: item.quantity,
-            unit_price: item.unit_price,
+            unit_price: item.sale_price,
+            tax: item.tax,
+            discount: item.discount,
             total_price: item.total_price
         }));
 
@@ -101,32 +121,16 @@ const CreateInvoice = () => {
         <div style={formContainer}>
             <div style={leftCol}>
                 <h2><FaFileInvoice /> Create Invoice</h2>
-                <div>
-                    <label style={labelStyle}>Search Product</label>
-                    <input
-                        type="text"
-                        value={searchText}
-                        onChange={e => setSearchText(e.target.value)}
-                        placeholder="Search product..."
-                        style={inputStyle}
-                    />
-                </div>
-                <div>
-                    <label style={labelStyle}>Select Product</label>
-                    <select value={selectedId} onChange={(e) => setSelectedId(e.target.value)} style={inputStyle}>
-                        <option value="">Select Product</option>
-                        {products
-                            .filter(p => p.name.toLowerCase().includes(searchText.toLowerCase()))
-                            .map(p => (
-                                <option key={p.id} value={p.id}>{p.name}</option>
-                            ))}
-                    </select>
-                </div>
-                <div>
-                    <label style={labelStyle}>Quantity</label>
-                    <input type="number" value={qty} onChange={e => setQty(e.target.value)} style={inputStyle} placeholder="Qty" />
-                </div>
-                <button onClick={addToInvoice} className="default-button" style={{ width: '100%' }}>Add</button>
+                <AsyncSelect
+                    key={selectKey}
+                    ref={selectRef}
+                    cacheOptions
+                    defaultOptions
+                    loadOptions={loadProductOptions}
+                    onChange={handleProductSelect}
+                    placeholder="Type to search for a product..."
+                    isClearable
+                />
 
                 <table style={tableStyle}>
                     <thead style={tableHeaderStyle}>
@@ -134,6 +138,8 @@ const CreateInvoice = () => {
                             <th style={{ ...thStyle, textAlign: 'left' }}>Product</th>
                             <th style={{ ...thStyle, textAlign: 'center' }}>Qty</th>
                             <th style={thStyle}>Rate</th>
+                            <th style={thStyle}>Tax (%)</th>
+                            <th style={thStyle}>Discount (%)</th>
                             <th style={thStyle}>Total</th>
                             <th style={{ ...thStyle, textAlign: 'center' }}>Action</th>
                         </tr>
@@ -147,11 +153,27 @@ const CreateInvoice = () => {
                                         type="number"
                                         value={i.quantity}
                                         min="1"
-                                        onChange={(e) => updateQty(i.id, e.target.value)}
+                                        onChange={(e) => handleItemChange(i.id, 'quantity', e.target.value)}
                                         style={qtyInputStyle}
                                     />
                                 </td>
-                                <td style={tdStyle}>{i.unit_price.toFixed(2)}</td>
+                                <td style={tdStyle}>{i.sale_price.toFixed(2)}</td>
+                                <td style={tdStyle}>
+                                    <input
+                                        type="number"
+                                        value={i.tax}
+                                        onChange={(e) => handleItemChange(i.id, 'tax', e.target.value)}
+                                        style={qtyInputStyle}
+                                    />
+                                </td>
+                                <td style={tdStyle}>
+                                    <input
+                                        type="number"
+                                        value={i.discount}
+                                        onChange={(e) => handleItemChange(i.id, 'discount', e.target.value)}
+                                        style={qtyInputStyle}
+                                    />
+                                </td>
                                 <td style={tdStyle}>{i.total_price.toFixed(2)}</td>
                                 <td style={{ ...tdStyle, textAlign: 'center' }}>
                                     <button onClick={() => removeItem(i.id)} className="action-button">
@@ -177,17 +199,6 @@ const CreateInvoice = () => {
                         <option value="Karim">Karim</option>
                         <option value="Rahim">Rahim</option>
                     </select>
-                </div>
-
-                <div style={{ display: 'flex', gap: '10px' }}>
-                    <div style={{ flex: 1 }}>
-                        <label style={labelStyle}>Discount</label>
-                        <input placeholder="Discount" value={discount} onChange={(e) => setDiscount(e.target.value)} style={inputStyle} />
-                    </div>
-                    <div style={{ flex: 1 }}>
-                        <label style={labelStyle}>Tax</label>
-                        <input placeholder="Tax" value={tax} onChange={(e) => setTax(e.target.value)} style={inputStyle} />
-                    </div>
                 </div>
 
                 <div>
