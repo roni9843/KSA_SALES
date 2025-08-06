@@ -8,7 +8,8 @@ const CreateInvoice = () => {
     const navigate = useNavigate();
     const [invoiceItems, setInvoiceItems] = useState([]);
     const [paid, setPaid] = useState(0);
-    const [customerName, setCustomerName] = useState('');
+    const [cartDiscount, setCartDiscount] = useState(0);
+    const [customer, setCustomer] = useState(null);
     const [invoiceDate, setInvoiceDate] = useState(new Date().toISOString().split('T')[0]);
     const [selectKey, setSelectKey] = useState(0);
     const selectRef = useRef(null);
@@ -28,6 +29,30 @@ const CreateInvoice = () => {
             toast.error('Failed to search for products.');
             return [];
         }
+    };
+
+    const loadCustomerOptions = async (inputValue) => {
+        if (inputValue.length < 2) return [];
+        try {
+            const results = await window.electron.ipcRenderer.invoke('search-customers', inputValue);
+            return results.map(c => ({
+                value: c.id,
+                label: `${c.name} (${c.phone})`,
+                customer: c
+            }));
+        } catch (error) {
+            console.error('Error searching customers:', error);
+            toast.error('Failed to search for customers.');
+            return [];
+        }
+    };
+
+    const handleCustomerSelect = (selectedOption) => {
+        if (!selectedOption) {
+            setCustomer(null);
+            return;
+        }
+        setCustomer(selectedOption.customer);
     };
 
     const handleProductSelect = (selectedOption) => {
@@ -77,15 +102,18 @@ const CreateInvoice = () => {
         setInvoiceItems(invoiceItems.filter(i => i.id !== id));
     };
 
-    const total = invoiceItems.reduce((sum, i) => sum + i.total_price, 0);
-    const grandTotal = total;
-    const due = grandTotal - parseFloat(paid);
+    const subtotal = invoiceItems.reduce((sum, i) => sum + i.sale_price * i.quantity, 0);
+    const itemDiscount = invoiceItems.reduce((sum, i) => sum + (i.sale_price * i.quantity * i.discount / 100), 0);
+    const itemTax = invoiceItems.reduce((sum, i) => sum + (i.sale_price * i.quantity * (1 - i.discount / 100) * i.tax / 100), 0);
+    const total = subtotal - itemDiscount + itemTax - parseFloat(cartDiscount || 0);
+    const due = total - parseFloat(paid || 0);
+    const change = parseFloat(paid || 0) > total ? parseFloat(paid || 0) - total : 0;
 
     const handleSave = async (print = false) => {
         if (parseFloat(paid) > grandTotal) return alert("❗ Paid amount can't be more than total");
 
         const invoice = {
-            customer_name: customerName,
+            customer_name: customer ? customer.name : 'Walk-in Customer',
             total: grandTotal,
             tax: 0, // Overall tax is no longer used
             discount: 0, // Overall discount is no longer used
@@ -195,19 +223,62 @@ const CreateInvoice = () => {
                 </div>
                 <div>
                     <label style={labelStyle}>Customer</label>
-                    <select value={customerName} onChange={(e) => setCustomerName(e.target.value)} style={inputStyle}>
-                        <option value="">Walk-in Customer</option>
-                        <option value="Karim">Karim</option>
-                        <option value="Rahim">Rahim</option>
-                    </select>
+                    <AsyncSelect
+                        cacheOptions
+                        defaultOptions
+                        loadOptions={loadCustomerOptions}
+                        onChange={handleCustomerSelect}
+                        placeholder="Search for a customer..."
+                        isClearable
+                        styles={selectStyles}
+                    />
                 </div>
 
-                <div>
-                    <label style={labelStyle}>Paid Amount</label>
-                    <input placeholder="Paid" value={paid} onChange={(e) => setPaid(e.target.value)} style={inputStyle} />
+                <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                    <div style={{ flex: 1 }}>
+                        <label style={labelStyle}>Paid Amount</label>
+                        <input type="number" placeholder="Paid" value={paid} onChange={(e) => setPaid(e.target.value)} style={inputStyle} />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                        <label style={labelStyle}>Cart Discount</label>
+                        <input type="number" placeholder="Cart Discount" value={cartDiscount} onChange={(e) => setCartDiscount(e.target.value)} style={inputStyle} />
+                    </div>
                 </div>
-                <p><strong>Total:</strong> {total.toFixed(2)}</p>
-                <p><strong>Due:</strong> {due.toFixed(2)}</p>
+
+                <hr />
+                <div style={summaryRow}>
+                    <span>Subtotal</span>
+                    <span>{subtotal.toFixed(2)}</span>
+                </div>
+                <div style={summaryRow}>
+                    <span>Item Discount</span>
+                    <span>{itemDiscount.toFixed(2)}</span>
+                </div>
+                <div style={summaryRow}>
+                    <span>Item Tax</span>
+                    <span>{itemTax.toFixed(2)}</span>
+                </div>
+                <div style={summaryRow}>
+                    <span>Cart Discount</span>
+                    <span>{cartDiscount}</span>
+                </div>
+                <hr />
+                <div style={summaryRow}>
+                    <strong>Total</strong>
+                    <strong>{total.toFixed(2)}</strong>
+                </div>
+                {change > 0 && (
+                    <div style={summaryRow}>
+                        <span>Change</span>
+                        <span>{change.toFixed(2)}</span>
+                    </div>
+                )}
+                {due > 0 && (
+                    <div style={summaryRow}>
+                        <span>Due</span>
+                        <span>{due.toFixed(2)}</span>
+                    </div>
+                )}
 
                 <div style={{ display: 'flex', gap: '10px' }}>
                     <button className="default-button" onClick={() => handleSave(false)}>Save</button>
@@ -294,26 +365,32 @@ const qtyInputStyle = {
 };
 
 const selectStyles = {
-  control: (provided) => ({
-    ...provided,
-    backgroundColor: '#fff',
-    color: '#333',
-    border: '1px solid #A0AEC0',
-  }),
-  menu: (provided) => ({
-    ...provided,
-    backgroundColor: '#fff',
-    color: '#333',
-  }),
-  option: (provided, state) => ({
-    ...provided,
-    backgroundColor: state.isSelected ? '#27ae60' : state.isFocused ? '#f0f0f0' : '#fff',
-    color: state.isSelected ? '#fff' : '#333',
-  }),
-  singleValue: (provided) => ({
-    ...provided,
-    color: '#333',
-  }),
+    control: (provided) => ({
+        ...provided,
+        backgroundColor: '#fff',
+        color: '#333',
+        border: '1px solid #A0AEC0',
+    }),
+    menu: (provided) => ({
+        ...provided,
+        backgroundColor: '#fff',
+        color: '#333',
+    }),
+    option: (provided, state) => ({
+        ...provided,
+        backgroundColor: state.isSelected ? '#27ae60' : state.isFocused ? '#f0f0f0' : '#fff',
+        color: state.isSelected ? '#fff' : '#333',
+    }),
+    singleValue: (provided) => ({
+        ...provided,
+        color: '#333',
+    }),
+};
+
+const summaryRow = {
+    display: 'flex',
+    justifyContent: 'space-between',
+    marginBottom: '10px',
 };
 
 export default CreateInvoice;
