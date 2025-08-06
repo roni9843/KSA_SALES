@@ -130,6 +130,7 @@ const CreateInvoice = () => {
                     onChange={handleProductSelect}
                     placeholder="Type to search for a product..."
                     isClearable
+                    styles={selectStyles}
                 />
 
                 <table style={tableStyle}>
@@ -290,6 +291,29 @@ const qtyInputStyle = {
     backgroundColor: '#E2E8F0',
     color: '#2D3748',
     textAlign: 'center',
+};
+
+const selectStyles = {
+  control: (provided) => ({
+    ...provided,
+    backgroundColor: '#fff',
+    color: '#333',
+    border: '1px solid #A0AEC0',
+  }),
+  menu: (provided) => ({
+    ...provided,
+    backgroundColor: '#fff',
+    color: '#333',
+  }),
+  option: (provided, state) => ({
+    ...provided,
+    backgroundColor: state.isSelected ? '#27ae60' : state.isFocused ? '#f0f0f0' : '#fff',
+    color: state.isSelected ? '#fff' : '#333',
+  }),
+  singleValue: (provided) => ({
+    ...provided,
+    color: '#333',
+  }),
 };
 
 export default CreateInvoice;
