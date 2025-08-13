@@ -1,6 +1,61 @@
 module.exports = (ipcMain) => {
   const db = require('../database/db');
 
+  ipcMain.handle('get-invoice', async (event, id) => {
+    return new Promise((resolve, reject) => {
+      const invoiceQuery = `
+        SELECT
+          i.id,
+          i.invoice_id as invoice_number,
+          i.created_at,
+          i.payable_total as total,
+          i.paid_amount as paid,
+          i.due_amount as due,
+          i.item_tax as tax,
+          (i.item_discount + i.cart_discount) as discount,
+          c.name as customer_name,
+          c.address as customer_address,
+          c.phone as customer_phone
+        FROM
+          invoice i
+        LEFT JOIN
+          customers c ON i.customer_id = c.id
+        WHERE
+          i.id = ?
+      `;
+
+      const itemsQuery = `
+        SELECT
+          ii.quantity,
+          ii.price as unit_price,
+          ii.total_price,
+          p.name as product_name
+        FROM
+          invoice_item ii
+        JOIN
+          product p ON ii.product_id = p.id
+        WHERE
+          ii.invoice_id = ?
+      `;
+
+      db.get(invoiceQuery, [id], (err, invoice) => {
+        if (err) {
+          return reject(err);
+        }
+        if (!invoice) {
+          return reject(new Error('Invoice not found'));
+        }
+
+        db.all(itemsQuery, [id], (err, details) => {
+          if (err) {
+            return reject(err);
+          }
+          resolve({ invoice, details });
+        });
+      });
+    });
+  });
+
   ipcMain.handle('get-invoices', async () => {
     return new Promise((resolve, reject) => {
       const sql = `
