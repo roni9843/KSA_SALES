@@ -8,11 +8,13 @@ module.exports = (ipcMain) => {
           i.id,
           i.invoice_id as invoice_number,
           i.created_at,
+          i.sub_total,
+          i.item_discount,
+          i.item_tax,
+          i.cart_discount,
           i.payable_total as total,
           i.paid_amount as paid,
           i.due_amount as due,
-          i.item_tax as tax,
-          (i.item_discount + i.cart_discount) as discount,
           c.name as customer_name,
           c.address as customer_address,
           c.phone as customer_phone
@@ -28,6 +30,8 @@ module.exports = (ipcMain) => {
         SELECT
           ii.quantity,
           ii.price as unit_price,
+          ii.tax,
+          ii.discount,
           ii.total_price,
           p.name as product_name
         FROM

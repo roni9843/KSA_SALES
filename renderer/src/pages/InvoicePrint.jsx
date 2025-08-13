@@ -23,13 +23,16 @@ function InvoicePrint() {
     const handlePrint = () => {
         window.print();
         setTimeout(() => {
-            navigate('/');
+            navigate('/invoices');
         }, 1000);
+    };
+
+    const handleCancel = () => {
+        navigate('/invoices');
     };
 
     if (!invoice) return <div style={{ padding: '20px' }}>Loading...</div>;
 
-    const subtotal = details.reduce((acc, item) => acc + item.total_price, 0);
     const dueDate = new Date(invoice.created_at);
     dueDate.setDate(dueDate.getDate() + 7); // Assuming due date is 7 days after issue
 
@@ -73,20 +76,30 @@ function InvoicePrint() {
                 <thead>
                     <tr style={{ borderBottom: '2px solid #333' }}>
                         <th style={{ textAlign: 'left', padding: '8px' }}>ITEM/SERVICE</th>
-                        <th style={{ textAlign: 'right', padding: '8px' }}>QTY/HRS</th>
+                        <th style={{ textAlign: 'right', padding: '8px' }}>QTY</th>
                         <th style={{ textAlign: 'right', padding: '8px' }}>RATE</th>
+                        <th style={{ textAlign: 'right', padding: '8px' }}>DISCOUNT</th>
+                        <th style={{ textAlign: 'right', padding: '8px' }}>TAX</th>
                         <th style={{ textAlign: 'right', padding: '8px' }}>AMOUNT</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {details.map((item, i) => (
-                        <tr key={i} style={{ borderBottom: '1px solid #ccc' }}>
-                            <td style={{ padding: '8px' }}>{item.product_name}</td>
-                            <td style={{ textAlign: 'right', padding: '8px' }}>{item.quantity}</td>
-                            <td style={{ textAlign: 'right', padding: '8px' }}>{item.unit_price.toFixed(2)}</td>
-                            <td style={{ textAlign: 'right', padding: '8px' }}>{item.total_price.toFixed(2)}</td>
-                        </tr>
-                    ))}
+                    {details.map((item, i) => {
+                        const itemSubtotal = item.quantity * item.unit_price;
+                        const discountAmount = itemSubtotal * (item.discount / 100);
+                        const taxAmount = (itemSubtotal - discountAmount) * (item.tax / 100);
+
+                        return (
+                            <tr key={i} style={{ borderBottom: '1px solid #ccc' }}>
+                                <td style={{ padding: '8px' }}>{item.product_name}</td>
+                                <td style={{ textAlign: 'right', padding: '8px' }}>{item.quantity}</td>
+                                <td style={{ textAlign: 'right', padding: '8px' }}>{item.unit_price.toFixed(2)}</td>
+                                <td style={{ textAlign: 'right', padding: '8px' }}>{discountAmount.toFixed(2)}</td>
+                                <td style={{ textAlign: 'right', padding: '8px' }}>{taxAmount.toFixed(2)}</td>
+                                <td style={{ textAlign: 'right', padding: '8px' }}>{item.total_price.toFixed(2)}</td>
+                            </tr>
+                        );
+                    })}
                 </tbody>
             </table>
 
@@ -95,15 +108,19 @@ function InvoicePrint() {
                 <div style={{ width: '250px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}>
                         <span>Subtotal</span>
-                        <span>{subtotal.toFixed(2)}</span>
+                        <span>{invoice.sub_total.toFixed(2)}</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}>
-                        <span>Discount</span>
-                        <span>-{invoice.discount.toFixed(2)}</span>
+                        <span>Item Discount</span>
+                        <span>-{invoice.item_discount.toFixed(2)}</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}>
-                        <span>Tax</span>
-                        <span>{invoice.tax.toFixed(2)}</span>
+                        <span>Item Tax</span>
+                        <span>{invoice.item_tax.toFixed(2)}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}>
+                        <span>Cart Discount</span>
+                        <span>-{invoice.cart_discount.toFixed(2)}</span>
                     </div>
                     <div style={{ borderTop: '2px solid #333', marginTop: '10px', paddingTop: '10px', display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '18px' }}>
                         <span>TOTAL</span>
@@ -113,10 +130,18 @@ function InvoicePrint() {
                         <span>Paid</span>
                         <span>{invoice.paid.toFixed(2)}</span>
                     </div>
-                     <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', fontWeight: 'bold' }}>
-                        <span>Due</span>
-                        <span>{(invoice.total - invoice.paid).toFixed(2)}</span>
-                    </div>
+                    { (invoice.paid - invoice.total > 0) &&
+                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}>
+                            <span>Change</span>
+                            <span>{(invoice.paid - invoice.total).toFixed(2)}</span>
+                        </div>
+                    }
+                    { invoice.due > 0 &&
+                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', fontWeight: 'bold' }}>
+                            <span>Due</span>
+                            <span>{invoice.due.toFixed(2)}</span>
+                        </div>
+                    }
                 </div>
             </div>
 
@@ -128,9 +153,12 @@ function InvoicePrint() {
                 <p>Payment can be made via bank transfer or cash.</p>
             </div>
 
-            <div style={{ marginTop: '20px', textAlign: 'center' }}>
+            <div style={{ marginTop: '20px', textAlign: 'center', display: 'flex', justifyContent: 'center', gap: '10px' }}>
                 <button onClick={handlePrint} style={{ padding: '10px 20px', cursor: 'pointer', border: 'none', backgroundColor: '#007bff', color: 'white', fontSize: '16px' }}>
                     🖨️ Print
+                </button>
+                <button onClick={handleCancel} style={{ padding: '10px 20px', cursor: 'pointer', border: 'none', backgroundColor: '#6c757d', color: 'white', fontSize: '16px' }}>
+                    Cancel
                 </button>
             </div>
 
