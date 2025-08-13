@@ -129,16 +129,11 @@ const CreateInvoice = () => {
     const due = total - parseFloat(paid || 0);
     const change = parseFloat(paid || 0) > total ? parseFloat(paid || 0) - total : 0;
 
-    const handleSave = async (print = false) => {
+    const handleSave = async () => {
         if (invoiceItems.length === 0) {
             toast.error('Please add products to the invoice.');
             return;
         }
-
-        // if (parseFloat(paid) > total) {
-        //     toast.error("Paid amount can't be more than total");
-        //     return;
-        // }
 
         const invoiceData = {
             customer_id: customer ? customer.id : null,
@@ -164,21 +159,31 @@ const CreateInvoice = () => {
 
         try {
             const newId = await window.electron.ipcRenderer.invoke('create-invoice', invoiceData);
-
-            if (print) {
-                navigate(`/invoice/${newId}`);
-            } else {
-                toast.success("Invoice Saved");
-                setInvoiceItems([]);
-                setCustomer(null);
-                setPaid(0);
-                setCartDiscount(0);
-                // Reset customer async select if possible, or just rely on setCustomer(null)
-            }
+            navigate(`/invoice/${newId}`);
         } catch (error) {
             console.error('Error creating invoice:', error);
             toast.error('Failed to create invoice.');
         }
+    };
+
+    const handleQuotation = () => {
+        if (invoiceItems.length === 0) {
+            toast.error('Please add products to the quotation.');
+            return;
+        }
+
+        const quotationData = {
+            customer: customer,
+            items: invoiceItems,
+            subtotal: subtotal,
+            itemDiscount: itemDiscount,
+            itemTax: itemTax,
+            cartDiscount: parseFloat(cartDiscount || 0),
+            total: total,
+            date: invoiceDate,
+        };
+
+        navigate('/quotation', { state: { quotation: quotationData } });
     };
 
     return (
@@ -317,8 +322,8 @@ const CreateInvoice = () => {
                 )}
 
                 <div style={{ display: 'flex', gap: '10px' }}>
-                    <button className="default-button" onClick={() => handleSave(false)}>Save</button>
-                    <button className="default-button" onClick={() => handleSave(true)}>Save & Print</button>
+                    <button className="default-button" onClick={handleQuotation}>Print Quotation</button>
+                    <button className="default-button" onClick={handleSave}>Create Invoice & Print</button>
                 </div>
             </div>
         </div>

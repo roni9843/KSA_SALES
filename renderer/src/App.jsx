@@ -16,6 +16,7 @@ import TaxRates from './pages/TaxRates';
 import MyCompany from './pages/MyCompany';
 import ProductPurchase from './pages/ProductPurchase';
 import PurchaseList from './components/PurchaseList';
+import QuotationPrint from './pages/QuotationPrint';
 
 
 function App() {
@@ -30,6 +31,7 @@ function App() {
           <Route path="/products" element={<ProductPage />} />
           <Route path="/create-invoice" element={<CreateInvoice />} />
           <Route path="/invoice/:id" element={<InvoicePrint />} />
+          <Route path="/quotation" element={<QuotationPrint />} />
           <Route path="/invoices" element={<InvoiceList />} />
           <Route path="/customers" element={<Customers />} />
           <Route path="/suppliers" element={<Suppliers />} />
