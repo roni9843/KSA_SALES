@@ -79,13 +79,13 @@ db.serialize(() => {
 // invoice related tables
 db.serialize(() => {
   // Drop existing tables if they exist to apply new schema
-  db.run(`DROP TABLE IF EXISTS invoice`);
-  db.run(`DROP TABLE IF EXISTS invoice_details`);
-  db.run(`DROP TABLE IF EXISTS invoice_item`);
-  db.run(`DROP TABLE IF EXISTS customer_payment_history`);
+  // db.run(`DROP TABLE IF EXISTS invoice`);
+  // db.run(`DROP TABLE IF EXISTS invoice_details`);
+  // db.run(`DROP TABLE IF EXISTS invoice_item`);
+  // db.run(`DROP TABLE IF EXISTS customer_payment_history`);
 
   // Create new tables based on renderer/invoice-related-table.md
-  
+
   // invoice table
   db.run(`
     CREATE TABLE IF NOT EXISTS invoice (

@@ -1,6 +1,34 @@
 module.exports = (ipcMain) => {
   const db = require('../database/db');
 
+  ipcMain.handle('get-invoices', async () => {
+    return new Promise((resolve, reject) => {
+      const sql = `
+        SELECT
+          i.id,
+          i.payable_total as total,
+          i.paid_amount as paid,
+          i.due_amount as due,
+          i.created_at,
+          c.name as customer_name
+        FROM
+          invoice i
+        LEFT JOIN
+          customers c ON i.customer_id = c.id
+        ORDER BY
+          i.id DESC
+      `;
+      db.all(sql, [], (err, rows) => {
+        if (err) {
+          console.error('Error fetching invoices:', err.message);
+          reject(err);
+        } else {
+          resolve(rows);
+        }
+      });
+    });
+  });
+
   ipcMain.handle('create-invoice', async (event, invoiceData) => {
     return new Promise((resolve, reject) => {
       const {
