@@ -76,33 +76,69 @@ db.serialize(() => {
 
 
 
-// ✅ invoices টেবিল
-db.run(`
-  CREATE TABLE IF NOT EXISTS invoice (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    customer_name TEXT,
-    total REAL,
-    discount REAL,
-    tax REAL,
-    paid REAL,
-    due REAL,
-    created_at TEXT DEFAULT CURRENT_TIMESTAMP
-  )
-`);
+// invoice related tables
+db.serialize(() => {
+  // Drop existing tables if they exist to apply new schema
+  db.run(`DROP TABLE IF EXISTS invoice`);
+  db.run(`DROP TABLE IF EXISTS invoice_details`);
+  db.run(`DROP TABLE IF EXISTS invoice_item`);
+  db.run(`DROP TABLE IF EXISTS customer_payment_history`);
 
-// ✅ invoice_details টেবিল
-db.run(`
-  CREATE TABLE IF NOT EXISTS invoice_details (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    invoice_id INTEGER,
-    product_id INTEGER,
-    quantity INTEGER,
-    unit_price REAL,
-    total_price REAL,
-    FOREIGN KEY (invoice_id) REFERENCES invoice(id),
-    FOREIGN KEY (product_id) REFERENCES product(id)
-  )
-`);
+  // Create new tables based on renderer/invoice-related-table.md
+  
+  // invoice table
+  db.run(`
+    CREATE TABLE IF NOT EXISTS invoice (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      invoice_id TEXT NOT NULL,
+      customer_id INTEGER NOT NULL,
+      invoice_date TEXT NOT NULL,
+      sub_total REAL NOT NULL,
+      item_discount REAL NOT NULL,
+      item_tax REAL NOT NULL,
+      cart_discount REAL NOT NULL,
+      payable_total REAL NOT NULL,
+      paid_amount REAL NOT NULL,
+      due_amount REAL NOT NULL,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      created_by TEXT NOT NULL,
+      FOREIGN KEY (customer_id) REFERENCES customers(id)
+    )
+  `);
+
+  // invoice_item table
+  db.run(`
+    CREATE TABLE IF NOT EXISTS invoice_item (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      invoice_id INTEGER NOT NULL,
+      product_id INTEGER NOT NULL,
+      quantity INTEGER NOT NULL,
+      price REAL NOT NULL,
+      tax REAL DEFAULT 0,
+      discount REAL NOT NULL,
+      total_price REAL NOT NULL,
+      FOREIGN KEY (invoice_id) REFERENCES invoice(id),
+      FOREIGN KEY (product_id) REFERENCES product(id)
+    )
+  `);
+
+  // customer_payment_history table
+  db.run(`
+    CREATE TABLE IF NOT EXISTS customer_payment_history (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      invoice_id INTEGER NOT NULL,
+      payment_date TEXT NOT NULL,
+      pre_due_amount REAL NOT NULL,
+      paid_amount REAL NOT NULL,
+      due_amount REAL NOT NULL,
+      change_amount REAL NOT NULL,
+      payment_method TEXT NOT NULL,
+      created_by INTEGER NOT NULL,
+      FOREIGN KEY (invoice_id) REFERENCES invoice(id)
+    )
+  `);
+});
 
 // tax table
 db.run(`

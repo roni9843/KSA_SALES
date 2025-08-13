@@ -130,38 +130,54 @@ const CreateInvoice = () => {
     const change = parseFloat(paid || 0) > total ? parseFloat(paid || 0) - total : 0;
 
     const handleSave = async (print = false) => {
-        if (parseFloat(paid) > grandTotal) return alert("❗ Paid amount can't be more than total");
+        if (invoiceItems.length === 0) {
+            toast.error('Please add products to the invoice.');
+            return;
+        }
 
-        const invoice = {
-            customer_name: customer ? customer.name : 'Walk-in Customer',
-            total: grandTotal,
-            tax: 0, // Overall tax is no longer used
-            discount: 0, // Overall discount is no longer used
-            paid,
-            due,
-            created_at: invoiceDate
+        // if (parseFloat(paid) > total) {
+        //     toast.error("Paid amount can't be more than total");
+        //     return;
+        // }
+
+        const invoiceData = {
+            customer_id: customer ? customer.id : null,
+            invoice_date: invoiceDate,
+            sub_total: subtotal,
+            item_discount: itemDiscount,
+            item_tax: itemTax,
+            cart_discount: parseFloat(cartDiscount || 0),
+            payable_total: total,
+            paid_amount: parseFloat(paid || 0),
+            due_amount: due,
+            change_amount: change,
+            created_by: 'user', // Replace with actual user if available
+            invoice_items: invoiceItems.map(item => ({
+                product_id: item.id,
+                quantity: item.quantity,
+                price: item.sale_price,
+                tax: item.tax,
+                discount: item.discount,
+                total_price: item.total_price
+            }))
         };
 
-        const details = invoiceItems.map(item => ({
-            product_id: item.id,
-            quantity: item.quantity,
-            unit_price: item.sale_price,
-            tax: item.tax,
-            discount: item.discount,
-            total_price: item.total_price
-        }));
+        try {
+            const newId = await window.electron.ipcRenderer.invoke('create-invoice', invoiceData);
 
-        const newId = await window.electron.ipcRenderer.invoke('create-invoice', {
-            invoice,
-            details
-        });
-
-        if (print) {
-            navigate(`/invoice/${newId}`);
-        } else {
-            alert("✅ Invoice Saved");
-            setInvoiceItems([]);
-            setCustomerName('');
+            if (print) {
+                navigate(`/invoice/${newId}`);
+            } else {
+                toast.success("Invoice Saved");
+                setInvoiceItems([]);
+                setCustomer(null);
+                setPaid(0);
+                setCartDiscount(0);
+                // Reset customer async select if possible, or just rely on setCustomer(null)
+            }
+        } catch (error) {
+            console.error('Error creating invoice:', error);
+            toast.error('Failed to create invoice.');
         }
     };
 
