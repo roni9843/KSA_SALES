@@ -13,7 +13,7 @@ module.exports = (ipcMain) => {
       db.serialize(() => {
         db.run('BEGIN TRANSACTION');
 
-        db.run(purchaseSql, [purchase_.id, supplier_id, supplier_invoice_no, supplier_invoice_date, purchase_date, grand_total, grand_total_before_tax, tax_amount, discount_amount], function (err) {
+        db.run(purchaseSql, [purchase_id, supplier_id, supplier_invoice_no, supplier_invoice_date, purchase_date, grand_total, grand_total_before_tax, tax_amount, discount_amount], function (err) {
           if (err) {
             db.run('ROLLBACK');
             return reject(err);
