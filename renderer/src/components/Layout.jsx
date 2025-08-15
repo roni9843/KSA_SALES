@@ -68,11 +68,7 @@ const Layout = ({ children }) => {
                         transition: 'width 0.3s ease-in-out'
                     }}
                 >
-                    {showSidebar && (
-                        <div style={{ padding: '15px' }}>
-                            <Sidebar />
-                        </div>
-                    )}
+                    {showSidebar && <Sidebar />}
                 </aside>
 
                 {/* 📄 Main Content */}
