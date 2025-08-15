@@ -26,9 +26,6 @@ const Layout = ({ children }) => {
                     position: 'sticky',
                     top: 0,
                     zIndex: 1000,
-                    // width: '100%',
-                    // marginLeft: showSidebar ? '200px' : '0px',
-                    // transition: 'margin-left 0.3s ease-in-out'
                 }}
             >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -93,6 +90,24 @@ const Layout = ({ children }) => {
                     {children}
                 </main>
             </div>
+
+            {/* 🦶 Footer */}
+            <footer
+                style={{
+                    height: '40px',
+                    backgroundColor: '#282A35',
+                    color: '#ecf0f1',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '0 20px',
+                    flexShrink: 0
+                }}
+            >
+                <span>
+                    Developed by <a href="https://araflogix.com/" target="_blank" rel="noopener noreferrer" style={{ color: '#1abc9c', textDecoration: 'none' }}>ArafLogix</a>
+                </span>
+            </footer>
         </div>
     );
 };
