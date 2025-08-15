@@ -6,6 +6,7 @@ const RoleManagement = () => {
     const [selectedRole, setSelectedRole] = useState(null);
     const [rolePermissions, setRolePermissions] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [newRoleName, setNewRoleName] = useState('');
 
     const fetchRoles = useCallback(async () => {
         const fetchedRoles = await window.electron.ipcRenderer.invoke('get-roles');
@@ -53,6 +54,18 @@ const RoleManagement = () => {
         alert('Permissions updated successfully!');
     };
 
+    const handleAddRole = async (e) => {
+        e.preventDefault();
+        if (!newRoleName.trim()) {
+            alert('Role name cannot be empty.');
+            return;
+        }
+        await window.electron.ipcRenderer.invoke('add-role', newRoleName);
+        setNewRoleName('');
+        fetchRoles(); // Refresh role list
+        alert(`Role '${newRoleName}' added successfully!`);
+    };
+
     // Styles
     const containerStyle = { display: 'flex', gap: '20px', padding: '20px', fontFamily: 'Arial, sans-serif', color: '#333' };
     const listContainerStyle = { flex: 1, border: '1px solid #ccc', borderRadius: '8px', padding: '10px' };
@@ -67,6 +80,7 @@ const RoleManagement = () => {
     const permissionsContainerStyle = { flex: 2, border: '1px solid #ccc', borderRadius: '8px', padding: '20px' };
     const checkboxLabelStyle = { display: 'block', margin: '10px 0', cursor: 'pointer' };
     const saveButtonStyle = { background: '#282A35', color: 'white', padding: '10px 20px', border: 'none', borderRadius: '4px', cursor: 'pointer', marginTop: '20px' };
+    const formInputStyle = { padding: '8px', margin: '5px 0', width: 'calc(100% - 16px)' };
 
     return (
         <div>
@@ -83,6 +97,18 @@ const RoleManagement = () => {
                             {role.name}
                         </div>
                     ))}
+                    <hr style={{ margin: '20px 0' }} />
+                    <h3>Add New Role</h3>
+                    <form onSubmit={handleAddRole}>
+                        <input
+                            type="text"
+                            placeholder="New role name"
+                            value={newRoleName}
+                            onChange={(e) => setNewRoleName(e.target.value)}
+                            style={formInputStyle}
+                        />
+                        <button type="submit" style={{...saveButtonStyle, marginTop: '10px', width: '100%'}}>Add Role</button>
+                    </form>
                 </div>
 
                 <div style={permissionsContainerStyle}>

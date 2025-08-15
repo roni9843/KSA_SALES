@@ -22,36 +22,39 @@ module.exports = (ipcMain) => {
             username: user.username,
           };
 
-          const rolesSql = `
-            SELECT r.name FROM roles r
-            JOIN user_roles ur ON r.id = ur.role_id
+          const rolesSql = `SELECT r.name FROM roles r JOIN user_roles ur ON r.id = ur.role_id WHERE ur.user_id = ?`;
+          const permissionsSql = `
+            SELECT DISTINCT p.name FROM permissions p
+            JOIN role_permissions rp ON p.id = rp.permission_id
+            JOIN user_roles ur ON rp.role_id = ur.role_id
             WHERE ur.user_id = ?
           `;
 
-          db.all(rolesSql, [user.id], async (roleErr, roles) => {
+          db.all(rolesSql, [user.id], (roleErr, roles) => {
             if (roleErr) {
               return resolve({ success: false, message: 'Error fetching user roles.' });
             }
             userSessionData.roles = roles.map(r => r.name);
 
-            // For now, supperAdmin gets all permissions. A full implementation
-            // would query the permissions table based on roles.
-            if (userSessionData.roles.includes('supperAdmin')) {
-              userSessionData.permissions = ['*']; // Wildcard for all permissions
-            } else {
-              // TODO: Fetch specific permissions for other roles
-              userSessionData.permissions = [];
-            }
+            db.all(permissionsSql, [user.id], async (permErr, permissions) => {
+              if (permErr) {
+                return resolve({ success: false, message: 'Error fetching user permissions.' });
+              }
+              // If user is supperAdmin, give all permissions regardless
+              userSessionData.permissions = userSessionData.roles.includes('supperAdmin') 
+                ? ['*'] 
+                : permissions.map(p => p.name);
 
-            const cookie = {
-              url: 'http://localhost',
-              name: 'userSession',
-              value: JSON.stringify(userSessionData),
-              httpOnly: true,
-            };
-            await session.defaultSession.cookies.set(cookie);
+              const cookie = {
+                url: 'http://localhost',
+                name: 'userSession',
+                value: JSON.stringify(userSessionData),
+                httpOnly: true,
+              };
+              await session.defaultSession.cookies.set(cookie);
 
-            resolve({ success: true, user: userSessionData });
+              resolve({ success: true, user: userSessionData });
+            });
           });
         } else {
           resolve({ success: false, message: 'Invalid username or password.' });

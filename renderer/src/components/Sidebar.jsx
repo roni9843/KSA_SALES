@@ -83,10 +83,14 @@ const Sidebar = () => {
         });
     }
 
+    const filteredMenuItems = menuItems.filter(item =>
+        user && (user.permissions.includes('*') || user.permissions.includes(item.permission))
+    );
+
 
     return (
         <div style={{ padding: '20px', color: '#fff' }}>
-            {menuItems.map(item => {
+            {filteredMenuItems.map(item => {
                 const isParentActive = item.subItems && item.subItems.some(sub => sub.path === location.pathname);
                 const isOpen = openMenu === item.label;
 
