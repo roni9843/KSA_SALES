@@ -25,6 +25,7 @@ const InvoiceList = () => {
                 <thead style={tableHeaderStyle}>
                     <tr>
                         <th style={{ ...thStyle, textAlign: 'left' }}>ID</th>
+                        <th style={{ ...thStyle, textAlign: 'left' }}>Invoice ID</th>
                         <th style={{ ...thStyle, textAlign: 'left' }}>Customer</th>
                         <th style={thStyle}>Total</th>
                         <th style={thStyle}>Paid</th>
@@ -37,6 +38,7 @@ const InvoiceList = () => {
                     {invoices.map((inv, index) => (
                         <tr key={inv.id} style={tableRowStyle(index)}>
                             <td style={{ ...tdStyle, textAlign: 'left' }}>#{inv.id}</td>
+                            <td style={{ ...tdStyle, textAlign: 'left' }}>{inv.invoice_id}</td>
                             <td style={{ ...tdStyle, textAlign: 'left' }}>{inv.customer_name || 'Walk-in Customer'}</td>
                             <td style={tdStyle}>{inv.total.toFixed(2)}</td>
                             <td style={tdStyle}>{inv.paid.toFixed(2)}</td>

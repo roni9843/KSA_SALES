@@ -65,6 +65,7 @@ module.exports = (ipcMain) => {
       const sql = `
         SELECT
           i.id,
+          i.invoice_id,
           i.payable_total as total,
           i.paid_amount as paid,
           i.due_amount as due,
@@ -135,7 +136,7 @@ module.exports = (ipcMain) => {
           created_by
         ];
 
-        invoiceStmt.run(invoiceValues, function(err) {
+        invoiceStmt.run(invoiceValues, function (err) {
           if (err) {
             db.run('ROLLBACK');
             console.error('Error inserting invoice:', err.message);
@@ -163,7 +164,7 @@ module.exports = (ipcMain) => {
             created_by
           ];
 
-          paymentHistoryStmt.run(paymentHistoryValues, function(err) {
+          paymentHistoryStmt.run(paymentHistoryValues, function (err) {
             if (err) {
               db.run('ROLLBACK');
               console.error('Error inserting payment history:', err.message);
@@ -195,13 +196,13 @@ module.exports = (ipcMain) => {
             }
 
             invoice_items.forEach(item => {
-              itemStmt.run([newInvoiceId, item.product_id, item.quantity, item.price, item.tax, item.discount, item.total_price], function(err) {
+              itemStmt.run([newInvoiceId, item.product_id, item.quantity, item.price, item.tax, item.discount, item.total_price], function (err) {
                 if (err) {
                   db.run('ROLLBACK');
                   return reject(err);
                 }
 
-                stockUpdateStmt.run([item.quantity, item.product_id], function(err) {
+                stockUpdateStmt.run([item.quantity, item.product_id], function (err) {
                   if (err) {
                     db.run('ROLLBACK');
                     return reject(err);
