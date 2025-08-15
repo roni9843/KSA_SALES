@@ -1,18 +1,16 @@
-import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import AddSupplier from '../components/AddSupplier';
-import SupplierList from '../components/SupplierList';
 
 const Suppliers = () => {
-    const [refresh, setRefresh] = useState(false);
+    const navigate = useNavigate();
 
     const handleAdded = () => {
-        setRefresh(!refresh);
+        navigate('/supplier-list');
     }
 
     return (
         <div>
             <AddSupplier onAdded={handleAdded} />
-            <SupplierList refresh={refresh} />
         </div>
     );
 };

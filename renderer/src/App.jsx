@@ -9,8 +9,11 @@ import CreateInvoice from './pages/CreateInvoice';
 import InvoicePrint from './pages/InvoicePrint';
 import InvoiceList from './pages/InvoiceList';
 import ProductPage from './pages/ProductPage';
+import ProductListPage from './pages/ProductListPage';
 import Customers from './pages/Customers';
+import CustomerListPage from './pages/CustomerListPage';
 import Suppliers from './pages/Suppliers';
+import SupplierListPage from './pages/SupplierListPage';
 import Reporting from './pages/Reporting';
 import TaxRates from './pages/TaxRates';
 import MyCompany from './pages/MyCompany';
@@ -29,12 +32,15 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/category" element={<AddCategory />} />
           <Route path="/products" element={<ProductPage />} />
+          <Route path="/product-list" element={<ProductListPage />} />
           <Route path="/create-invoice" element={<CreateInvoice />} />
           <Route path="/invoice/:id" element={<InvoicePrint />} />
           <Route path="/quotation" element={<QuotationPrint />} />
           <Route path="/invoices" element={<InvoiceList />} />
           <Route path="/customers" element={<Customers />} />
+          <Route path="/customer-list" element={<CustomerListPage />} />
           <Route path="/suppliers" element={<Suppliers />} />
+          <Route path="/supplier-list" element={<SupplierListPage />} />
           <Route path="/reporting" element={<Reporting />} />
           <Route path="/tax-rates" element={<TaxRates />} />
           <Route path="/my-company" element={<MyCompany />} />

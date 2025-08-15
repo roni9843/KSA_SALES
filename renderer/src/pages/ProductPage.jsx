@@ -1,17 +1,16 @@
+import { useNavigate } from 'react-router-dom';
 import AddProduct from '../components/AddProduct';
-import ProductList from '../components/ProductList';
-import { useState } from 'react';
 
 const ProductPage = () => {
-    const [refresh, setRefresh] = useState(false);
+    const navigate = useNavigate();
 
-    const refreshData = () => setRefresh(!refresh);
+    const handleAdded = () => {
+        navigate('/product-list');
+    }
 
     return (
         <div>
-            {/* <h2 style={{ color: '#333' }}>🛒 Product Management</h2> */}
-            <AddProduct onAdded={refreshData} />
-            <ProductList refresh={refresh} />
+            <AddProduct onAdded={handleAdded} />
         </div>
     );
 };

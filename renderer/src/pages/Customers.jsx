@@ -1,18 +1,16 @@
-import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import AddCustomer from '../components/AddCustomer';
-import CustomerList from '../components/CustomerList';
 
 const Customers = () => {
-    const [refresh, setRefresh] = useState(false);
+    const navigate = useNavigate();
 
     const handleAdded = () => {
-        setRefresh(!refresh);
+        navigate('/customer-list');
     }
 
     return (
         <div>
             <AddCustomer onAdded={handleAdded} />
-            <CustomerList refresh={refresh} />
         </div>
     );
 };
