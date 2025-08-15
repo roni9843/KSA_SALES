@@ -74,6 +74,10 @@ require('./ipc/product.js')(ipcMain);
 require('./ipc/purchase.js')(ipcMain);
 require('./ipc/invoice.js')(ipcMain);
 require('./ipc/customer.js')(ipcMain);
+require('./ipc/auth.js')(ipcMain);
+require('./ipc/permissions.js')(ipcMain);
+require('./ipc/roles.js')(ipcMain);
+require('./ipc/users.js')(ipcMain);
 
 // IPC for add-supplier
 ipcMain.handle('add-supplier', async (event, supplier) => {

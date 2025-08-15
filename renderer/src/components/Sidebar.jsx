@@ -6,20 +6,24 @@ import {
     FaChevronDown, FaChevronRight
 } from 'react-icons/fa';
 
+import { useAuth } from '../context/AuthContext';
+
 const Sidebar = () => {
     const location = useLocation();
     const [openMenu, setOpenMenu] = useState(null);
+    const { user } = useAuth();
 
     const handleMenuClick = (label) => {
         setOpenMenu(openMenu === label ? null : label);
     };
 
-    const menuItems = [
-        { path: '/', label: 'Home', icon: <FaHome /> },
-        { path: '/category', label: 'Category', icon: <FaFolder /> },
+    let menuItems = [
+        { path: '/', label: 'Home', icon: <FaHome />, permission: 'page:view:home' },
+        { path: '/category', label: 'Category', icon: <FaFolder />, permission: 'page:view:category' },
         {
             label: 'Products',
             icon: <FaBox />,
+            permission: 'page:view:products',
             subItems: [
                 { path: '/products', label: 'Add Product' },
                 { path: '/product-list', label: 'Product List' },
@@ -28,6 +32,7 @@ const Sidebar = () => {
         {
             label: 'Invoice',
             icon: <FaFileInvoice />,
+            permission: 'page:view:invoice',
             subItems: [
                 { path: '/create-invoice', label: 'Invoice Create' },
                 { path: '/invoices', label: 'Invoice List' },
@@ -36,6 +41,7 @@ const Sidebar = () => {
         {
             label: 'Customers',
             icon: <FaUsers />,
+            permission: 'page:view:customers',
             subItems: [
                 { path: '/customers', label: 'Add Customer' },
                 { path: '/customer-list', label: 'Customer List' },
@@ -44,23 +50,39 @@ const Sidebar = () => {
         {
             label: 'Suppliers',
             icon: <FaTruck />,
+            permission: 'page:view:suppliers',
             subItems: [
                 { path: '/suppliers', label: 'Add Supplier' },
                 { path: '/supplier-list', label: 'Supplier List' },
             ]
         },
-        { path: '/reporting', label: 'Reporting', icon: <FaChartBar /> },
-        { path: '/tax-rates', label: 'Tax Rates', icon: <FaMoneyBillAlt /> },
-        { path: '/my-company', label: 'My Company', icon: <FaBuilding /> },
+        { path: '/reporting', label: 'Reporting', icon: <FaChartBar />, permission: 'page:view:reporting' },
+        { path: '/tax-rates', label: 'Tax Rates', icon: <FaMoneyBillAlt />, permission: 'page:view:tax-rates' },
+        { path: '/my-company', label: 'My Company', icon: <FaBuilding />, permission: 'page:view:my-company' },
         {
             label: 'Purchase',
             icon: <FaShoppingCart />,
+            permission: 'page:view:purchase',
             subItems: [
                 { path: '/product-purchase', label: 'Purchase Product' },
                 { path: '/purchase-list', label: 'Purchase List' },
             ]
         }
     ];
+
+    // Add settings menu for users with permission
+    if (user && (user.permissions.includes('*') || user.permissions.includes('manage:users'))) {
+        menuItems.push({
+            label: 'Settings',
+            icon: <FaBuilding />,
+            permission: 'manage:users',
+            subItems: [
+                { path: '/manage-roles', label: 'Role Management' },
+                { path: '/manage-users', label: 'User Management' },
+            ]
+        });
+    }
+
 
     return (
         <div style={{ padding: '20px', color: '#fff' }}>

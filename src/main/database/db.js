@@ -233,4 +233,151 @@ db.run(`
   )
 `);
 
+const bcrypt = require('bcrypt');
+
+// Role-based authentication tables
+db.serialize(() => {
+  // users table
+  db.run(`
+    CREATE TABLE IF NOT EXISTS users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      username TEXT UNIQUE NOT NULL,
+      password TEXT NOT NULL,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  // roles table
+  db.run(`
+    CREATE TABLE IF NOT EXISTS roles (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT UNIQUE NOT NULL
+    )
+  `);
+
+  // user_roles table (many-to-many)
+  db.run(`
+    CREATE TABLE IF NOT EXISTS user_roles (
+      user_id INTEGER NOT NULL,
+      role_id INTEGER NOT NULL,
+      PRIMARY KEY (user_id, role_id),
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE
+    )
+  `);
+
+  // permissions table
+  db.run(`
+    CREATE TABLE IF NOT EXISTS permissions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT UNIQUE NOT NULL,
+      description TEXT
+    )
+  `);
+
+  // role_permissions table (many-to-many)
+  db.run(`
+    CREATE TABLE IF NOT EXISTS role_permissions (
+      role_id INTEGER NOT NULL,
+      permission_id INTEGER NOT NULL,
+      PRIMARY KEY (role_id, permission_id),
+      FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE,
+      FOREIGN KEY (permission_id) REFERENCES permissions(id) ON DELETE CASCADE
+    )
+  `);
+});
+
+// Seed initial data for authentication
+db.get('SELECT * FROM users WHERE username = ?', ['supperAdmin'], (err, user) => {
+  if (err) {
+    return console.error('Error checking for supperAdmin:', err.message);
+  }
+  if (!user) {
+    console.log('supperAdmin not found, creating...');
+    // Hash the password
+    bcrypt.hash('123456', 10, (err, hash) => {
+      if (err) {
+        return console.error('Error hashing password:', err.message);
+      }
+
+      db.serialize(() => {
+        db.run('BEGIN TRANSACTION');
+
+        // 1. Insert supperAdmin role
+        db.run(`INSERT INTO roles (name) VALUES (?)`, ['supperAdmin'], function(err) {
+          if (err) {
+            console.error('Error inserting supperAdmin role:', err.message);
+            return db.run('ROLLBACK');
+          }
+          const supperAdminRoleId = this.lastID;
+          console.log('supperAdmin role created with ID:', supperAdminRoleId);
+
+          // 2. Insert supperAdmin user
+          db.run(`INSERT INTO users (username, password) VALUES (?, ?)`, ['supperAdmin', hash], function(err) {
+            if (err) {
+              console.error('Error inserting supperAdmin user:', err.message);
+              return db.run('ROLLBACK');
+            }
+            const supperAdminUserId = this.lastID;
+            console.log('supperAdmin user created with ID:', supperAdminUserId);
+
+            // 3. Define Permissions
+            const permissions = [
+              { name: 'page:view:home', description: 'Access the Home page' },
+              { name: 'page:view:category', description: 'Access the Category page' },
+              { name: 'page:view:products', description: 'Access the Products pages (Add and List)' },
+              { name: 'page:view:invoice', description: 'Access the Invoice pages (Create and List)' },
+              { name: 'page:view:customers', description: 'Access the Customers pages (Add and List)' },
+              { name: 'page:view:suppliers', description: 'Access the Suppliers pages (Add and List)' },
+              { name: 'page:view:reporting', description: 'Access the Reporting page' },
+              { name: 'page:view:tax-rates', description: 'Access the Tax Rates page' },
+              { name: 'page:view:my-company', description: 'Access the My Company page' },
+              { name: 'page:view:purchase', description: 'Access the Purchase pages (Add and List)' },
+              { name: 'manage:users', description: 'Manage users, roles, and permissions' },
+            ];
+
+            const permissionStmt = db.prepare(`INSERT INTO permissions (name, description) VALUES (?, ?)`);
+            const rolePermissionStmt = db.prepare(`INSERT INTO role_permissions (role_id, permission_id) VALUES (?, ?)`);
+
+            let permissionsCompleted = 0;
+            permissions.forEach(p => {
+              permissionStmt.run([p.name, p.description], function(err) {
+                if (err) {
+                  console.error(`Error inserting permission ${p.name}:`, err.message);
+                  return db.run('ROLLBACK');
+                }
+                const permissionId = this.lastID;
+                // 4. Assign all permissions to supperAdmin role
+                rolePermissionStmt.run([supperAdminRoleId, permissionId], function(err) {
+                  if (err) {
+                    console.error(`Error assigning permission ${p.name} to supperAdmin:`, err.message);
+                    return db.run('ROLLBACK');
+                  }
+                  permissionsCompleted++;
+                  if (permissionsCompleted === permissions.length) {
+                    console.log('All permissions created and assigned to supperAdmin.');
+                    permissionStmt.finalize();
+                    rolePermissionStmt.finalize();
+                    // 5. Assign supperAdmin role to supperAdmin user
+                    db.run(`INSERT INTO user_roles (user_id, role_id) VALUES (?, ?)`, [supperAdminUserId, supperAdminRoleId], function(err) {
+                      if (err) {
+                        console.error('Error assigning role to user:', err.message);
+                        return db.run('ROLLBACK');
+                      }
+                      console.log('Assigned supperAdmin role to supperAdmin user.');
+                      db.run('COMMIT');
+                    });
+                  }
+                });
+              });
+            });
+          });
+        });
+      });
+    });
+  } else {
+    console.log('supperAdmin user already exists.');
+  }
+});
+
 module.exports = db;

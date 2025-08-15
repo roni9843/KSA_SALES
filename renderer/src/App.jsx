@@ -1,9 +1,12 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
 
 import Layout from './components/Layout';
 import Toast from './components/common/Toast';
+import ProtectedRoute from './components/ProtectedRoute';
 
 import Home from './pages/Home';
+import LoginPage from './pages/LoginPage';
 import AddCategory from './pages/AddCategory';
 import CreateInvoice from './pages/CreateInvoice';
 import InvoicePrint from './pages/InvoicePrint';
@@ -20,37 +23,47 @@ import MyCompany from './pages/MyCompany';
 import ProductPurchase from './pages/ProductPurchase';
 import PurchaseList from './components/PurchaseList';
 import QuotationPrint from './pages/QuotationPrint';
-
+import RoleManagement from './pages/RoleManagement';
+import UserManagement from './pages/UserManagement';
 
 function App() {
-
   return (
-    <Router>
-      <Layout>
-
+    <AuthProvider>
+      <Router>
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/category" element={<AddCategory />} />
-          <Route path="/products" element={<ProductPage />} />
-          <Route path="/product-list" element={<ProductListPage />} />
-          <Route path="/create-invoice" element={<CreateInvoice />} />
-          <Route path="/invoice/:id" element={<InvoicePrint />} />
-          <Route path="/quotation" element={<QuotationPrint />} />
-          <Route path="/invoices" element={<InvoiceList />} />
-          <Route path="/customers" element={<Customers />} />
-          <Route path="/customer-list" element={<CustomerListPage />} />
-          <Route path="/suppliers" element={<Suppliers />} />
-          <Route path="/supplier-list" element={<SupplierListPage />} />
-          <Route path="/reporting" element={<Reporting />} />
-          <Route path="/tax-rates" element={<TaxRates />} />
-          <Route path="/my-company" element={<MyCompany />} />
-          <Route path="/product-purchase" element={<ProductPurchase />} />
-          <Route path="/purchase-list" element={<PurchaseList />} />
-          <Route path="*" element={<p>404 Not Found</p>} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route element={<ProtectedRoute />}>
+            <Route path="/*" element={
+              <Layout>
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/category" element={<AddCategory />} />
+                  <Route path="/products" element={<ProductPage />} />
+                  <Route path="/product-list" element={<ProductListPage />} />
+                  <Route path="/create-invoice" element={<CreateInvoice />} />
+                  <Route path="/invoice/:id" element={<InvoicePrint />} />
+                  <Route path="/quotation" element={<QuotationPrint />} />
+                  <Route path="/invoices" element={<InvoiceList />} />
+                  <Route path="/customers" element={<Customers />} />
+                  <Route path="/customer-list" element={<CustomerListPage />} />
+                  <Route path="/suppliers" element={<Suppliers />} />
+                  <Route path="/supplier-list" element={<SupplierListPage />} />
+                  <Route path="/reporting" element={<Reporting />} />
+                  <Route path="/tax-rates" element={<TaxRates />} />
+                  <Route path="/my-company" element={<MyCompany />} />
+                  <Route path="/product-purchase" element={<ProductPurchase />} />
+                  <Route path="/purchase-list" element={<PurchaseList />} />
+                  <Route path="/manage-roles" element={<RoleManagement />} />
+                  <Route path="/manage-users" element={<UserManagement />} />
+                  <Route path="*" element={<p>404 Not Found</p>} />
+                </Routes>
+              </Layout>
+            } />
+          </Route>
         </Routes>
-      </Layout>
-      <Toast />
-    </Router>
+        <Toast />
+      </Router>
+    </AuthProvider>
   );
 }
 
