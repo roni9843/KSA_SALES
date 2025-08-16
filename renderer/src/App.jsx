@@ -27,6 +27,7 @@ import RoleManagement from './pages/RoleManagement';
 import UserManagement from './pages/UserManagement';
 import CollectDue from './pages/CollectDue';
 import DueCollectionReceipt from './pages/DueCollectionReceipt';
+import PaymentHistory from './pages/PaymentHistory';
 
 function App() {
   return (
@@ -48,6 +49,7 @@ function App() {
                   <Route path="/invoices" element={<InvoiceList />} />
                   <Route path="/collect-due" element={<CollectDue />} />
                   <Route path="/due-receipt/:invoiceId" element={<DueCollectionReceipt />} />
+                  <Route path="/payment-history" element={<PaymentHistory />} />
                   <Route path="/customers" element={<Customers />} />
                   <Route path="/customer-list" element={<CustomerListPage />} />
                   <Route path="/suppliers" element={<Suppliers />} />

@@ -43,6 +43,7 @@ const Sidebar = () => {
                 { path: '/create-invoice', label: 'Invoice Create' },
                 { path: '/invoices', label: 'Invoice List' },
                 { path: '/collect-due', label: 'Collect Due' },
+                { path: '/payment-history', label: 'Payment History' },
             ]
         },
         {
@@ -130,7 +131,7 @@ const Sidebar = () => {
                                         </span>
                                     </div>
                                     <div style={{
-                                        maxHeight: isOpen ? '100px' : '0',
+                                        maxHeight: isOpen ? '200px' : '0',
                                         overflow: 'hidden',
                                         transition: 'max-height 0.3s ease-in-out',
                                         paddingLeft: '20px',
