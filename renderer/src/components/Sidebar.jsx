@@ -42,6 +42,7 @@ const Sidebar = () => {
             subItems: [
                 { path: '/create-invoice', label: 'Invoice Create' },
                 { path: '/invoices', label: 'Invoice List' },
+                { path: '/collect-due', label: 'Collect Due' },
             ]
         },
         {

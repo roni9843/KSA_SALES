@@ -25,6 +25,7 @@ import PurchaseList from './components/PurchaseList';
 import QuotationPrint from './pages/QuotationPrint';
 import RoleManagement from './pages/RoleManagement';
 import UserManagement from './pages/UserManagement';
+import CollectDue from './pages/CollectDue';
 
 function App() {
   return (
@@ -44,6 +45,7 @@ function App() {
                   <Route path="/invoice/:id" element={<InvoicePrint />} />
                   <Route path="/quotation" element={<QuotationPrint />} />
                   <Route path="/invoices" element={<InvoiceList />} />
+                  <Route path="/collect-due" element={<CollectDue />} />
                   <Route path="/customers" element={<Customers />} />
                   <Route path="/customer-list" element={<CustomerListPage />} />
                   <Route path="/suppliers" element={<Suppliers />} />

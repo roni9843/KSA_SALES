@@ -229,4 +229,132 @@ module.exports = (ipcMain) => {
       });
     });
   });
+
+  ipcMain.handle('search-invoices-with-due', async (event, searchTerm) => {
+    return new Promise((resolve, reject) => {
+        const sql = `
+            SELECT
+                i.id,
+                i.invoice_id,
+                c.name as customer_name
+            FROM
+                invoice i
+            LEFT JOIN
+                customers c ON i.customer_id = c.id
+            WHERE
+                i.due_amount > 0
+                AND i.invoice_id LIKE ?
+            ORDER BY
+                i.id DESC
+            LIMIT 10
+        `;
+        const params = [`%${searchTerm}%`];
+        db.all(sql, params, (err, rows) => {
+            if (err) {
+                console.error('Error searching invoices with due:', err.message);
+                reject(err);
+            } else {
+                resolve(rows);
+            }
+        });
+    });
+  });
+
+  ipcMain.handle('get-invoice-with-due-details', async (event, invoiceId) => {
+    return new Promise((resolve, reject) => {
+        const sql = `
+            SELECT
+                i.id,
+                i.invoice_id,
+                i.invoice_date,
+                i.sub_total,
+                i.item_discount,
+                i.item_tax,
+                i.cart_discount,
+                i.payable_total,
+                i.paid_amount,
+                i.due_amount,
+                c.id as customer_id,
+                c.name as customer_name,
+                c.phone as customer_phone,
+                c.address as customer_address
+            FROM
+                invoice i
+            LEFT JOIN
+                customers c ON i.customer_id = c.id
+            WHERE
+                i.id = ?
+        `;
+        db.get(sql, [invoiceId], (err, row) => {
+            if (err) {
+                console.error('Error getting invoice details:', err.message);
+                reject(err);
+            } else {
+                resolve(row);
+            }
+        });
+    });
+  });
+
+  ipcMain.handle('collect-due-payment', async (event, { invoiceId, paidAmount, paymentMethod, createdBy }) => {
+    return new Promise((resolve, reject) => {
+        db.get('SELECT * FROM invoice WHERE id = ?', [invoiceId], (err, invoice) => {
+            if (err) {
+                return reject(err);
+            }
+            if (!invoice) {
+                return reject(new Error('Invoice not found'));
+            }
+
+            const newPaidAmount = invoice.paid_amount + paidAmount;
+            const newDueAmount = invoice.due_amount - paidAmount;
+            const changeAmount = newDueAmount < 0 ? Math.abs(newDueAmount) : 0;
+            const finalDueAmount = newDueAmount < 0 ? 0 : newDueAmount;
+            const now = new Date().toISOString();
+
+            db.serialize(() => {
+                db.run('BEGIN TRANSACTION');
+
+                const updateInvoiceStmt = db.prepare(`
+                    UPDATE invoice
+                    SET
+                        paid_amount = ?,
+                        due_amount = ?,
+                        updated_at = ?
+                    WHERE
+                        id = ?
+                `);
+                updateInvoiceStmt.run([newPaidAmount, finalDueAmount, now, invoiceId], function(err) {
+                    if (err) {
+                        db.run('ROLLBACK');
+                        return reject(err);
+                    }
+                    updateInvoiceStmt.finalize();
+
+                    const paymentHistoryStmt = db.prepare(`
+                        INSERT INTO customer_payment_history (
+                            invoice_id, payment_date, pre_due_amount, paid_amount, due_amount,
+                            change_amount, payment_method, created_by
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    `);
+                    paymentHistoryStmt.run([invoiceId, now, invoice.due_amount, paidAmount, finalDueAmount, changeAmount, paymentMethod, createdBy], function(err) {
+                        if (err) {
+                            db.run('ROLLBACK');
+                            return reject(err);
+                        }
+                        paymentHistoryStmt.finalize();
+
+                        db.run('COMMIT', (err) => {
+                            if (err) {
+                                db.run('ROLLBACK');
+                                return reject(err);
+                            }
+                            resolve({ success: true });
+                        });
+                    });
+                });
+            });
+        });
+    });
+  });
 }
