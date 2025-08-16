@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import AsyncSelect from 'react-select/async';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 
 const CollectDue = () => {
     const { user } = useAuth();
+    const navigate = useNavigate(); // Get navigate function
     const [selectedInvoice, setSelectedInvoice] = useState(null);
     const [invoiceDetails, setInvoiceDetails] = useState(null);
     const [paidAmount, setPaidAmount] = useState('');
@@ -53,17 +55,20 @@ const CollectDue = () => {
 
         setIsLoading(true);
         try {
-            await window.electron.ipcRenderer.invoke('collect-due-payment', {
+            const result = await window.electron.ipcRenderer.invoke('collect-due-payment', {
                 invoiceId: invoiceDetails.id,
                 paidAmount: paid,
                 paymentMethod: 'Cash', // Assuming cash for now
                 createdBy: user.username,
             });
-            toast.success('Due collected successfully!');
-            // Reset form
-            setSelectedInvoice(null);
-            setInvoiceDetails(null);
-            setPaidAmount('');
+
+            if (result.success) {
+                toast.success('Due collected successfully!');
+                // Navigate to receipt page
+                navigate(`/due-receipt/${invoiceDetails.id}`);
+            } else {
+                toast.error('Failed to collect due.');
+            }
         } catch (error) {
             console.error('Error collecting due:', error);
             toast.error('Failed to collect due.');

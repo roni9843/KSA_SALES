@@ -357,4 +357,39 @@ module.exports = (ipcMain) => {
         });
     });
   });
+
+  ipcMain.handle('get-last-payment-details', async (event, invoiceId) => {
+    return new Promise((resolve, reject) => {
+        const sql = `
+            SELECT
+                ph.payment_date,
+                ph.pre_due_amount,
+                ph.paid_amount,
+                ph.due_amount,
+                ph.change_amount,
+                i.invoice_id,
+                c.name as customer_name,
+                c.phone as customer_phone,
+                c.address as customer_address
+            FROM
+                customer_payment_history ph
+            JOIN
+                invoice i ON ph.invoice_id = i.id
+            JOIN
+                customers c ON i.customer_id = c.id
+            WHERE
+                ph.invoice_id = ?
+            ORDER BY
+                ph.id DESC
+            LIMIT 1
+        `;
+        db.get(sql, [invoiceId], (err, row) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(row);
+            }
+        });
+    });
+  });
 }
