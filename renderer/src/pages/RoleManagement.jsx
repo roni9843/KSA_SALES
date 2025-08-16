@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import toast from 'react-hot-toast';
 
 const RoleManagement = () => {
     const [roles, setRoles] = useState([]);
@@ -51,19 +52,19 @@ const RoleManagement = () => {
             permissionIds: rolePermissions
         });
         setIsLoading(false);
-        alert('Permissions updated successfully!');
+        toast.success('Permissions updated successfully!');
     };
 
     const handleAddRole = async (e) => {
         e.preventDefault();
         if (!newRoleName.trim()) {
-            alert('Role name cannot be empty.');
+            toast.error('Role name cannot be empty.');
             return;
         }
         await window.electron.ipcRenderer.invoke('add-role', newRoleName);
         setNewRoleName('');
         fetchRoles(); // Refresh role list
-        alert(`Role '${newRoleName}' added successfully!`);
+        toast.success(`Role '${newRoleName}' added successfully!`);
     };
 
     // Styles

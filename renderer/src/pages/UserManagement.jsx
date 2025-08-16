@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import toast from 'react-hot-toast';
 
 const UserManagement = () => {
     const [users, setUsers] = useState([]);
@@ -51,19 +52,19 @@ const UserManagement = () => {
             roleIds: userRoles
         });
         setIsLoading(false);
-        alert('User roles updated successfully!');
+        toast.success('User roles updated successfully!');
     };
 
     const handleAddUser = async (e) => {
         e.preventDefault();
         if (!newUser.username || !newUser.password) {
-            alert('Username and password are required.');
+            toast.error('Username and password are required.');
             return;
         }
         await window.electron.ipcRenderer.invoke('add-user', newUser);
         setNewUser({ username: '', password: '' });
         fetchUsers(); // Refresh user list
-        alert('User added successfully!');
+        toast.success('User added successfully!');
     };
 
     // Styles are similar to RoleManagement for consistency
@@ -84,7 +85,7 @@ const UserManagement = () => {
 
     return (
         <div>
-            <h1 style={{color: '#333'}}>User Management</h1>
+            <h1 style={{ color: '#333' }}>User Management</h1>
             <div style={containerStyle}>
                 <div style={listContainerStyle}>
                     <h2>Users</h2>
@@ -114,7 +115,7 @@ const UserManagement = () => {
                             onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
                             style={formInputStyle}
                         />
-                        <button type="submit" style={{...saveButtonStyle, marginTop: '10px'}}>Add User</button>
+                        <button type="submit" style={{ ...saveButtonStyle, marginTop: '10px' }}>Add User</button>
                     </form>
                 </div>
 

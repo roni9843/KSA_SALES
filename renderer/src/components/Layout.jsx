@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Sidebar from './Sidebar';
 import { useTranslation } from 'react-i18next';
+import { Toaster } from 'react-hot-toast';
 
 const Layout = ({ children }) => {
     const { i18n } = useTranslation();
@@ -13,6 +14,7 @@ const Layout = ({ children }) => {
 
     return (
         <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+            <Toaster />
             {/* 🔝 Topbar */}
             <header
                 style={{
