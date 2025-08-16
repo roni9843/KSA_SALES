@@ -48,7 +48,8 @@ const LoginPage = () => {
         marginBottom: '20px',
         borderRadius: '4px',
         border: '1px solid #ccc',
-        fontSize: '16px'
+        fontSize: '16px',
+        boxSizing: 'border-box'
     };
 
     const buttonStyle = {
@@ -66,7 +67,7 @@ const LoginPage = () => {
     return (
         <div style={pageStyle}>
             <div style={formContainerStyle}>
-                <h1 style={{ textAlign: 'center', marginBottom: '30px', color: '#333' }}>Login</h1>
+                <h3 style={{ textAlign: 'center', marginBottom: '30px', color: '#333' }}>Moto POS - Account Login</h3>
                 <form onSubmit={handleLogin}>
                     <input
                         type="text"
@@ -87,6 +88,11 @@ const LoginPage = () => {
                     {error && <p style={{ color: 'red', textAlign: 'center', marginBottom: '15px' }}>{error}</p>}
                     <button type="submit" style={buttonStyle}>Login</button>
                 </form>
+                <div style={{ textAlign: 'center', marginTop: '20px', color: '#888' }}>
+                    <p>
+                        Develop by <a href="https://araflogix.com/" target="_blank" rel="noopener noreferrer" style={{ color: '#282A35', textDecoration: 'none' }}>ArafLogix</a>
+                    </p>
+                </div>
             </div>
         </div>
     );
