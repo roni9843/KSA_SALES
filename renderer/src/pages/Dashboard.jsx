@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { FaChartBar, FaShoppingCart, FaBoxOpen, FaUsers, FaMoneyBillWave, FaPlus } from 'react-icons/fa';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import StatCard from '../components/dashboard/StatCard';
 
 // Mock data for charts - replace with actual data fetching
@@ -68,13 +69,13 @@ const Dashboard = () => {
         <StatCard
           icon={<FaMoneyBillWave size={24} color="white" />}
           title="Today's Sale"
-          value={`${data.todaysSale.toFixed(2)}`}
+          value={`$${data.todaysSale.toFixed(2)}`}
           iconBgColor="#28a745"
         />
         <StatCard
           icon={<FaShoppingCart size={24} color="white" />}
           title="Today's Purchase"
-          value={`${data.todaysPurchase.toFixed(2)}`}
+          value={`$${data.todaysPurchase.toFixed(2)}`}
           iconBgColor="#17a2b8"
         />
         <StatCard
@@ -86,13 +87,13 @@ const Dashboard = () => {
         <StatCard
           icon={<FaUsers size={24} color="white" />}
           title="Total Customer Due"
-          value={`${data.totalCustomerDue.toFixed(2)}`}
+          value={`$${data.totalCustomerDue.toFixed(2)}`}
           iconBgColor="#dc3545"
         />
         <StatCard
           icon={<FaChartBar size={24} color="white" />}
           title="Today's Profit"
-          value={`${data.todaysProfit.toFixed(2)}`}
+          value={`$${data.todaysProfit.toFixed(2)}`}
           iconBgColor="#6f42c1"
         />
       </div>
@@ -100,8 +101,18 @@ const Dashboard = () => {
       <div style={styles.mainGrid}>
         <div style={styles.chartContainer}>
             <h2 style={styles.sectionTitle}>Weekly Sales & Purchases</h2>
-            <div style={{...styles.centered, height: '320px', color: '#a0aec0'}}>
-                <p>Chart component will be here. Need to install a charting library.</p>
+            <div style={{ width: '100%', height: 320 }}>
+              <ResponsiveContainer>
+                <BarChart data={salesData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.1)" />
+                  <XAxis dataKey="name" stroke="#9CA3AF" />
+                  <YAxis stroke="#9CA3AF" />
+                  <Tooltip contentStyle={{ backgroundColor: '#374151', border: 'none' }} />
+                  <Legend />
+                  <Bar dataKey="sales" fill="#28a745" name="Sales" />
+                  <Bar dataKey="purchases" fill="#17a2b8" name="Purchases" />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
         </div>
 
