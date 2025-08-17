@@ -140,4 +140,33 @@ module.exports = (ipcMain) => {
       return { error: error.message };
     }
   });
+
+  ipcMain.handle('get-recent-invoices', async () => {
+    return new Promise((resolve, reject) => {
+      const sql = `
+        SELECT
+          i.id,
+          i.invoice_id,
+          i.payable_total,
+          i.due_amount,
+          c.name as customer_name
+        FROM invoice i
+        LEFT JOIN customers c ON i.customer_id = c.id
+        ORDER BY i.id DESC
+        LIMIT 5
+      `;
+      db.all(sql, [], (err, rows) => {
+        if (err) {
+          return reject(err);
+        }
+        const invoices = rows.map(row => ({
+          id: row.invoice_id,
+          customer: row.customer_name,
+          amount: `${row.payable_total.toFixed(2)}`,
+          status: row.due_amount > 0 ? 'Overdue' : 'Paid'
+        }));
+        resolve(invoices);
+      });
+    });
+  });
 };

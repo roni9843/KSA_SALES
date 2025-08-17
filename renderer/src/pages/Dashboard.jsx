@@ -3,27 +3,23 @@ import { FaChartBar, FaShoppingCart, FaBoxOpen, FaUsers, FaMoneyBillWave, FaPlus
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import StatCard from '../components/dashboard/StatCard';
 
-const recentInvoices = [
-    { id: 'INV-001', customer: 'John Doe', amount: '$250.00', status: 'Paid' },
-    { id: 'INV-002', customer: 'Jane Smith', amount: '$150.75', status: 'Pending' },
-    { id: 'INV-003', customer: 'Sam Wilson', amount: '$45.00', status: 'Paid' },
-    { id: 'INV-004', customer: 'Chris Lee', amount: '$300.50', status: 'Overdue' },
-];
-
 const Dashboard = () => {
   const [data, setData] = useState(null);
   const [salesData, setSalesData] = useState([]);
+  const [recentInvoices, setRecentInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [dashboardData, weeklySummary] = await Promise.all([
+        const [dashboardData, weeklySummary, recentInvoicesData] = await Promise.all([
           window.electron.getDashboardData(),
           window.electron.getWeeklySummary(),
+          window.electron.getRecentInvoices(),
         ]);
         setData(dashboardData);
         setSalesData(weeklySummary);
+        setRecentInvoices(recentInvoicesData);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
       }
