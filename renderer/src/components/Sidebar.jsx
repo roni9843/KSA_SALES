@@ -25,6 +25,7 @@ const Sidebar = () => {
 
     let menuItems = [
         { path: '/', label: 'Home', icon: <FaHome />, permission: 'page:view:home' },
+        { path: '/dashboard', label: 'Dashboard', icon: <FaHome />, permission: 'page:view:dashboard' },
         { path: '/category', label: 'Category', icon: <FaFolder />, permission: 'page:view:category' },
         {
             label: 'Products',

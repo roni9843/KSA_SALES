@@ -324,6 +324,7 @@ db.get('SELECT * FROM users WHERE username = ?', ['supperAdmin'], (err, user) =>
             // 3. Define Permissions
             const permissions = [
               { name: 'page:view:home', description: 'Access the Home page' },
+              { name: 'page:view:dashboard', description: 'Access the Dashboard page' },
               { name: 'page:view:category', description: 'Access the Category page' },
               { name: 'page:view:products', description: 'Access the Products pages (Add and List)' },
               { name: 'page:view:invoice', description: 'Access the Invoice pages (Create and List)' },

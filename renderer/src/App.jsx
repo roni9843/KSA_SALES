@@ -28,6 +28,7 @@ import UserManagement from './pages/UserManagement';
 import CollectDue from './pages/CollectDue';
 import DueCollectionReceipt from './pages/DueCollectionReceipt';
 import PaymentHistory from './pages/PaymentHistory';
+import Dashboard from './pages/Dashboard';
 
 function App() {
   return (
@@ -40,6 +41,7 @@ function App() {
               <Layout>
                 <Routes>
                   <Route path="/" element={<Home />} />
+                  <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/category" element={<AddCategory />} />
                   <Route path="/products" element={<ProductPage />} />
                   <Route path="/product-list" element={<ProductListPage />} />

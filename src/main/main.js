@@ -80,6 +80,7 @@ require('./ipc/roles.js')(ipcMain);
 require('./ipc/users.js')(ipcMain);
 require('./ipc/tax.js')(ipcMain);
 require('./ipc/payment.js')(ipcMain);
+require('./ipc/dashboard.js')(ipcMain);
 
 // IPC for add-supplier
 ipcMain.handle('add-supplier', async (event, supplier) => {
