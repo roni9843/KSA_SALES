@@ -60,84 +60,48 @@ module.exports = (ipcMain) => {
   });
 
   ipcMain.handle('get-dashboard-data', async () => {
-    const today = new Date().toISOString().slice(0, 10);
-
-    const getTodaysSale = new Promise((resolve, reject) => {
-      db.get(
-        `SELECT SUM(paid_amount) as total FROM invoice WHERE invoice_date LIKE ?`,
-        [`${today}%`],
-        (err, row) => {
-          if (err) reject(err);
-          resolve(row?.total || 0);
-        }
-      );
-    });
-
-    const getTodaysPurchase = new Promise((resolve, reject) => {
-      db.get(
-        `SELECT SUM(grand_total) as total FROM product_purchase WHERE purchase_date LIKE ?`,
-        [`${today}%`],
-        (err, row) => {
-          if (err) reject(err);
-          resolve(row?.total || 0);
-        }
-      );
-    });
-
-    const getAvailableProducts = new Promise((resolve, reject) => {
-      db.get(
-        `SELECT COUNT(*) as count FROM product WHERE quantity_in_stock > 0`,
-        (err, row) => {
-          if (err) reject(err);
-          resolve(row?.count || 0);
-        }
-      );
-    });
-
-    const getTotalCustomerDue = new Promise((resolve, reject) => {
-      db.get(`SELECT SUM(due_amount) as total FROM invoice`, (err, row) => {
-        if (err) reject(err);
-        resolve(row?.total || 0);
-      });
-    });
-
-    const getTodaysProfit = new Promise((resolve, reject) => {
-        const query = `
-            SELECT
-                SUM((ii.price - p.purchase_price) * ii.quantity) as profit
-            FROM invoice_item ii
-            JOIN product p ON ii.product_id = p.id
-            JOIN invoice i ON ii.invoice_id = i.id
-            WHERE i.invoice_date LIKE ?
-        `;
-        db.get(query, [`${today}%`], (err, row) => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(row?.profit || 0);
-            }
+    const runQuery = (query, params = []) => {
+      return new Promise((resolve, reject) => {
+        db.get(query, params, (err, row) => {
+          if (err) return reject(err);
+          resolve(row);
         });
-    });
+      });
+    };
 
     try {
-      const [todaysSale, todaysPurchase, availableProducts, totalCustomerDue, todaysProfit] = await Promise.all([
-        getTodaysSale,
-        getTodaysPurchase,
-        getAvailableProducts,
-        getTotalCustomerDue,
-        getTodaysProfit
-      ]);
+      const todaysSaleRow = await runQuery(`SELECT SUM(payable_total) as total FROM invoice WHERE date(invoice_date) = date('now')`);
+      const todaysPurchaseRow = await runQuery(`SELECT SUM(grand_total) as total FROM product_purchase WHERE date(purchase_date) = date('now')`);
+      const availableProductsRow = await runQuery(`SELECT COUNT(*) as count FROM product WHERE quantity_in_stock > 0`);
+      const totalCustomerDueRow = await runQuery(`SELECT SUM(due_amount) as total FROM invoice`);
+      const todaysProfitRow = await runQuery(`
+        SELECT SUM((ii.price - p.purchase_price) * ii.quantity) as profit
+        FROM invoice_item ii
+        JOIN product p ON ii.product_id = p.id
+        JOIN invoice i ON ii.invoice_id = i.id
+        WHERE date(i.invoice_date) = date('now')
+      `);
+      const totalCustomersRow = await runQuery(`SELECT COUNT(*) as count FROM customers`);
+      const totalSuppliersRow = await runQuery(`SELECT COUNT(*) as count FROM suppliers`);
+      const totalDueInvoicesRow = await runQuery(`SELECT COUNT(*) as count FROM invoice WHERE due_amount > 0`);
+      const todaysTotalInvoicesRow = await runQuery(`SELECT COUNT(*) as count FROM invoice WHERE date(invoice_date) = date('now')`);
+      const todaysTotalPurchasesRow = await runQuery(`SELECT COUNT(*) as count FROM product_purchase WHERE date(purchase_date) = date('now')`);
 
       return {
-        todaysSale,
-        todaysPurchase,
-        availableProducts,
-        totalCustomerDue,
-        todaysProfit
+        todaysSale: todaysSaleRow.total || 0,
+        todaysPurchase: todaysPurchaseRow.total || 0,
+        availableProducts: availableProductsRow.count || 0,
+        totalCustomerDue: totalCustomerDueRow.total || 0,
+        todaysProfit: todaysProfitRow.profit || 0,
+        totalCustomers: totalCustomersRow.count || 0,
+        totalSuppliers: totalSuppliersRow.count || 0,
+        totalDueInvoices: totalDueInvoicesRow.count || 0,
+        todaysTotalInvoices: todaysTotalInvoicesRow.count || 0,
+        todaysTotalPurchases: todaysTotalPurchasesRow.count || 0,
       };
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
-      return { error: error.message };
+      throw error;
     }
   });
 
@@ -166,6 +130,29 @@ module.exports = (ipcMain) => {
           status: row.due_amount > 0 ? 'Overdue' : 'Paid'
         }));
         resolve(invoices);
+      });
+    });
+  });
+
+  ipcMain.handle('get-top-selling-products', async () => {
+    return new Promise((resolve, reject) => {
+      const sql = `
+        SELECT
+          p.name,
+          SUM(ii.quantity) as total_quantity
+        FROM invoice_item ii
+        JOIN product p ON ii.product_id = p.id
+        JOIN invoice i ON ii.invoice_id = i.id
+        WHERE date(i.invoice_date) >= date('now', '-6 days')
+        GROUP BY p.id, p.name
+        ORDER BY total_quantity DESC
+        LIMIT 5
+      `;
+      db.all(sql, [], (err, rows) => {
+        if (err) {
+          return reject(err);
+        }
+        resolve(rows);
       });
     });
   });
