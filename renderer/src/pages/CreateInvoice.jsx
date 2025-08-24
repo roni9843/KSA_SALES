@@ -78,9 +78,9 @@ const CreateInvoice = () => {
             quantity: 1,
             quantity_in_stock: product.quantity_in_stock,
             sale_price: product.sale_price,
-            tax: 0,
+            tax: product.tax,
             discount: 0,
-            total_price: product.sale_price,
+            total_price: product.sale_price * (1 + product.tax / 100),
         };
 
         setInvoiceItems([...invoiceItems, newItem]);
@@ -232,8 +232,8 @@ const CreateInvoice = () => {
                                     <input
                                         type="number"
                                         value={i.tax}
-                                        onChange={(e) => handleItemChange(i.id, 'tax', e.target.value)}
-                                        style={qtyInputStyle}
+                                        readOnly
+                                        style={readOnlyInputStyle}
                                     />
                                 </td>
                                 <td style={tdStyle}>
@@ -403,6 +403,12 @@ const qtyInputStyle = {
     backgroundColor: '#E2E8F0',
     color: '#2D3748',
     textAlign: 'center',
+};
+
+const readOnlyInputStyle = {
+    ...qtyInputStyle,
+    backgroundColor: '#CBD5E0',
+    cursor: 'not-allowed',
 };
 
 const selectStyles = {
