@@ -123,6 +123,7 @@ const ProductList = ({ refresh }) => {
                         <th style={thStyle}>Purchase Price</th>
                         <th style={thStyle}>Sale Price</th>
                         <th style={thStyle}>Stock</th>
+                        <th style={thStyle}>Tax</th>
                         <th style={thStyle}>Unit</th>
                         <th style={{ ...thStyle, textAlign: 'center' }}>Actions</th>
                     </tr>
@@ -136,6 +137,7 @@ const ProductList = ({ refresh }) => {
                             <td style={tdStyle}>{p.purchase_price.toFixed(2)}</td>
                             <td style={tdStyle}>{p.sale_price.toFixed(2)}</td>
                             <td style={{ ...tdStyle, color: p.quantity_in_stock < 10 ? '#F56565' : 'inherit', fontWeight: p.quantity_in_stock < 10 ? 'bold' : 'normal' }}>{p.quantity_in_stock}</td>
+                            <td style={tdStyle}>{p.tax}%</td>
                             <td style={tdStyle}>{p.unit}</td>
                             <td style={{ ...tdStyle, textAlign: 'center' }}>
                                 <button onClick={() => setEditProduct(p)} className="action-button"><FaEdit /></button>
