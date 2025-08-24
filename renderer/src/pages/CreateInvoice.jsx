@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { FaFileInvoice, FaTrash } from 'react-icons/fa';
+import { FaFileInvoice, FaTrash, FaPlus } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import AsyncSelect from 'react-select/async';
 import toast from 'react-hot-toast';
+import AddCustomer from '../components/AddCustomer';
 
 const CreateInvoice = () => {
     const navigate = useNavigate();
@@ -13,6 +14,8 @@ const CreateInvoice = () => {
     const [invoiceDate, setInvoiceDate] = useState(new Date().toISOString().split('T')[0]);
     const [selectKey, setSelectKey] = useState(0);
     const selectRef = useRef(null);
+    const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
+
 
     useEffect(() => {
         if (selectRef.current) {
@@ -186,6 +189,11 @@ const CreateInvoice = () => {
         navigate('/quotation', { state: { quotation: quotationData } });
     };
 
+    const handleCustomerAdded = () => {
+        setIsCustomerModalOpen(false);
+        toast.success('Customer added successfully! You can now search for them.');
+    };
+
     return (
         <div style={formContainer}>
             <div style={leftCol}>
@@ -264,15 +272,31 @@ const CreateInvoice = () => {
                 </div>
                 <div>
                     <label style={labelStyle}>Customer</label>
-                    <AsyncSelect
-                        cacheOptions
-                        defaultOptions
-                        loadOptions={loadCustomerOptions}
-                        onChange={handleCustomerSelect}
-                        placeholder="Search for a customer..."
-                        isClearable
-                        styles={selectStyles}
-                    />
+                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                        <div style={{ flex: 1 }}>
+                            <AsyncSelect
+                                cacheOptions
+                                defaultOptions
+                                loadOptions={loadCustomerOptions}
+                                onChange={handleCustomerSelect}
+                                placeholder="Search for a customer..."
+                                isClearable
+                                styles={selectStyles}
+                            />
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => setIsCustomerModalOpen(true)}
+                            className="default-button"
+                            style={{
+                                flex: "0 0 auto",
+                                width: "100px", // 👈 fixed width
+                                padding: "10px",
+                            }}
+                        >
+                            <FaPlus />
+                        </button>
+                    </div>
                 </div>
 
                 <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
@@ -326,6 +350,14 @@ const CreateInvoice = () => {
                     <button className="default-button" onClick={handleSave}>Create Invoice & Print</button>
                 </div>
             </div>
+            {isCustomerModalOpen && (
+                <div style={modalOverlay}>
+                    <div style={modalBox}>
+                        <AddCustomer onAdded={handleCustomerAdded} />
+                        <button onClick={() => setIsCustomerModalOpen(false)} style={{ ...closeButtonStyle, position: 'absolute', top: '10px', right: '10px' }}>X</button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
@@ -438,6 +470,33 @@ const summaryRow = {
     display: 'flex',
     justifyContent: 'space-between',
     marginBottom: '10px',
+};
+
+const modalOverlay = {
+    position: 'fixed',
+    top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000
+};
+
+const modalBox = {
+    background: '#4A5568',
+    padding: '20px',
+    borderRadius: '8px',
+    position: 'relative',
+    width: '80%',
+    maxWidth: '800px'
+};
+
+const closeButtonStyle = {
+    background: 'transparent',
+    border: 'none',
+    color: '#fff',
+    fontSize: '20px',
+    cursor: 'pointer'
 };
 
 export default CreateInvoice;
