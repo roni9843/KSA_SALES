@@ -1,15 +1,69 @@
-# React + Vite
+# Moto POS - Renderer
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This directory contains the frontend React application for Moto POS, a desktop point-of-sale application built with Electron.
 
-Currently, two official plugins are available:
+## About The Project
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Moto POS is designed to be a comprehensive solution for managing sales, inventory, customers, and more for small to medium-sized businesses. The user interface is built with React and Vite, ensuring a fast and modern user experience.
 
-## Expanding the ESLint configuration
+## Technologies Used
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- **Framework:** [React](https://reactjs.org/)
+- **Build Tool:** [Vite](https://vitejs.dev/)
+- **Routing:** [React Router](https://reactrouter.com/)
+- **Internationalization (i18n):** [i18next](https://www.i18next.com/)
+- **Styling:** Plain CSS with some components for UI elements.
+- **Icons:** [React Icons](https://react-icons.github.io/react-icons/)
+
+## Features
+
+The renderer application implements the following user-facing features:
+- Dashboard with key business statistics.
+- Invoice creation, listing, and printing.
+- Product, customer, and supplier management.
+- Purchase and stock management.
+- Tax rate configuration.
+- User and role-based access control management.
+- Due collection and payment history tracking.
+
+## Getting Started
+
+To run the frontend application in a development environment, follow these steps.
+
+### Prerequisites
+
+- Node.js and npm installed.
+
+### Installation & Development
+
+1.  **Install root dependencies:**
+    Navigate to the project root (`moto_pos`) and run:
+    ```sh
+    npm install
+    ```
+
+2.  **Install renderer dependencies:**
+    From the project root, navigate to the `renderer` directory:
+    ```sh
+    cd renderer
+    npm install
+    ```
+
+3.  **Run the application:**
+    Go back to the project root directory and run the main development script. This will start both the Electron main process and the React development server with Hot-Module-Replacement (HMR).
+    ```sh
+    cd ..
+    npm run dev
+    ```
+
+## Build
+
+To create a production build of the React application, run the following command from the `renderer` directory:
+
+```sh
+npm run build
+```
+This will create a `dist` folder inside the `renderer` directory, which is then loaded by Electron in the production build of the desktop app. To build the full application, run `npm run build` from the root directory.
 
 ## Colors:
 - Form BG: #2D3748
