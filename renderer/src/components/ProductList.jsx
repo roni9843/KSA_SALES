@@ -77,13 +77,19 @@ const ProductList = ({ refresh }) => {
     };
 
     const [categories, setCategories] = useState([]);
+    const [taxes, setTaxes] = useState([]);
 
     useEffect(() => {
         async function fetchCategories() {
             const res = await window.electron.ipcRenderer.invoke('get-categories');
             setCategories(res);
         }
+        async function fetchTaxes() {
+            const res = await window.electron.ipcRenderer.invoke('get-taxes');
+            setTaxes(res);
+        }
         fetchCategories();
+        fetchTaxes();
     }, []);
 
 
@@ -207,8 +213,11 @@ const ProductList = ({ refresh }) => {
                                     </div>
 
                                     <div style={inputGroupStyle}>
-                                        <label style={labelStyle}>Tax (%)</label>
-                                        <input type="number" name="tax" placeholder="e.g., 5" value={editProduct.tax} onChange={handleChange} style={inputStyle} />
+                                        <label style={labelStyle}>Tax</label>
+                                        <select name="tax" value={editProduct.tax} onChange={handleChange} style={inputStyle}>
+                                            <option value="0">No Tax</option>
+                                            {taxes.map(t => <option key={t.id} value={t.tax_percentage}>{t.tax_label} ({t.tax_percentage}%)</option>)}
+                                        </select>
                                     </div>
 
                                     <div style={inputGroupStyle}>
