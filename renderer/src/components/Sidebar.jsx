@@ -24,8 +24,8 @@ const Sidebar = () => {
     };
 
     let menuItems = [
-        { path: '/', label: 'Home', icon: <FaHome />, permission: 'page:view:home' },
-        { path: '/dashboard', label: 'Dashboard', icon: <FaHome />, permission: 'page:view:dashboard' },
+        // { path: '/', label: 'Home', icon: <FaHome />, permission: 'page:view:home' },
+        { path: '/', label: 'Dashboard', icon: <FaHome />, permission: 'page:view:dashboard' },
         { path: '/category', label: 'Category', icon: <FaFolder />, permission: 'page:view:category' },
         {
             label: 'Products',
@@ -156,7 +156,7 @@ const Sidebar = () => {
                                             </Link>
                                         ))}
                                     </div>
-                                </> 
+                                </>
                             ) : (
                                 <Link to={item.path} style={linkStyle}>
                                     <span style={{ marginRight: '10px' }}>{item.icon}</span>
@@ -170,7 +170,7 @@ const Sidebar = () => {
             {user && (
                 <div style={{ padding: '20px', borderTop: '1px solid #4a4a4a' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <span style={{display: 'flex', alignItems: 'center'}}>
+                        <span style={{ display: 'flex', alignItems: 'center' }}>
                             <FaUser style={{ marginRight: '10px' }} />
                             {user.username}
                         </span>

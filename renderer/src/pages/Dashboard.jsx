@@ -51,13 +51,8 @@ const Dashboard = () => {
 
   return (
     <div style={styles.dashboardContainer}>
-      <div style={styles.header}>
-        <h1 style={styles.title}>Dashboard</h1>
-        <button style={styles.button}>
-            <FaPlus style={{ marginRight: '8px' }} /> Create Invoice
-        </button>
-      </div>
-      
+
+
       <div style={styles.statsGrid}>
         <StatCard
           icon={<FaMoneyBillWave size={24} color="white" />}
@@ -91,7 +86,7 @@ const Dashboard = () => {
         />
       </div>
 
-      <div style={{...styles.statsGrid, marginTop: '24px'}}>
+      <div style={{ ...styles.statsGrid, marginTop: '24px' }}>
         <StatCard
           icon={<FaUsers size={24} color="white" />}
           title="Total Customers"
@@ -124,50 +119,50 @@ const Dashboard = () => {
         />
       </div>
 
-      <div style={{...styles.mainGrid, marginTop: '24px'}}>
+      <div style={{ ...styles.mainGrid, marginTop: '24px' }}>
         <div style={styles.chartContainer}>
-            <h2 style={styles.sectionTitle}>Weekly Sales & Purchases</h2>
-            <div style={{ width: '100%', height: 320 }}>
-              <ResponsiveContainer>
-                <BarChart data={salesData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.1)" />
-                  <XAxis dataKey="name" stroke="#9CA3AF" />
-                  <YAxis stroke="#9CA3AF" />
-                  <Tooltip contentStyle={{ backgroundColor: '#374151', border: 'none' }} />
-                  <Legend />
-                  <Bar dataKey="sales" fill="#28a745" name="Sales" />
-                  <Bar dataKey="purchases" fill="#17a2b8" name="Purchases" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+          <h2 style={styles.sectionTitle}>Weekly Sales & Purchases</h2>
+          <div style={{ width: '100%', height: 320 }}>
+            <ResponsiveContainer>
+              <BarChart data={salesData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.1)" />
+                <XAxis dataKey="name" stroke="#9CA3AF" />
+                <YAxis stroke="#9CA3AF" />
+                <Tooltip contentStyle={{ backgroundColor: '#374151', border: 'none' }} />
+                <Legend />
+                <Bar dataKey="sales" fill="#28a745" name="Sales" />
+                <Bar dataKey="purchases" fill="#17a2b8" name="Purchases" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
 
         <div style={styles.rightColumn}>
           <div style={styles.recentInvoicesContainer}>
-              <h2 style={styles.sectionTitle}>Recent Invoices</h2>
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                  {recentInvoices.map((invoice, index) => (
-                      <li key={invoice.id} style={{...styles.invoiceItem, borderBottom: index < recentInvoices.length - 1 ? '1px solid #3E404E' : 'none'}}>
-                          <div>
-                              <p style={{ fontWeight: '600', margin: 0, color: '#fff' }}>{invoice.id} - {invoice.customer}</p>
-                              <p style={{ fontSize: '14px', color: '#a0aec0', margin: 0 }}>{invoice.amount}</p>
-                          </div>
-                          <span style={{...styles.statusBadge, ...getStatusStyle(invoice.status)}}>
-                              {invoice.status}
-                          </span>
-                      </li>
-                  ))}
-              </ul>
+            <h2 style={styles.sectionTitle}>Recent Invoices</h2>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+              {recentInvoices.map((invoice, index) => (
+                <li key={invoice.id} style={{ ...styles.invoiceItem, borderBottom: index < recentInvoices.length - 1 ? '1px solid #3E404E' : 'none' }}>
+                  <div>
+                    <p style={{ fontWeight: '600', margin: 0, color: '#fff' }}>{invoice.id} - {invoice.customer}</p>
+                    <p style={{ fontSize: '14px', color: '#a0aec0', margin: 0 }}>{invoice.amount}</p>
+                  </div>
+                  <span style={{ ...styles.statusBadge, ...getStatusStyle(invoice.status) }}>
+                    {invoice.status}
+                  </span>
+                </li>
+              ))}
+            </ul>
           </div>
-          <div style={{...styles.recentInvoicesContainer, marginTop: '24px'}}>
+          <div style={{ ...styles.recentInvoicesContainer, marginTop: '24px' }}>
             <h2 style={styles.sectionTitle}>Top Selling Products This Week</h2>
             <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                {topSellingProducts.map((product, index) => (
-                    <li key={index} style={{...styles.invoiceItem, borderBottom: index < topSellingProducts.length - 1 ? '1px solid #3E404E' : 'none'}}>
-                        <p style={{ fontWeight: '600', margin: 0, color: '#fff' }}>{product.name}</p>
-                        <p style={{ fontSize: '14px', color: '#a0aec0', margin: 0 }}>Sold: {product.total_quantity}</p>
-                    </li>
-                ))}
+              {topSellingProducts.map((product, index) => (
+                <li key={index} style={{ ...styles.invoiceItem, borderBottom: index < topSellingProducts.length - 1 ? '1px solid #3E404E' : 'none' }}>
+                  <p style={{ fontWeight: '600', margin: 0, color: '#fff' }}>{product.name}</p>
+                  <p style={{ fontSize: '14px', color: '#a0aec0', margin: 0 }}>Sold: {product.total_quantity}</p>
+                </li>
+              ))}
             </ul>
           </div>
         </div>

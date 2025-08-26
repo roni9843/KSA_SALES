@@ -41,8 +41,8 @@ function App() {
             <Route path="/*" element={
               <Layout>
                 <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/dashboard" element={<Dashboard />} />
+                  {/* <Route path="/" element={<Home />} /> */}
+                  <Route path="/" element={<Dashboard />} />
                   <Route path="/category" element={<AddCategory />} />
                   <Route path="/products" element={<ProductPage />} />
                   <Route path="/product-list" element={<ProductListPage />} />
