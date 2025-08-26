@@ -3,10 +3,14 @@ import AsyncSelect from 'react-select/async';
 import toast from 'react-hot-toast';
 import { DateRange } from 'react-date-range';
 import { format } from 'date-fns';
+import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import 'react-date-range/dist/styles.css';
 import 'react-date-range/dist/theme/default.css';
+import Dropdown from '../components/common/Dropdown';
 
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 25;
 
 const ProductSalesReport = () => {
     const [selectedProduct, setSelectedProduct] = useState(null);
@@ -16,11 +20,13 @@ const ProductSalesReport = () => {
     const dateRangeRef = useRef(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
-    const [dateRange, setDateRange] = useState([{
-        startDate: new Date(),
-        endDate: new Date(),
-        key: 'selection'
-    }]);
+    const [dateRange, setDateRange] = useState([
+        {
+            startDate: new Date(),
+            endDate: new Date(),
+            key: 'selection'
+        }
+    ]);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -50,7 +56,7 @@ const ProductSalesReport = () => {
         }
     };
 
-    const fetchReport = async (productId, start, end, page = 1) => {
+    const fetchReport = async (productId, start, end, page = 1, limit = PAGE_SIZE) => {
         setLoading(true);
         try {
             const { rows, totalCount } = await window.electron.ipcRenderer.invoke('get-product-sales-report', {
@@ -58,14 +64,13 @@ const ProductSalesReport = () => {
                 startDate: start.toISOString().split('T')[0],
                 endDate: end.toISOString().split('T')[0],
                 page: page,
-                limit: PAGE_SIZE
+                limit: limit
             });
-            setReportData(rows);
-            setTotalPages(Math.ceil(totalCount / PAGE_SIZE));
-            setCurrentPage(page);
+            return { rows, totalCount };
         } catch (error) {
             console.error('Error fetching report:', error);
             toast.error('Failed to generate report.');
+            return { rows: [], totalCount: 0 };
         } finally {
             setLoading(false);
         }
@@ -74,7 +79,11 @@ const ProductSalesReport = () => {
     const handleProductSelect = (selectedOption) => {
         setSelectedProduct(selectedOption);
         if (selectedOption) {
-            fetchReport(selectedOption.value, dateRange[0].startDate, dateRange[0].endDate, 1);
+            fetchReport(selectedOption.value, dateRange[0].startDate, dateRange[0].endDate, 1).then(({ rows, totalCount }) => {
+                setReportData(rows);
+                setTotalPages(Math.ceil(totalCount / PAGE_SIZE));
+                setCurrentPage(1);
+            });
         } else {
             setReportData([]);
             setTotalPages(0);
@@ -86,23 +95,141 @@ const ProductSalesReport = () => {
             toast.error('Please select a product first.');
             return;
         }
-        fetchReport(selectedProduct.value, dateRange[0].startDate, dateRange[0].endDate, 1);
+        fetchReport(selectedProduct.value, dateRange[0].startDate, dateRange[0].endDate, 1).then(({ rows, totalCount }) => {
+            setReportData(rows);
+            setTotalPages(Math.ceil(totalCount / PAGE_SIZE));
+            setCurrentPage(1);
+        });
     };
 
     const handlePageChange = (newPage) => {
         if (newPage >= 1 && newPage <= totalPages) {
-            fetchReport(selectedProduct.value, dateRange[0].startDate, dateRange[0].endDate, newPage);
+            fetchReport(selectedProduct.value, dateRange[0].startDate, dateRange[0].endDate, newPage).then(({ rows }) => {
+                setReportData(rows);
+                setCurrentPage(newPage);
+            });
         }
     };
 
+    const fetchAllReportData = async () => {
+        if (!selectedProduct) {
+            toast.error('Please select a product first.');
+            return [];
+        }
+        setLoading(true);
+        try {
+            const { totalCount } = await window.electron.ipcRenderer.invoke('get-product-sales-report', {
+                productId: selectedProduct.value,
+                startDate: dateRange[0].startDate.toISOString().split('T')[0],
+                endDate: dateRange[0].endDate.toISOString().split('T')[0],
+                page: 1,
+                limit: 1
+            });
+
+            const allData = [];
+            const totalPagesToFetch = Math.ceil(totalCount / PAGE_SIZE);
+            for (let i = 1; i <= totalPagesToFetch; i++) {
+                const { rows } = await fetchReport(selectedProduct.value, dateRange[0].startDate, dateRange[0].endDate, i, PAGE_SIZE);
+                allData.push(...rows);
+            }
+            return allData;
+        } catch (error) {
+            console.error('Error fetching all report data:', error);
+            toast.error('Failed to fetch all report data.');
+            return [];
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const exportToCSV = async () => {
+        const allData = await fetchAllReportData();
+        if (allData.length === 0) {
+            toast.error('No data to export.');
+            return;
+        }
+        const headers = ['Invoice ID', 'Date', 'Quantity', 'Unit Price', 'Total'];
+        const csvContent = [
+            headers.join(','),
+            ...allData.map(item => [
+                item.invoice_id,
+                new Date(item.invoice_date).toLocaleDateString(),
+                item.quantity,
+                item.price.toFixed(2),
+                item.total_price.toFixed(2)
+            ].join(','))
+        ].join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `product_sales_report_${selectedProduct.label}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    const exportToPDF = async () => {
+        const allData = await fetchAllReportData();
+        if (allData.length === 0) {
+            toast.error('No data to export.');
+            return;
+        }
+
+        const doc = new jsPDF();
+        doc.text(`Product Sales Report: ${selectedProduct.label}`, 14, 16);
+        doc.text(`Date Range: ${format(dateRange[0].startDate, "yyyy-MM-dd")} to ${format(dateRange[0].endDate, "yyyy-MM-dd")}`, 14, 22);
+
+        const tableColumn = ["Invoice ID", "Date", "Quantity", "Unit Price", "Total"];
+        const tableRows = [];
+
+        allData.forEach(item => {
+            const itemData = [
+                item.invoice_id,
+                new Date(item.invoice_date).toLocaleDateString(),
+                item.quantity,
+                item.price.toFixed(2),
+                item.total_price.toFixed(2),
+            ];
+            tableRows.push(itemData);
+        });
+        
+        const totalQuantityAll = allData.reduce((sum, item) => sum + item.quantity, 0);
+        const totalValueAll = allData.reduce((sum, item) => sum + item.total_price, 0);
+        tableRows.push(["", "Total", totalQuantityAll, "", totalValueAll.toFixed(2)]);
+
+
+        autoTable(doc, {
+            head: [tableColumn],
+            body: tableRows,
+            startY: 30,
+        });
+
+        doc.save(`product_sales_report_${selectedProduct.label}.pdf`);
+    };
+
+    const handleExportSelect = (option) => {
+        if (option === 'csv') {
+            exportToCSV();
+        } else if (option === 'pdf') {
+            exportToPDF();
+        }
+    };
+    
     const totalQuantity = reportData.reduce((sum, item) => sum + item.quantity, 0);
     const totalValue = reportData.reduce((sum, item) => sum + item.total_price, 0);
+
+    const exportOptions = [
+        { label: 'Export as CSV', value: 'csv' },
+        { label: 'Export as PDF', value: 'pdf' },
+    ];
 
     return (
         <div style={styles.container}>
             <h2>Product Wise Sales Report</h2>
             <div style={styles.filters}>
-                <div style={{ flex: 2 }}>
+                <div style={{flex: 2}}>
                     <label>Select Product</label>
                     <AsyncSelect
                         cacheOptions
@@ -113,7 +240,7 @@ const ProductSalesReport = () => {
                         isClearable
                     />
                 </div>
-                <div style={{ flex: 2, position: 'relative' }}>
+                <div style={{flex: 2, position: 'relative'}}>
                     <label>Date Range</label>
                     <input
                         type="text"
@@ -136,10 +263,11 @@ const ProductSalesReport = () => {
                 <button onClick={handleGenerateReport} disabled={loading || !selectedProduct} className="default-button">
                     {loading ? 'Generating...' : 'Generate Report'}
                 </button>
+                {reportData.length > 0 && <Dropdown options={exportOptions} onSelect={handleExportSelect} title="Export Report" />}
             </div>
 
             {selectedProduct && (
-                <div style={styles.tableContainer}>
+                 <div style={styles.tableContainer}>
                     <table style={styles.table}>
                         <thead>
                             <tr>
@@ -161,16 +289,16 @@ const ProductSalesReport = () => {
                                 </tr>
                             )) : (
                                 <tr>
-                                    <td colSpan="5" style={{ textAlign: 'center', padding: '20px' }}>No sales data found for the selected criteria.</td>
+                                    <td colSpan="5" style={{textAlign: 'center', padding: '20px'}}>No sales data found for the selected criteria.</td>
                                 </tr>
                             )}
                         </tbody>
-                        <tfoot>
+                         <tfoot>
                             <tr>
-                                <td colSpan="2" style={{ ...styles.td, textAlign: 'right', fontWeight: 'bold' }}>Total (Page):</td>
-                                <td style={{ ...styles.td, fontWeight: 'bold' }}>{totalQuantity}</td>
+                                <td colSpan="2" style={{...styles.td, textAlign: 'right', fontWeight: 'bold'}}>Total (Page):</td>
+                                <td style={{...styles.td, fontWeight: 'bold'}}>{totalQuantity}</td>
                                 <td style={styles.td}></td>
-                                <td style={{ ...styles.td, fontWeight: 'bold' }}>{totalValue.toFixed(2)}</td>
+                                <td style={{...styles.td, fontWeight: 'bold'}}>{totalValue.toFixed(2)}</td>
                             </tr>
                         </tfoot>
                     </table>
@@ -180,11 +308,11 @@ const ProductSalesReport = () => {
             {totalPages > 1 && (
                 <div style={styles.pagination}>
                     <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} className="default-button">
-                        Previous
+                        <FaChevronLeft />
                     </button>
                     <span>Page {currentPage} of {totalPages}</span>
                     <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} className="default-button">
-                        Next
+                        <FaChevronRight />
                     </button>
                 </div>
             )}
@@ -204,3 +332,4 @@ const styles = {
 };
 
 export default ProductSalesReport;
+
