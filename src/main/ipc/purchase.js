@@ -21,26 +21,35 @@ module.exports = (ipcMain) => {
 
           const new_purchase_id = this.lastID;
           const itemSql = `
-          INSERT INTO product_purchase_item (product_purchase_id, product_id, quantity, price, tax_percentage, discount_percentage, total_before_tax, total)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+          INSERT INTO product_purchase_item (product_purchase_id, product_id, quantity, price, tax_percentage, discount_percentage, total_before_tax, total, pre_stock, new_stock)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
           const updateProductSql = `
           UPDATE product
-          SET quantity_in_stock = quantity_in_stock + ?
+          SET quantity_in_stock = ?
           WHERE id = ?
         `;
 
           const itemPromises = items.map(item => {
             return new Promise((resolve, reject) => {
-              db.run(itemSql, [new_purchase_id, item.product_id, item.quantity, item.price, item.tax_percentage, item.discount_percentage, item.total_before_tax, item.total], (err) => {
+              db.get('SELECT quantity_in_stock FROM product WHERE id = ?', [item.product_id], (err, product) => {
                 if (err) {
                   return reject(err);
                 }
-                db.run(updateProductSql, [item.quantity, item.product_id], (err) => {
+
+                const pre_stock = product.quantity_in_stock;
+                const new_stock = pre_stock + item.quantity;
+
+                db.run(itemSql, [new_purchase_id, item.product_id, item.quantity, item.price, item.tax_percentage, item.discount_percentage, item.total_before_tax, item.total, pre_stock, new_stock], (err) => {
                   if (err) {
                     return reject(err);
                   }
-                  resolve();
+                  db.run(updateProductSql, [new_stock, item.product_id], (err) => {
+                    if (err) {
+                      return reject(err);
+                    }
+                    resolve();
+                  });
                 });
               });
             });

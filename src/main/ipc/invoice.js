@@ -175,12 +175,12 @@ module.exports = (ipcMain) => {
             // Process invoice items
             const itemStmt = db.prepare(`
               INSERT INTO invoice_item (
-                invoice_id, product_id, quantity, price, tax, discount, total_price
-              ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                invoice_id, product_id, quantity, price, tax, discount, total_price, pre_stock, new_stock
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             `);
 
             const stockUpdateStmt = db.prepare(
-              'UPDATE product SET quantity_in_stock = quantity_in_stock - ? WHERE id = ?'
+              'UPDATE product SET quantity_in_stock = ? WHERE id = ?'
             );
 
             let itemsProcessed = 0;
@@ -196,30 +196,40 @@ module.exports = (ipcMain) => {
             }
 
             invoice_items.forEach(item => {
-              itemStmt.run([newInvoiceId, item.product_id, item.quantity, item.price, item.tax, item.discount, item.total_price], function (err) {
+              db.get('SELECT quantity_in_stock FROM product WHERE id = ?', [item.product_id], (err, product) => {
                 if (err) {
                   db.run('ROLLBACK');
                   return reject(err);
                 }
 
-                stockUpdateStmt.run([item.quantity, item.product_id], function (err) {
+                const pre_stock = product.quantity_in_stock;
+                const new_stock = pre_stock - item.quantity;
+
+                itemStmt.run([newInvoiceId, item.product_id, item.quantity, item.price, item.tax, item.discount, item.total_price, pre_stock, new_stock], function (err) {
                   if (err) {
                     db.run('ROLLBACK');
                     return reject(err);
                   }
 
-                  itemsProcessed++;
-                  if (itemsProcessed === invoice_items.length) {
-                    itemStmt.finalize();
-                    stockUpdateStmt.finalize();
-                    db.run('COMMIT', (err) => {
-                      if (err) {
-                        db.run('ROLLBACK');
-                        return reject(err);
-                      }
-                      resolve(newInvoiceId);
-                    });
-                  }
+                  stockUpdateStmt.run([new_stock, item.product_id], function (err) {
+                    if (err) {
+                      db.run('ROLLBACK');
+                      return reject(err);
+                    }
+
+                    itemsProcessed++;
+                    if (itemsProcessed === invoice_items.length) {
+                      itemStmt.finalize();
+                      stockUpdateStmt.finalize();
+                      db.run('COMMIT', (err) => {
+                        if (err) {
+                          db.run('ROLLBACK');
+                          return reject(err);
+                        }
+                        resolve(newInvoiceId);
+                      });
+                    }
+                  });
                 });
               });
             });
