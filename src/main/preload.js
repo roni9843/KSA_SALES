@@ -1,6 +1,8 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('electron', {
+    getSettings: () => ipcRenderer.invoke('get-settings'),
+    updateSettings: (settings) => ipcRenderer.invoke('update-settings', settings),
     getDashboardData: () => ipcRenderer.invoke('get-dashboard-data'),
     getWeeklySummary: () => ipcRenderer.invoke('get-weekly-summary'),
     getRecentInvoices: () => ipcRenderer.invoke('get-recent-invoices'),

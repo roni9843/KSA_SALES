@@ -29,6 +29,7 @@ import CollectDue from './pages/CollectDue';
 import DueCollectionReceipt from './pages/DueCollectionReceipt';
 import PaymentHistory from './pages/PaymentHistory';
 import Dashboard from './pages/Dashboard';
+import GeneralSetting from './pages/GeneralSetting';
 
 function App() {
   return (
@@ -63,6 +64,7 @@ function App() {
                   <Route path="/purchase-list" element={<PurchaseList />} />
                   <Route path="/manage-roles" element={<RoleManagement />} />
                   <Route path="/manage-users" element={<UserManagement />} />
+                  <Route path="/general-setting" element={<GeneralSetting />} />
                   <Route path="*" element={<p>404 Not Found</p>} />
                 </Routes>
               </Layout>

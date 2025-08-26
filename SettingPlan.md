@@ -1,0 +1,10 @@
+setting table attribute:
+- id - integer - primary key - auto increment,
+- language - text - not null,
+- writing_direction - text - not null,
+- color_scheme - text - not null,
+- shop_name - text - not null,
+- shop_address - text - not null,
+- shop_phone - text - not null,
+- shop_email - text - not null,
+- shop_logo - text - not null,

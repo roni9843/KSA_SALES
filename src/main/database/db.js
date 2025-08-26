@@ -287,6 +287,36 @@ db.serialize(() => {
   `);
 });
 
+// settings table
+db.serialize(() => {
+  db.run(`
+    CREATE TABLE IF NOT EXISTS settings (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      language TEXT NOT NULL,
+      writing_direction TEXT NOT NULL,
+      color_scheme TEXT NOT NULL,
+      shop_name TEXT NOT NULL,
+      shop_address TEXT NOT NULL,
+      shop_phone TEXT NOT NULL,
+      shop_email TEXT NOT NULL,
+      shop_logo TEXT NOT NULL
+    )
+  `);
+
+  // default settings data
+    db.get('SELECT * FROM settings WHERE id = ?', [1], (err, settings) => {
+        if (err) {
+            return console.error('Error checking for settings:', err.message);
+        }
+        if (!settings) {
+            db.run(`
+                INSERT INTO settings (id, language, writing_direction, color_scheme, shop_name, shop_address, shop_phone, shop_email, shop_logo)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `, [1, 'en', 'ltr', 'light', 'Moto POS', 'Mirpur 10, Dhaka', '01700000000', 'example@email.com', ''])
+        }
+    });
+});
+
 // Seed initial data for authentication
 db.get('SELECT * FROM users WHERE username = ?', ['supperAdmin'], (err, user) => {
   if (err) {
