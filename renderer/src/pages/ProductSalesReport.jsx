@@ -3,8 +3,10 @@ import AsyncSelect from 'react-select/async';
 import toast from 'react-hot-toast';
 import { DateRange } from 'react-date-range';
 import { format } from 'date-fns';
-import 'react-date-range/dist/styles.css'; // main style file
-import 'react-date-range/dist/theme/default.css'; // theme css file
+import 'react-date-range/dist/styles.css';
+import 'react-date-range/dist/theme/default.css';
+
+const PAGE_SIZE = 5;
 
 const ProductSalesReport = () => {
     const [selectedProduct, setSelectedProduct] = useState(null);
@@ -12,6 +14,8 @@ const ProductSalesReport = () => {
     const [loading, setLoading] = useState(false);
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
     const dateRangeRef = useRef(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(0);
     const [dateRange, setDateRange] = useState([{
         startDate: new Date(),
         endDate: new Date(),
@@ -46,24 +50,19 @@ const ProductSalesReport = () => {
         }
     };
 
-    const handleProductSelect = (selectedOption) => {
-        setSelectedProduct(selectedOption);
-        if (selectedOption) {
-            fetchReport(selectedOption.value, dateRange[0].startDate, dateRange[0].endDate);
-        } else {
-            setReportData([]);
-        }
-    };
-
-    const fetchReport = async (productId, start, end) => {
+    const fetchReport = async (productId, start, end, page = 1) => {
         setLoading(true);
         try {
-            const data = await window.electron.ipcRenderer.invoke('get-product-sales-report', {
+            const { rows, totalCount } = await window.electron.ipcRenderer.invoke('get-product-sales-report', {
                 productId: productId,
                 startDate: start.toISOString().split('T')[0],
-                endDate: end.toISOString().split('T')[0]
+                endDate: end.toISOString().split('T')[0],
+                page: page,
+                limit: PAGE_SIZE
             });
-            setReportData(data);
+            setReportData(rows);
+            setTotalPages(Math.ceil(totalCount / PAGE_SIZE));
+            setCurrentPage(page);
         } catch (error) {
             console.error('Error fetching report:', error);
             toast.error('Failed to generate report.');
@@ -72,14 +71,30 @@ const ProductSalesReport = () => {
         }
     };
 
+    const handleProductSelect = (selectedOption) => {
+        setSelectedProduct(selectedOption);
+        if (selectedOption) {
+            fetchReport(selectedOption.value, dateRange[0].startDate, dateRange[0].endDate, 1);
+        } else {
+            setReportData([]);
+            setTotalPages(0);
+        }
+    };
+
     const handleGenerateReport = () => {
         if (!selectedProduct) {
             toast.error('Please select a product first.');
             return;
         }
-        fetchReport(selectedProduct.value, dateRange[0].startDate, dateRange[0].endDate);
+        fetchReport(selectedProduct.value, dateRange[0].startDate, dateRange[0].endDate, 1);
     };
-    
+
+    const handlePageChange = (newPage) => {
+        if (newPage >= 1 && newPage <= totalPages) {
+            fetchReport(selectedProduct.value, dateRange[0].startDate, dateRange[0].endDate, newPage);
+        }
+    };
+
     const totalQuantity = reportData.reduce((sum, item) => sum + item.quantity, 0);
     const totalValue = reportData.reduce((sum, item) => sum + item.total_price, 0);
 
@@ -87,7 +102,7 @@ const ProductSalesReport = () => {
         <div style={styles.container}>
             <h2>Product Wise Sales Report</h2>
             <div style={styles.filters}>
-                <div style={{flex: 2}}>
+                <div style={{ flex: 2 }}>
                     <label>Select Product</label>
                     <AsyncSelect
                         cacheOptions
@@ -98,7 +113,7 @@ const ProductSalesReport = () => {
                         isClearable
                     />
                 </div>
-                <div style={{flex: 2, position: 'relative'}}>
+                <div style={{ flex: 2, position: 'relative' }}>
                     <label>Date Range</label>
                     <input
                         type="text"
@@ -124,7 +139,7 @@ const ProductSalesReport = () => {
             </div>
 
             {selectedProduct && (
-                 <div style={styles.tableContainer}>
+                <div style={styles.tableContainer}>
                     <table style={styles.table}>
                         <thead>
                             <tr>
@@ -146,19 +161,31 @@ const ProductSalesReport = () => {
                                 </tr>
                             )) : (
                                 <tr>
-                                    <td colSpan="5" style={{textAlign: 'center', padding: '20px'}}>No sales data found for the selected criteria.</td>
+                                    <td colSpan="5" style={{ textAlign: 'center', padding: '20px' }}>No sales data found for the selected criteria.</td>
                                 </tr>
                             )}
                         </tbody>
-                         <tfoot>
+                        <tfoot>
                             <tr>
-                                <td colSpan="2" style={{...styles.td, textAlign: 'right', fontWeight: 'bold'}}>Total:</td>
-                                <td style={{...styles.td, fontWeight: 'bold'}}>{totalQuantity}</td>
+                                <td colSpan="2" style={{ ...styles.td, textAlign: 'right', fontWeight: 'bold' }}>Total (Page):</td>
+                                <td style={{ ...styles.td, fontWeight: 'bold' }}>{totalQuantity}</td>
                                 <td style={styles.td}></td>
-                                <td style={{...styles.td, fontWeight: 'bold'}}>{totalValue.toFixed(2)}</td>
+                                <td style={{ ...styles.td, fontWeight: 'bold' }}>{totalValue.toFixed(2)}</td>
                             </tr>
                         </tfoot>
                     </table>
+                </div>
+            )}
+
+            {totalPages > 1 && (
+                <div style={styles.pagination}>
+                    <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} className="default-button">
+                        Previous
+                    </button>
+                    <span>Page {currentPage} of {totalPages}</span>
+                    <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} className="default-button">
+                        Next
+                    </button>
                 </div>
             )}
         </div>
@@ -173,6 +200,7 @@ const styles = {
     table: { width: '100%', borderCollapse: 'collapse' },
     th: { background: '#4A5568', color: '#fff', padding: '12px', textAlign: 'left' },
     td: { padding: '12px', borderBottom: '1px solid #4A5568' },
+    pagination: { display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', marginTop: '20px' },
 };
 
 export default ProductSalesReport;
