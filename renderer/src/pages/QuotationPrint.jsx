@@ -1,10 +1,28 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 function QuotationPrint() {
     const location = useLocation();
     const navigate = useNavigate();
     const { quotation } = location.state || {};
+    const [settings, setSettings] = useState(null);
+    const [logoDataUrl, setLogoDataUrl] = useState('');
+
+    useEffect(() => {
+        async function fetchSettings() {
+            try {
+                const settingsData = await window.electron.ipcRenderer.invoke('get-settings');
+                setSettings(settingsData);
+
+                if (settingsData && settingsData.shop_logo) {
+                    setLogoDataUrl(settingsData.shop_logo);
+                }
+            } catch (e) {
+                console.error('Error fetching settings:', e);
+            }
+        }
+        fetchSettings();
+    }, []);
 
     const handlePrint = () => {
         window.print();
@@ -23,30 +41,40 @@ function QuotationPrint() {
         );
     }
 
+    if (!settings) {
+        return (
+            <div style={{ padding: '20px' }}>
+                <p>Loading...</p>
+            </div>
+        );
+    }
+
     const { customer, items, subtotal, itemDiscount, itemTax, cartDiscount, total, date } = quotation;
 
     return (
         <div style={{ maxWidth: '800px', margin: 'auto', padding: '20px', fontFamily: 'sans-serif', color: '#333' }}>
             {/* Header */}
-            <div style={{ backgroundColor: '#003366', color: 'white', padding: '40px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div style={{ backgroundColor: '#003366', color: 'white', padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div style={{ flex: 1 }}>
                     <h1 style={{ fontSize: '48px', margin: 0 }}>Quotation</h1>
-                    <div style={{ border: '1px solid white', padding: '20px', marginTop: '20px', width: '150px', textAlign: 'center' }}>
-                        Your Company Logo
+                    <div style={{ border: '1px solid white', padding: '20px', marginTop: '10px', width: '150px', textAlign: 'center', height: '100px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        {logoDataUrl ? (
+                            <img src={logoDataUrl} alt="Company Logo" style={{ maxWidth: '100%', maxHeight: '100%' }} />
+                        ) : (
+                            'Your Company Logo'
+                        )}
                     </div>
                 </div>
                 <div style={{ textAlign: 'right', flex: 1 }}>
-                    <h2>Business Name</h2>
-                    <p>Street Address Line 01</p>
-                    <p>Street Address Line 02</p>
-                    <p>+1 (999)-999-9999</p>
-                    <p>Email Address</p>
-                    <p>Website</p>
+                    <h2>{settings.shop_name}</h2>
+                    <p>{settings.shop_address}</p>
+                    <p>{settings.shop_phone}</p>
+                    <p>{settings.shop_email}</p>
                 </div>
             </div>
 
             {/* Quotation Details & Bill To */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '20px 0', borderBottom: '1px solid #ccc' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #ccc' }}>
                 <div>
                     <h3 style={{ margin: '0 0 10px 0' }}>QUOTATION DETAILS:</h3>
                     <p><strong>Quotation #:</strong> Q-{Date.now()}</p>
@@ -60,7 +88,7 @@ function QuotationPrint() {
             </div>
 
             {/* Items Table */}
-            <table width="100%" style={{ marginTop: '20px', borderCollapse: 'collapse' }}>
+            <table width="100%" style={{ marginTop: '10px', borderCollapse: 'collapse' }}>
                 <thead>
                     <tr style={{ borderBottom: '2px solid #333' }}>
                         <th style={{ textAlign: 'left', padding: '8px' }}>ITEM/SERVICE</th>
@@ -92,7 +120,7 @@ function QuotationPrint() {
             </table>
 
             {/* Totals Section */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
                 <div style={{ width: '250px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}>
                         <span>Subtotal</span>
@@ -118,12 +146,12 @@ function QuotationPrint() {
             </div>
 
             {/* Footer */}
-            <div style={{ marginTop: '40px' }}>
+            <div style={{ marginTop: '20px' }}>
                 <h3>TERMS & CONDITIONS</h3>
                 <p>This quotation is valid for 30 days. Prices are subject to change.</p>
             </div>
 
-            <div style={{ marginTop: '20px', textAlign: 'center', display: 'flex', justifyContent: 'center', gap: '10px' }}>
+            <div style={{ marginTop: '10px', textAlign: 'center', display: 'flex', justifyContent: 'center', gap: '10px' }}>
                 <button onClick={handlePrint} style={{ padding: '10px 20px', cursor: 'pointer', border: 'none', backgroundColor: '#007bff', color: 'white', fontSize: '16px' }}>
                     🖨️ Print
                 </button>

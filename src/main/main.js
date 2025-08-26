@@ -252,8 +252,3 @@ ipcMain.handle('generate-purchase-id', async () => {
         });
     });
 });
-
-
-
-
-

@@ -13,13 +13,17 @@ const GeneralSetting = () => {
         shop_email: '',
         shop_logo: ''
     });
+    const [logoPreview, setLogoPreview] = useState('');
 
     useEffect(() => {
         const fetchSettings = async () => {
             try {
-                const fetchedSettings = await window.electron.getSettings();
+                const fetchedSettings = await window.electron.ipcRenderer.invoke('get-settings');
                 if (fetchedSettings) {
                     setSettings(fetchedSettings);
+                    if (fetchedSettings.shop_logo) {
+                        setLogoPreview(fetchedSettings.shop_logo);
+                    }
                 }
             } catch (error) {
                 toast.error('Failed to fetch settings.');
@@ -36,10 +40,24 @@ const GeneralSetting = () => {
         }));
     };
 
+    const handleLogoChange = async (e) => {
+        const file = e.target.files[0];
+        if (file && file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                const dataUrl = event.target.result;
+                setLogoPreview(dataUrl);
+                setSettings(prev => ({ ...prev, shop_logo: dataUrl }));
+                toast.success('Logo selected. Click "Save Settings" to apply.');
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await window.electron.updateSettings(settings);
+            await window.electron.ipcRenderer.invoke('update-settings', settings);
             toast.success('Settings updated successfully!');
         } catch (error) {
             toast.error('Failed to update settings.');
@@ -93,8 +111,14 @@ const GeneralSetting = () => {
                         </div>
                         <div style={inputGroupStyle}>
                             <label style={labelStyle}>Shop Logo</label>
-                            <input type="file" name="shop_logo" onChange={handleChange} style={inputStyle} />
+                            <input type="file" name="shop_logo_file" onChange={handleLogoChange} style={inputStyle} accept="image/*" />
                         </div>
+                        {logoPreview && (
+                            <div style={inputGroupStyle}>
+                                <label style={labelStyle}>Logo Preview</label>
+                                <img src={logoPreview} alt="Shop Logo Preview" style={{ maxWidth: '200px', maxHeight: '200px', borderRadius: '5px', objectFit: 'contain' }} />
+                            </div>
+                        )}
                     </div>
                 </fieldset>
 
