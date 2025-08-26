@@ -25,6 +25,7 @@ The renderer application implements the following user-facing features:
 - Tax rate configuration.
 - User and role-based access control management.
 - Due collection and payment history tracking.
+- Product transaction history report.
 
 ## Getting Started
 

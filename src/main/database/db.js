@@ -108,6 +108,7 @@ db.serialize(() => {
   `);
 
   // invoice_item table
+  // invoice_item table
   db.run(`
     CREATE TABLE IF NOT EXISTS invoice_item (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -122,6 +123,18 @@ db.serialize(() => {
       FOREIGN KEY (product_id) REFERENCES product(id)
     )
   `);
+
+  // Add pre_stock and new_stock to invoice_item
+  db.all("PRAGMA table_info(invoice_item)", (err, columns) => {
+    if (err) return console.error("PRAGMA error:", err.message);
+    const existingColumns = columns.map(c => c.name);
+    if (!existingColumns.includes('pre_stock')) {
+      db.run("ALTER TABLE invoice_item ADD COLUMN pre_stock INTEGER DEFAULT 0");
+    }
+    if (!existingColumns.includes('new_stock')) {
+      db.run("ALTER TABLE invoice_item ADD COLUMN new_stock INTEGER DEFAULT 0");
+    }
+  });
 
   // customer_payment_history table
   db.run(`
@@ -232,6 +245,18 @@ db.run(`
     FOREIGN KEY (product_id) REFERENCES product(id)
   )
 `);
+
+  // Add pre_stock and new_stock to product_purchase_item
+  db.all("PRAGMA table_info(product_purchase_item)", (err, columns) => {
+    if (err) return console.error("PRAGMA error:", err.message);
+    const existingColumns = columns.map(c => c.name);
+    if (!existingColumns.includes('pre_stock')) {
+      db.run("ALTER TABLE product_purchase_item ADD COLUMN pre_stock INTEGER DEFAULT 0");
+    }
+    if (!existingColumns.includes('new_stock')) {
+      db.run("ALTER TABLE product_purchase_item ADD COLUMN new_stock INTEGER DEFAULT 0");
+    }
+  });
 
 const bcrypt = require('bcrypt');
 

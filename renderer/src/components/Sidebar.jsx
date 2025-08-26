@@ -71,6 +71,7 @@ const Sidebar = () => {
             permission: 'page:view:reporting',
             subItems: [
                 { path: '/product-sales-report', label: 'Product wise sales' },
+                { path: '/product-transaction', label: 'Product Transaction' },
             ]
         },
         { path: '/tax-rates', label: 'Tax Rates', icon: <FaMoneyBillAlt />, permission: 'page:view:tax-rates' },

@@ -82,6 +82,7 @@ require('./ipc/tax.js')(ipcMain);
 require('./ipc/payment.js')(ipcMain);
 require('./ipc/dashboard.js')(ipcMain);
 require('./ipc/reporting.js')(ipcMain);
+require('./ipc/transaction.js')(ipcMain);
 
 
 // settings

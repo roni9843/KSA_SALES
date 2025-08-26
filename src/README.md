@@ -24,7 +24,7 @@ The backend is structured to be modular and maintainable, separating concerns in
   - Defining and creating the entire database schema upon application startup.
   - Seeding the database with initial data, such as creating a default `supperAdmin` user, roles, and permissions.
 
-- **`main/ipc/*.js`**: This directory contains the core business logic of the application, broken down by feature. Each file registers a set of IPC handlers for a specific domain (e.g., `invoice.js`, `product.js`, `auth.js`). This keeps the `main.js` file clean and makes the application logic easy to navigate and manage.
+- **`main/ipc/*.js`**: This directory contains the core business logic of the application, broken down by feature. Each file registers a set of IPC handlers for a specific domain (e.g., `invoice.js`, `product.js`, `auth.js`, `transaction.js`). This keeps the `main.js` file clean and makes the application logic easy to navigate and manage.
 
 ## Database Schema
 
@@ -33,8 +33,8 @@ The application uses a SQLite database (`moto_pos.db`) to store all its data. Th
 - `users`, `roles`, `permissions`, `user_roles`, `role_permissions`: For handling role-based access control (RBAC).
 - `product_category`, `product`: For product and inventory management.
 - `customers`, `suppliers`: For managing customer and supplier information.
-- `product_purchase`, `product_purchase_item`: For tracking product purchases.
-- `invoice`, `invoice_item`: For creating and managing sales invoices.
+- `product_purchase`, `product_purchase_item`: For tracking product purchases. The `product_purchase_item` table includes `pre_stock` and `new_stock` columns to record the stock level before and after the transaction.
+- `invoice`, `invoice_item`: For creating and managing sales invoices. The `invoice_item` table includes `pre_stock` and `new_stock` columns to record the stock level before and after the transaction.
 - `customer_payment_history`: For tracking customer payments and due amounts.
 - `tax`: For managing tax rates.
 

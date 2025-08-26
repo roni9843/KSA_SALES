@@ -31,6 +31,7 @@ import PaymentHistory from './pages/PaymentHistory';
 import Dashboard from './pages/Dashboard';
 import GeneralSetting from './pages/GeneralSetting';
 import ProductSalesReport from './pages/ProductSalesReport';
+import ProductTransaction from './pages/ProductTransaction';
 
 function App() {
   return (
@@ -60,6 +61,7 @@ function App() {
                   <Route path="/supplier-list" element={<SupplierListPage />} />
                   <Route path="/reporting" element={<Reporting />} />
                   <Route path="/product-sales-report" element={<ProductSalesReport />} />
+                  <Route path="/product-transaction" element={<ProductTransaction />} />
                   <Route path="/tax-rates" element={<TaxRates />} />
                   <Route path="/my-company" element={<MyCompany />} />
                   <Route path="/product-purchase" element={<ProductPurchase />} />
