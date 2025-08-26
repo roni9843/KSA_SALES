@@ -65,9 +65,16 @@ const Sidebar = () => {
                 { path: '/supplier-list', label: 'Supplier List' },
             ]
         },
-        { path: '/reporting', label: 'Reporting', icon: <FaChartBar />, permission: 'page:view:reporting' },
+                {
+            label: 'Reporting',
+            icon: <FaChartBar />,
+            permission: 'page:view:reporting',
+            subItems: [
+                { path: '/product-sales-report', label: 'Product wise sales' },
+            ]
+        },
         { path: '/tax-rates', label: 'Tax Rates', icon: <FaMoneyBillAlt />, permission: 'page:view:tax-rates' },
-        { path: '/my-company', label: 'My Company', icon: <FaBuilding />, permission: 'page:view:my-company' },
+        // { path: '/my-company', label: 'My Company', icon: <FaBuilding />, permission: 'page:view:my-company' },
         {
             label: 'Purchase',
             icon: <FaShoppingCart />,

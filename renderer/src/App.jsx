@@ -30,6 +30,7 @@ import DueCollectionReceipt from './pages/DueCollectionReceipt';
 import PaymentHistory from './pages/PaymentHistory';
 import Dashboard from './pages/Dashboard';
 import GeneralSetting from './pages/GeneralSetting';
+import ProductSalesReport from './pages/ProductSalesReport';
 
 function App() {
   return (
@@ -58,6 +59,7 @@ function App() {
                   <Route path="/suppliers" element={<Suppliers />} />
                   <Route path="/supplier-list" element={<SupplierListPage />} />
                   <Route path="/reporting" element={<Reporting />} />
+                  <Route path="/product-sales-report" element={<ProductSalesReport />} />
                   <Route path="/tax-rates" element={<TaxRates />} />
                   <Route path="/my-company" element={<MyCompany />} />
                   <Route path="/product-purchase" element={<ProductPurchase />} />
