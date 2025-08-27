@@ -12,7 +12,7 @@ const AddProduct = ({ onAdded }) => {
         description: '',
         purchase_price: '',
         sale_price: '',
-        quantity_in_stock: '',
+        quantity_in_stock: 0,
         unit: '',
         tax: '0',
         code: '',
@@ -55,7 +55,7 @@ const AddProduct = ({ onAdded }) => {
                 description: '',
                 purchase_price: '',
                 sale_price: '',
-                quantity_in_stock: '',
+                quantity_in_stock: 0,
                 unit: '',
                 tax: '0',
                 code: '',
@@ -164,7 +164,7 @@ const AddProduct = ({ onAdded }) => {
 
                         <div style={inputGroupStyle}>
                             <label style={labelStyle}>Stock Quantity</label>
-                            <input type="number" name="quantity_in_stock" placeholder="0" value={form.quantity_in_stock} onChange={handleChange} style={inputStyle} />
+                            <input type="number" name="quantity_in_stock" placeholder="0" value={form.quantity_in_stock} readOnly style={{ ...inputStyle, backgroundColor: '#E2E8F0' }} />
                         </div>
                     </div>
                 </fieldset>

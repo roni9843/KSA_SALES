@@ -245,7 +245,7 @@ const ProductList = ({ refresh }) => {
 
                                     <div style={inputGroupStyle}>
                                         <label style={labelStyle}>Stock Quantity</label>
-                                        <input type="number" name="quantity_in_stock" placeholder="0" value={editProduct.quantity_in_stock} onChange={handleChange} style={inputStyle} />
+                                        <input type="number" name="quantity_in_stock" placeholder="0" value={editProduct.quantity_in_stock} readOnly style={{ ...inputStyle, backgroundColor: '#E2E8F0' }} />
                                     </div>
                                 </div>
                             </fieldset>
