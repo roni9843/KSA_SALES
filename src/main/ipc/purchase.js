@@ -38,7 +38,7 @@ module.exports = (ipcMain) => {
                 }
 
                 const pre_stock = product.quantity_in_stock;
-                const new_stock = pre_stock + item.quantity;
+                const new_stock = pre_stock + parseFloat(item.quantity);
 
                 db.run(itemSql, [new_purchase_id, item.product_id, item.quantity, item.price, item.tax_percentage, item.discount_percentage, item.total_before_tax, item.total, pre_stock, new_stock], (err) => {
                   if (err) {

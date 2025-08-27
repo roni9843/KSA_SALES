@@ -16,6 +16,7 @@ const CustomDatePickerInput = React.forwardRef(({
     className="example-custom-input"
     onClick={onClick}
     value={value}
+    readOnly
     ref={ref}
     style={style}
   />
@@ -346,7 +347,7 @@ const ProductPurchase = () => {
                     <td style={{ ...tdStyle, width: '12%', textAlign: 'right' }}>
                       <input
                         type="number"
-                        value={item.priceBeforeTax.toFixed(2)}
+                        value={(item.priceBeforeTax || 0).toFixed(2)}
                         readOnly
                         style={{ ...inputStyle, backgroundColor: '#E2E8F0', textAlign: 'right' }}
                       />
@@ -362,7 +363,7 @@ const ProductPurchase = () => {
                     <td style={{ ...tdStyle, width: '10%', textAlign: 'right' }}>
                       <input
                         type="number"
-                        value={item.price.toFixed(2)}
+                        value={(item.price || 0).toFixed(2)}
                         readOnly
                         style={{ ...inputStyle, backgroundColor: '#E2E8F0', textAlign: 'right' }}
                       />
@@ -376,10 +377,10 @@ const ProductPurchase = () => {
                       />
                     </td>
                     <td style={{ ...tdStyle, width: '12%', textAlign: 'right' }}>
-                      {item.totalBeforeTax.toFixed(2)}
+                      {(item.totalBeforeTax || 0).toFixed(2)}
                     </td>
                     <td style={{ ...tdStyle, width: '10%', textAlign: 'right' }}>
-                      {item.total.toFixed(2)}
+                      {(item.total || 0).toFixed(2)}
                     </td>
                     <td style={{ ...tdStyle, width: '3%' }}>
                       <button type="button" onClick={() => removeItem(index)} className="action-button">
@@ -398,19 +399,19 @@ const ProductPurchase = () => {
           <div style={summaryGridStyle}>
             <div style={summaryItemStyle}>
               <span style={summaryLabelStyle}>Total Before Tax:</span>
-              <span style={summaryValueStyle}>{calculateTotalBeforeTax().toFixed(2)}</span>
+              <span style={summaryValueStyle}>{(calculateTotalBeforeTax() || 0).toFixed(2)}</span>
             </div>
             <div style={summaryItemStyle}>
               <span style={summaryLabelStyle}>Total Tax:</span>
-              <span style={summaryValueStyle}>{calculateTotalTax().toFixed(2)}</span>
+              <span style={summaryValueStyle}>{(calculateTotalTax() || 0).toFixed(2)}</span>
             </div>
             <div style={summaryItemStyle}>
               <span style={summaryLabelStyle}>Total Discount:</span>
-              <span style={summaryValueStyle}>{calculateTotalDiscount().toFixed(2)}</span>
+              <span style={summaryValueStyle}>{(calculateTotalDiscount() || 0).toFixed(2)}</span>
             </div>
             <div style={summaryItemStyle}>
               <span style={summaryLabelStyle}>Grand Total:</span>
-              <span style={summaryValueStyle}>{calculateGrandTotal().toFixed(2)}</span>
+              <span style={summaryValueStyle}>{(calculateGrandTotal() || 0).toFixed(2)}</span>
             </div>
           </div>
         </fieldset>

@@ -203,7 +203,7 @@ module.exports = (ipcMain) => {
                 }
 
                 const pre_stock = product.quantity_in_stock;
-                const new_stock = pre_stock - item.quantity;
+                const new_stock = pre_stock - parseFloat(item.quantity);
 
                 itemStmt.run([newInvoiceId, item.product_id, item.quantity, item.price, item.tax, item.discount, item.total_price, pre_stock, new_stock], function (err) {
                   if (err) {
