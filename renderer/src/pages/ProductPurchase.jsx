@@ -9,12 +9,13 @@ import '../App.css';
 const CustomDatePickerInput = React.forwardRef(({
   value,
   onClick,
-  style
+  style,
+  isReadOnly
 }, ref) => (
   <input
     type="text"
     className="example-custom-input"
-    onClick={onClick}
+    onClick={isReadOnly ? undefined : onClick}
     value={value}
     readOnly
     ref={ref}
@@ -27,7 +28,7 @@ const ProductPurchase = () => {
   const [purchaseId, setPurchaseId] = useState('');
   const [supplierInvoiceNo, setSupplierInvoiceNo] = useState('');
   const [supplierInvoiceDate, setSupplierInvoiceDate] = useState(null);
-  const [purchaseDate, setPurchaseDate] = useState(null);
+  const [purchaseDate, setPurchaseDate] = useState(new Date());
   const [selectedSupplier, setSelectedSupplier] = useState('');
   const [purchaseItems, setPurchaseItems] = useState([]);
   const [selectKey, setSelectKey] = useState(0);
@@ -172,11 +173,19 @@ const ProductPurchase = () => {
       }
     }
 
+    const formatDate = (date) => {
+      if (!date) return '';
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
     const purchaseData = {
       purchase_id: purchaseId,
       supplier_invoice_no: supplierInvoiceNo,
-      supplier_invoice_date: supplierInvoiceDate ? supplierInvoiceDate.toISOString().slice(0, 10) : '',
-      purchase_date: purchaseDate ? purchaseDate.toISOString().slice(0, 10) : '',
+      supplier_invoice_date: formatDate(supplierInvoiceDate),
+      purchase_date: formatDate(purchaseDate),
       supplier_id: selectedSupplier,
       grand_total: calculateGrandTotal(),
       grand_total_before_tax: calculateTotalBeforeTax(),
@@ -201,7 +210,7 @@ const ProductPurchase = () => {
       setPurchaseId(generatedPurchaseId);
       setSupplierInvoiceNo('');
       setSupplierInvoiceDate(null);
-      setPurchaseDate(null);
+      setPurchaseDate(new Date());
       setSelectedSupplier('');
       setPurchaseItems([]);
     } catch (err) {
@@ -237,13 +246,8 @@ const ProductPurchase = () => {
                 id="purchaseDate"
                 name="purchaseDate"
                 selected={purchaseDate}
-                onChange={(date) => setPurchaseDate(date)}
                 dateFormat="yyyy-MM-dd"
-                customInput={<CustomDatePickerInput style={inputStyle} />}
-                peekNextMonth
-                showMonthDropdown
-                showYearDropdown
-                dropdownMode="select"
+                customInput={<CustomDatePickerInput style={{ ...inputStyle, backgroundColor: '#E2E8F0' }} isReadOnly={true} />}
               />
             </div>
             <div style={inputGroupStyle}>

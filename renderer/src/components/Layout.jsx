@@ -1,6 +1,50 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import { useTranslation } from 'react-i18next';
+
+
+const Clock = () => {
+    const [date, setDate] = useState(new Date());
+
+    useEffect(() => {
+        const timerId = setInterval(() => setDate(new Date()), 1000);
+        return () => clearInterval(timerId);
+    }, []);
+
+    const formatDateTime = (date) => {
+        const year = date.getFullYear();
+        const day = date.getDate();
+        const month = date.toLocaleString('default', { month: 'short' });
+
+        const getDayWithSuffix = (d) => {
+            if (d > 3 && d < 21) return `${d}th`;
+            switch (d % 10) {
+                case 1: return `${d}st`;
+                case 2: return `${d}nd`;
+                case 3: return `${d}rd`;
+                default: return `${d}th`;
+            }
+        };
+
+        const dayWithSuffix = getDayWithSuffix(day);
+
+        let hours = date.getHours();
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12;
+        hours = hours ? hours : 12; // the hour '0' should be '12'
+
+        const strTime = `${hours}:${minutes} ${ampm}`;
+
+        return `${dayWithSuffix} ${month} ${year} | ${strTime}`;
+    };
+
+    return (
+        <div style={{ fontSize: '16px', color: '#fff' }}>
+            {formatDateTime(date)}
+        </div>
+    );
+};
 
 
 const Layout = ({ children }) => {
@@ -14,7 +58,7 @@ const Layout = ({ children }) => {
 
     return (
         <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
-            
+
             {/* 🔝 Topbar */}
             <header
                 style={{
@@ -48,13 +92,16 @@ const Layout = ({ children }) => {
                     <h2 style={{ margin: 0 }}>{t('title')} </h2>
                 </div>
 
-                {/* Language Selector */}
-                <div >
-                    <select onChange={(e) => changeLanguage(e.target.value)} defaultValue={i18n.language}>
-                        <option value="en">English</option>
-                        <option value="bn">বাংলা</option>
-                        <option value="ar">العربية</option>
-                    </select>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                    <Clock />
+                    {/* Language Selector */}
+                    <div >
+                        <select onChange={(e) => changeLanguage(e.target.value)} defaultValue={i18n.language}>
+                            <option value="en">English</option>
+                            <option value="bn">বাংলা</option>
+                            <option value="ar">العربية</option>
+                        </select>
+                    </div>
                 </div>
             </header>
 
