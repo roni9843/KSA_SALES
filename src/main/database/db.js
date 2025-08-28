@@ -153,6 +153,52 @@ db.serialize(() => {
   `);
 });
 
+db.all("PRAGMA table_info(customer_payment_history)", (err, columns) => {
+    if (err) return console.error("PRAGMA error:", err.message);
+    const existingColumns = columns.map(c => c.name);
+    const newPaymentColumns = [
+        { name: 'paid_amount_cash', type: 'REAL', default: 0 },
+        { name: 'paid_amount_card', type: 'REAL', default: 0 },
+        { name: 'paid_amount_bank', type: 'REAL', default: 0 }
+    ];
+
+    newPaymentColumns.forEach(col => {
+        if (!existingColumns.includes(col.name)) {
+            let query = `ALTER TABLE customer_payment_history ADD COLUMN ${col.name} ${col.type} DEFAULT ${col.default}`;
+            db.run(query, (err) => {
+                if (err) {
+                    console.error(`Error adding ${col.name} column to customer_payment_history:`, err.message);
+                } else {
+                    console.log(`✅ '${col.name}' column added to customer_payment_history table`);
+                }
+            });
+        }
+    });
+});
+
+db.all("PRAGMA table_info(invoice)", (err, columns) => {
+    if (err) return console.error("PRAGMA error:", err.message);
+    const existingColumns = columns.map(c => c.name);
+    const newPaymentColumns = [
+        { name: 'paid_amount_cash', type: 'REAL', default: 0 },
+        { name: 'paid_amount_card', type: 'REAL', default: 0 },
+        { name: 'paid_amount_bank', type: 'REAL', default: 0 }
+    ];
+
+    newPaymentColumns.forEach(col => {
+        if (!existingColumns.includes(col.name)) {
+            let query = `ALTER TABLE invoice ADD COLUMN ${col.name} ${col.type} DEFAULT ${col.default}`;
+            db.run(query, (err) => {
+                if (err) {
+                    console.error(`Error adding ${col.name} column to invoice:`, err.message);
+                } else {
+                    console.log(`✅ '${col.name}' column added to invoice table`);
+                }
+            });
+        }
+    });
+});
+
 // tax table
 db.run(`
   CREATE TABLE IF NOT EXISTS tax (

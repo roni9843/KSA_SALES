@@ -8,7 +8,9 @@ import AddCustomer from '../components/AddCustomer';
 const CreateInvoice = () => {
     const navigate = useNavigate();
     const [invoiceItems, setInvoiceItems] = useState([]);
-    const [paid, setPaid] = useState(0);
+    const [paidByCash, setPaidByCash] = useState(0);
+    const [paidByCard, setPaidByCard] = useState(0);
+    const [paidByBank, setPaidByBank] = useState(0);
     const [cartDiscount, setCartDiscount] = useState(0);
     const [customer, setCustomer] = useState(null);
     const [invoiceDate, setInvoiceDate] = useState(new Date().toISOString().split('T')[0]);
@@ -129,8 +131,9 @@ const CreateInvoice = () => {
     const itemDiscount = invoiceItems.reduce((sum, i) => sum + (i.sale_price * i.quantity * i.discount / 100), 0);
     const itemTax = invoiceItems.reduce((sum, i) => sum + (i.sale_price * i.quantity * (1 - i.discount / 100) * i.tax / 100), 0);
     const total = subtotal - itemDiscount + itemTax - parseFloat(cartDiscount || 0);
-    const due = total - parseFloat(paid || 0);
-    const change = parseFloat(paid || 0) > total ? parseFloat(paid || 0) - total : 0;
+    const paid = parseFloat(paidByCash || 0) + parseFloat(paidByCard || 0) + parseFloat(paidByBank || 0);
+    const due = total - paid;
+    const change = paid > total ? paid - total : 0;
 
     const handleSave = async () => {
         if (invoiceItems.length === 0) {
@@ -146,7 +149,10 @@ const CreateInvoice = () => {
             item_tax: itemTax,
             cart_discount: parseFloat(cartDiscount || 0),
             payable_total: total,
-            paid_amount: parseFloat(paid || 0),
+            paid_amount: paid,
+            paid_amount_cash: parseFloat(paidByCash || 0),
+            paid_amount_card: parseFloat(paidByCard || 0),
+            paid_amount_bank: parseFloat(paidByBank || 0),
             due_amount: due,
             change_amount: change,
             created_by: 'user', // Replace with actual user if available
@@ -299,14 +305,17 @@ const CreateInvoice = () => {
                     </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-                    <div style={{ flex: 1 }}>
-                        <label style={labelStyle}>Paid Amount</label>
-                        <input type="number" placeholder="Paid" value={paid} onChange={(e) => setPaid(e.target.value)} style={inputStyle} />
-                    </div>
-                    <div style={{ flex: 1 }}>
-                        <label style={labelStyle}>Cart Discount</label>
-                        <input type="number" placeholder="Cart Discount" value={cartDiscount} onChange={(e) => setCartDiscount(e.target.value)} style={inputStyle} />
+                <div style={{ marginTop: '10px' }}>
+                    <label style={labelStyle}>Cart Discount</label>
+                    <input type="number" placeholder="Cart Discount" value={cartDiscount} onChange={(e) => setCartDiscount(e.target.value)} style={inputStyle} />
+                </div>
+
+                <div style={{ marginTop: '10px' }}>
+                    <label style={labelStyle}>Payment Details</label>
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                        <input type="number" placeholder="Paid by Cash" value={paidByCash} onChange={(e) => setPaidByCash(e.target.value)} style={{ ...inputStyle, marginBottom: 0 }} />
+                        <input type="number" placeholder="Paid by Card" value={paidByCard} onChange={(e) => setPaidByCard(e.target.value)} style={{ ...inputStyle, marginBottom: 0 }} />
+                        <input type="number" placeholder="Paid by Bank" value={paidByBank} onChange={(e) => setPaidByBank(e.target.value)} style={{ ...inputStyle, marginBottom: 0 }} />
                     </div>
                 </div>
 

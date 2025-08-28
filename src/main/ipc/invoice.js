@@ -101,6 +101,10 @@ module.exports = (ipcMain) => {
         cart_discount,
         payable_total,
         paid_amount,
+
+        paid_amount_cash,
+        paid_amount_card,
+        paid_amount_bank,
         due_amount,
         change_amount,
         created_by,
@@ -117,8 +121,9 @@ module.exports = (ipcMain) => {
           INSERT INTO invoice (
             invoice_id, customer_id, invoice_date, sub_total, item_discount,
             item_tax, cart_discount, payable_total, paid_amount, due_amount,
-            created_at, updated_at, created_by
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            created_at, updated_at, created_by,
+            paid_amount_cash, paid_amount_card, paid_amount_bank
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `);
 
         const invoiceValues = [
@@ -134,7 +139,10 @@ module.exports = (ipcMain) => {
           due_amount,
           now,
           now,
-          created_by
+          created_by,
+          paid_amount_cash,
+          paid_amount_card,
+          paid_amount_bank
         ];
 
         invoiceStmt.run(invoiceValues, function (err) {
@@ -146,34 +154,15 @@ module.exports = (ipcMain) => {
 
           const newInvoiceId = this.lastID;
 
-          // Insert into customer_payment_history
-          const paymentHistoryStmt = db.prepare(`
-            INSERT INTO customer_payment_history (
-              invoice_id, payment_date, pre_due_amount, paid_amount, due_amount, 
-              change_amount, payment_method, created_by
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-          `);
+          const payments = [
+            { method: 'Cash', amount: paid_amount_cash },
+            { method: 'Card', amount: paid_amount_card },
+            { method: 'Bank', amount: paid_amount_bank }
+          ].filter(p => p.amount > 0);
 
-          const paymentHistoryValues = [
-            newInvoiceId,
-            now,
-            payable_total, // pre_due_amount is the total before this payment
-            paid_amount,
-            due_amount,
-            change_amount,
-            'Cash', // Assuming Cash, as it's not captured in UI
-            created_by
-          ];
+          let allPaymentsProcessed = true;
 
-          paymentHistoryStmt.run(paymentHistoryValues, function (err) {
-            if (err) {
-              db.run('ROLLBACK');
-              console.error('Error inserting payment history:', err.message);
-              return reject(err);
-            }
-            paymentHistoryStmt.finalize();
-
-            // Process invoice items
+          const processItems = () => {
             const itemStmt = db.prepare(`
               INSERT INTO invoice_item (
                 invoice_id, product_id, quantity, price, tax, discount, total_price, pre_stock, new_stock
@@ -234,7 +223,45 @@ module.exports = (ipcMain) => {
                 });
               });
             });
-          });
+          };
+
+          if (paid_amount > 0) {
+            const paymentHistoryStmt = db.prepare(`
+              INSERT INTO customer_payment_history (
+                invoice_id, payment_date, pre_due_amount, paid_amount, due_amount, 
+                change_amount, payment_method, created_by,
+                paid_amount_cash, paid_amount_card, paid_amount_bank
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `);
+
+            const paymentMethods = payments.map(p => p.method).join(', ');
+
+            const paymentHistoryValues = [
+              newInvoiceId,
+              now,
+              payable_total,
+              paid_amount,
+              due_amount,
+              change_amount,
+              paymentMethods,
+              created_by,
+              paid_amount_cash,
+              paid_amount_card,
+              paid_amount_bank
+            ];
+
+            paymentHistoryStmt.run(paymentHistoryValues, function (err) {
+              paymentHistoryStmt.finalize();
+              if (err) {
+                db.run('ROLLBACK');
+                console.error('Error inserting payment history:', err.message);
+                return reject(new Error('Failed to save payment history.'));
+              }
+              processItems();
+            });
+          } else {
+            processItems();
+          }
         });
         invoiceStmt.finalize();
       });
@@ -345,10 +372,19 @@ module.exports = (ipcMain) => {
             const paymentHistoryStmt = db.prepare(`
                         INSERT INTO customer_payment_history (
                             invoice_id, payment_date, pre_due_amount, paid_amount, due_amount,
-                            change_amount, payment_method, created_by
-                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                            change_amount, payment_method, created_by,
+                            paid_amount_cash, paid_amount_card, paid_amount_bank
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     `);
-            paymentHistoryStmt.run([invoiceId, now, invoice.due_amount, paidAmount, finalDueAmount, changeAmount, paymentMethod, createdBy], function (err) {
+
+            const paid_amount_cash = paymentMethod === 'Cash' ? paidAmount : 0;
+            const paid_amount_card = paymentMethod === 'Card' ? paidAmount : 0;
+            const paid_amount_bank = paymentMethod === 'Bank' ? paidAmount : 0;
+
+            paymentHistoryStmt.run([
+                invoiceId, now, invoice.due_amount, paidAmount, finalDueAmount, changeAmount, paymentMethod, createdBy,
+                paid_amount_cash, paid_amount_card, paid_amount_bank
+            ], function (err) {
               if (err) {
                 db.run('ROLLBACK');
                 return reject(err);
