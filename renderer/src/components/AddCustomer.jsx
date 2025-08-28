@@ -13,6 +13,7 @@ const AddCustomer = ({ onAdded }) => {
         phone: '',
         email: '',
         tax_number: '',
+        Uakam_no: '',
         status: 1
     });
 
@@ -35,6 +36,7 @@ const AddCustomer = ({ onAdded }) => {
             phone: '',
             email: '',
             tax_number: '',
+            Uakam_no: '',
             status: 1
         });
     };
@@ -81,6 +83,10 @@ const AddCustomer = ({ onAdded }) => {
                         <div style={inputGroupStyle}>
                             <label style={labelStyle}>Tax Number</label>
                             <input name="tax_number" placeholder="Enter tax number" value={form.tax_number} onChange={handleChange} style={inputStyle} />
+                        </div>
+                        <div style={inputGroupStyle}>
+                            <label style={labelStyle}>Uakam No</label>
+                            <input name="Uakam_no" placeholder="Enter Uakam No" value={form.Uakam_no} onChange={handleChange} style={inputStyle} />
                         </div>
                         <div style={inputGroupStyle}>
                             <label style={labelStyle}>Status</label>

@@ -19,8 +19,8 @@ module.exports = (ipcMain) => {
     // IPC for update-customer
     ipcMain.handle('update-customer', async (event, customer) => {
         return new Promise((resolve, reject) => {
-            const sql = `UPDATE customers SET name = ?, code = ?, phone = ?, email = ?, address = ?, zip_code = ?, city = ?, country = ?, tax_number = ?, status = ? WHERE id = ?`;
-            const params = [customer.name, customer.code, customer.phone, customer.email, customer.address, customer.zip_code, customer.city, customer.country, customer.tax_number, customer.status, customer.id];
+            const sql = `UPDATE customers SET name = ?, code = ?, phone = ?, email = ?, address = ?, zip_code = ?, city = ?, country = ?, tax_number = ?, status = ?, Uakam_no = ? WHERE id = ?`;
+            const params = [customer.name, customer.code, customer.phone, customer.email, customer.address, customer.zip_code, customer.city, customer.country, customer.tax_number, customer.status, customer.Uakam_no, customer.id];
             db.run(sql, params, function (err) {
                 if (err) {
                     console.error(err.message);
@@ -52,8 +52,8 @@ module.exports = (ipcMain) => {
         return new Promise((resolve, reject) => {
             const sql = `
           INSERT INTO customers
-          (name, code, phone, email, address, zip_code, city, country, tax_number, status)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          (name, code, phone, email, address, zip_code, city, country, tax_number, status, Uakam_no)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
             const params = [
                 customer.name,
@@ -65,7 +65,8 @@ module.exports = (ipcMain) => {
                 customer.city,
                 customer.country,
                 customer.tax_number,
-                customer.status
+                customer.status,
+                customer.Uakam_no
             ];
             db.run(sql, params, function (err) {
                 if (err) {

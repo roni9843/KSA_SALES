@@ -195,6 +195,15 @@ db.run(`
   )
 `);
 
+// Add Uakam_no to customers
+db.all("PRAGMA table_info(customers)", (err, columns) => {
+  if (err) return console.error("PRAGMA error:", err.message);
+  const existingColumns = columns.map(c => c.name);
+  if (!existingColumns.includes('Uakam_no')) {
+    db.run("ALTER TABLE customers ADD COLUMN Uakam_no TEXT");
+  }
+});
+
 // suppliers table
 db.run(`
   CREATE TABLE IF NOT EXISTS suppliers (
