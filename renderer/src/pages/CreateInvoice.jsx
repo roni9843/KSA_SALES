@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { FaFileInvoice, FaTrash, FaPlus } from 'react-icons/fa';
+import { FaFileInvoice, FaTrash, FaPlus, FaMoneyBillWave, FaCreditCard, FaUniversity } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import AsyncSelect from 'react-select/async';
 import toast from 'react-hot-toast';
@@ -310,12 +310,21 @@ const CreateInvoice = () => {
                     <input type="number" placeholder="Cart Discount" value={cartDiscount} onChange={(e) => setCartDiscount(e.target.value)} style={inputStyle} />
                 </div>
 
-                <div style={{ marginTop: '10px' }}>
+                <div style={{ marginTop: '20px' }}>
                     <label style={labelStyle}>Payment Details</label>
-                    <div style={{ display: 'flex', gap: '10px' }}>
-                        <input type="number" placeholder="Paid by Cash" value={paidByCash} onChange={(e) => setPaidByCash(e.target.value)} style={{ ...inputStyle, marginBottom: 0 }} />
-                        <input type="number" placeholder="Paid by Card" value={paidByCard} onChange={(e) => setPaidByCard(e.target.value)} style={{ ...inputStyle, marginBottom: 0 }} />
-                        <input type="number" placeholder="Paid by Bank" value={paidByBank} onChange={(e) => setPaidByBank(e.target.value)} style={{ ...inputStyle, marginBottom: 0 }} />
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '15px' }}>
+                        <div style={paymentGroupStyle}>
+                            <label style={paymentLabelStyle}><FaMoneyBillWave /> Cash</label>
+                            <input type="number" placeholder="0.00" value={paidByCash} onChange={(e) => setPaidByCash(e.target.value)} style={{ ...inputStyle, marginBottom: 0 }} />
+                        </div>
+                        <div style={paymentGroupStyle}>
+                            <label style={paymentLabelStyle}><FaCreditCard /> Card</label>
+                            <input type="number" placeholder="0.00" value={paidByCard} onChange={(e) => setPaidByCard(e.target.value)} style={{ ...inputStyle, marginBottom: 0 }} />
+                        </div>
+                        <div style={paymentGroupStyle}>
+                            <label style={paymentLabelStyle}><FaUniversity /> Bank</label>
+                            <input type="number" placeholder="0.00" value={paidByBank} onChange={(e) => setPaidByBank(e.target.value)} style={{ ...inputStyle, marginBottom: 0 }} />
+                        </div>
                     </div>
                 </div>
 
@@ -479,6 +488,19 @@ const summaryRow = {
     display: 'flex',
     justifyContent: 'space-between',
     marginBottom: '10px',
+};
+
+const paymentGroupStyle = {
+    display: 'flex',
+    flexDirection: 'column'
+};
+
+const paymentLabelStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    marginBottom: '5px',
+    fontSize: '0.9em'
 };
 
 const modalOverlay = {

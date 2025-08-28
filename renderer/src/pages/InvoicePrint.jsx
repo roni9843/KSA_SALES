@@ -142,6 +142,24 @@ function InvoicePrint() {
                         <span>Paid</span>
                         <span>{invoice.paid.toFixed(2)}</span>
                     </div>
+                    {invoice.paid_amount_cash > 0 && (
+                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 8px', fontSize: '14px' }}>
+                            <span>&nbsp;&nbsp;↳ by Cash</span>
+                            <span>{invoice.paid_amount_cash.toFixed(2)}</span>
+                        </div>
+                    )}
+                    {invoice.paid_amount_card > 0 && (
+                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 8px', fontSize: '14px' }}>
+                            <span>&nbsp;&nbsp;↳ by Card</span>
+                            <span>{invoice.paid_amount_card.toFixed(2)}</span>
+                        </div>
+                    )}
+                    {invoice.paid_amount_bank > 0 && (
+                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 8px', fontSize: '14px' }}>
+                            <span>&nbsp;&nbsp;↳ by Bank</span>
+                            <span>{invoice.paid_amount_bank.toFixed(2)}</span>
+                        </div>
+                    )}
                     {(invoice.paid - invoice.total > 0) &&
                         <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}>
                             <span>Change</span>
