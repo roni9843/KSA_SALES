@@ -83,7 +83,9 @@ function QuotationPrint() {
                 <div style={{ textAlign: 'right' }}>
                     <h3 style={{ margin: '0 0 10px 0' }}>BILL TO:</h3>
                     <p>{customer ? customer.name : 'Walk-in Customer'}</p>
-                    {customer && <p>{customer.address}</p>}
+                    {customer && customer.address && <p>{customer.address}</p>}
+                    {customer && customer.tax_number && <p>Tax No: {customer.tax_number}</p>}
+                    {customer && customer.Uakam_no && <p>Uakam No: {customer.Uakam_no}</p>}
                 </div>
             </div>
 

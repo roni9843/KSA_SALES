@@ -77,7 +77,9 @@ function InvoicePrint() {
                 <div style={{ textAlign: 'right' }}>
                     <h3 style={{ margin: '0 0 10px 0' }}>BILL TO:</h3>
                     <p>{invoice.customer_name}</p>
-                    {/* Add address fields if available */}
+                    {invoice.customer_address && <p>{invoice.customer_address}</p>}
+                    {invoice.customer_tax_number && <p>Tax No: {invoice.customer_tax_number}</p>}
+                    {invoice.customer_Uakam_no && <p>Uakam No: {invoice.customer_Uakam_no}</p>}
                 </div>
             </div>
 
@@ -136,17 +138,17 @@ function InvoicePrint() {
                         <span>TOTAL</span>
                         <span>{invoice.total.toFixed(2)}</span>
                     </div>
-                     <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}>
                         <span>Paid</span>
                         <span>{invoice.paid.toFixed(2)}</span>
                     </div>
-                    { (invoice.paid - invoice.total > 0) &&
+                    {(invoice.paid - invoice.total > 0) &&
                         <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}>
                             <span>Change</span>
                             <span>{(invoice.paid - invoice.total).toFixed(2)}</span>
                         </div>
                     }
-                    { invoice.due > 0 &&
+                    {invoice.due > 0 &&
                         <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', fontWeight: 'bold' }}>
                             <span>Due</span>
                             <span>{invoice.due.toFixed(2)}</span>
