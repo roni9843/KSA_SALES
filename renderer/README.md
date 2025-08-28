@@ -26,6 +26,7 @@ The renderer application implements the following user-facing features:
 - User and role-based access control management.
 - Due collection and payment history tracking.
 - Product transaction history report.
+- Stock adjustment creation and a detailed, filterable list of adjustments.
 
 ## Getting Started
 

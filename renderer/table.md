@@ -1,3 +1,15 @@
+stock_adjustment table:
+id - integer - primary key - auto increment,
+stock_adjustment_no - string - required - will be auto generated as like 'SA2025-07-26-0001',
+stock_adjustment_date - date - today's date,
+stock_adjustment_by - integer - required - have a relation with users table,
+
+attribute for stock_adjustment_item table:
+id - integer - primary key - auto increment,
+stock_adjustment_id - integer - required - have a relation with stock_adjustment table,
+product_id - integer - required - have a relation with product table,
+quantity - integer - required,
+
 attribute for product_purchase table:
 id - integer - primary key - auto increment,
 purchase_id - string - required - will be auto generated as like 'P2025-07-26-0001',

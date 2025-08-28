@@ -11,6 +11,7 @@ Moto POS is a feature-rich, cross-platform desktop point-of-sale (POS) applicati
 - **Dashboard & Reporting:** Get a quick overview of your business with a dashboard showing key metrics like sales, purchases, and profit. 
 - **Export Reports:** Export sales reports to CSV and PDF formats for further analysis and record-keeping.
 - **Product Transaction History:** View a detailed history of a product's sales and purchases.
+- **Stock Adjustment:** Manually adjust product stock levels and view a detailed history of all adjustments.
 - **Role-Based Access Control (RBAC):** Secure your application with a flexible user, role, and permission system.
 - **Due Collection:** Keep track of outstanding payments and manage due collections efficiently.
 - **Multi-language Support:** The UI supports internationalization (i18n) for easy translation.

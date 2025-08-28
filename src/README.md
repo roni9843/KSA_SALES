@@ -37,6 +37,7 @@ The application uses a SQLite database (`moto_pos.db`) to store all its data. Th
 - `invoice`, `invoice_item`: For creating and managing sales invoices. The `invoice_item` table includes `pre_stock` and `new_stock` columns to record the stock level before and after the transaction.
 - `customer_payment_history`: For tracking customer payments and due amounts.
 - `tax`: For managing tax rates.
+- `stock_adjustment`, `stock_adjustment_item`: For tracking manual stock adjustments. The `stock_adjustment_item` table includes `pre_stock` and `new_stock` columns to maintain a clear audit trail of inventory changes.
 
 ## Communication Flow (IPC)
 

@@ -32,6 +32,8 @@ import Dashboard from './pages/Dashboard';
 import GeneralSetting from './pages/GeneralSetting';
 import ProductSalesReport from './pages/ProductSalesReport';
 import ProductTransaction from './pages/ProductTransaction';
+import StockAdjust from './pages/StockAdjust';
+import StockAdjustmentList from './pages/StockAdjustmentList';
 
 function App() {
   return (
@@ -69,6 +71,8 @@ function App() {
                   <Route path="/manage-roles" element={<RoleManagement />} />
                   <Route path="/manage-users" element={<UserManagement />} />
                   <Route path="/general-setting" element={<GeneralSetting />} />
+                  <Route path="/stock-adjust" element={<StockAdjust />} />
+                  <Route path="/stock-adjustment-list" element={<StockAdjustmentList />} />
                   <Route path="*" element={<p>404 Not Found</p>} />
                 </Routes>
               </Layout>

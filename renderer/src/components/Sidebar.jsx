@@ -84,6 +84,15 @@ const Sidebar = () => {
                 { path: '/product-purchase', label: 'Purchase Product' },
                 { path: '/purchase-list', label: 'Purchase List' },
             ]
+        },
+        {
+            label: 'Stock',
+            icon: <FaBox />,
+            permission: 'page:view:stock',
+            subItems: [
+                { path: '/stock-adjust', label: 'Stock Adjust' },
+                { path: '/stock-adjustment-list', label: 'Adjustment List' },
+            ]
         }
     ];
 

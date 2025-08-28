@@ -389,6 +389,7 @@ db.get('SELECT * FROM users WHERE username = ?', ['supperAdmin'], (err, user) =>
               { name: 'page:view:tax-rates', description: 'Access the Tax Rates page' },
               { name: 'page:view:my-company', description: 'Access the My Company page' },
               { name: 'page:view:purchase', description: 'Access the Purchase pages (Add and List)' },
+              { name: 'page:view:stock', description: 'Access the Stock Adjustment pages' },
               { name: 'manage:users', description: 'Manage users, roles, and permissions' },
             ];
 
@@ -437,3 +438,33 @@ db.get('SELECT * FROM users WHERE username = ?', ['supperAdmin'], (err, user) =>
 });
 
 module.exports = db;
+
+// Stock Adjustment Tables
+db.serialize(() => {
+  // stock_adjustment table
+  db.run(`
+    CREATE TABLE IF NOT EXISTS stock_adjustment (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      stock_adjustment_no TEXT NOT NULL,
+      stock_adjustment_date TEXT NOT NULL,
+      stock_adjustment_by INTEGER NOT NULL,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (stock_adjustment_by) REFERENCES users(id)
+    )
+  `);
+
+  // stock_adjustment_item table
+  db.run(`
+    CREATE TABLE IF NOT EXISTS stock_adjustment_item (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      stock_adjustment_id INTEGER NOT NULL,
+      product_id INTEGER NOT NULL,
+      quantity INTEGER NOT NULL,
+      type TEXT NOT NULL, -- 'add' or 'subtract'
+      pre_stock INTEGER NOT NULL,
+      new_stock INTEGER NOT NULL,
+      FOREIGN KEY (stock_adjustment_id) REFERENCES stock_adjustment(id) ON DELETE CASCADE,
+      FOREIGN KEY (product_id) REFERENCES product(id)
+    )
+  `);
+});
