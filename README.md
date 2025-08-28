@@ -14,6 +14,7 @@ Moto POS is a feature-rich, cross-platform desktop point-of-sale (POS) applicati
 - **Stock Adjustment:** Manually adjust product stock levels and view a detailed history of all adjustments.
 - **Role-Based Access Control (RBAC):** Secure your application with a flexible user, role, and permission system.
 - **Due Collection:** Keep track of outstanding payments and manage due collections efficiently.
+- **Database Backup & Restore:** Easily export your entire database for backup and import it to restore your application data.
 - **Multi-language Support:** The UI supports internationalization (i18n) for easy translation.
 
 ## Tech Stack

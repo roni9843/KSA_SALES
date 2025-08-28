@@ -106,6 +106,7 @@ const Sidebar = () => {
                 { path: '/manage-roles', label: 'Role Management' },
                 { path: '/manage-users', label: 'User Management' },
                 { path: '/general-setting', label: 'General Setting' },
+                { path: '/database-backup', label: 'Database Backup' },
             ]
         });
     }

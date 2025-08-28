@@ -34,6 +34,7 @@ import ProductSalesReport from './pages/ProductSalesReport';
 import ProductTransaction from './pages/ProductTransaction';
 import StockAdjust from './pages/StockAdjust';
 import StockAdjustmentList from './pages/StockAdjustmentList';
+import DatabaseBackup from './pages/DatabaseBackup';
 
 function App() {
   return (
@@ -73,6 +74,7 @@ function App() {
                   <Route path="/general-setting" element={<GeneralSetting />} />
                   <Route path="/stock-adjust" element={<StockAdjust />} />
                   <Route path="/stock-adjustment-list" element={<StockAdjustmentList />} />
+                  <Route path="/database-backup" element={<DatabaseBackup />} />
                   <Route path="*" element={<p>404 Not Found</p>} />
                 </Routes>
               </Layout>

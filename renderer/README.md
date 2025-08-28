@@ -27,6 +27,7 @@ The renderer application implements the following user-facing features:
 - Due collection and payment history tracking.
 - Product transaction history report.
 - Stock adjustment creation and a detailed, filterable list of adjustments.
+- Database backup and restore functionality.
 
 ## Getting Started
 
