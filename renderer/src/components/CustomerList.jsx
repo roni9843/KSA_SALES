@@ -1,24 +1,49 @@
 import { useEffect, useState } from 'react';
 import Switch from './common/Switch';
-import { FaEdit, FaTrash, FaUsers } from 'react-icons/fa';
+
+import { FaEdit, FaTrash, FaUsers, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+
+const PAGE_SIZE = 10;
 
 const CustomerList = ({ refresh }) => {
     const [list, setList] = useState([]);
     const [editCustomer, setEditCustomer] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(0);
+    const [searchTerm, setSearchTerm] = useState('');
 
-    const fetch = async () => {
-        const customers = await window.electron.ipcRenderer.invoke('get-customers');
-        setList(customers);
+    const fetchCustomers = async (page, search) => {
+        const { rows, totalCount } = await window.electron.ipcRenderer.invoke('get-customers', {
+            page,
+            limit: PAGE_SIZE,
+            searchTerm: search,
+        });
+        setList(rows);
+        setTotalPages(Math.ceil(totalCount / PAGE_SIZE));
     };
 
     useEffect(() => {
-        fetch();
-    }, [refresh]);
+        const handler = setTimeout(() => {
+            fetchCustomers(currentPage, searchTerm);
+        }, 300);
+        return () => clearTimeout(handler);
+    }, [refresh, currentPage, searchTerm]);
+
+    const handleSearchChange = (e) => {
+        setSearchTerm(e.target.value);
+        setCurrentPage(1);
+    };
+
+    const handlePageChange = (newPage) => {
+        if (newPage >= 1 && newPage <= totalPages) {
+            setCurrentPage(newPage);
+        }
+    };
 
     const deleteCustomer = async (id) => {
         if (confirm('Delete this customer?')) {
             await window.electron.ipcRenderer.invoke('delete-customer', id);
-            fetch();
+            fetchCustomers(currentPage, searchTerm);
         }
     };
 
@@ -26,7 +51,7 @@ const CustomerList = ({ refresh }) => {
         e.preventDefault();
         await window.electron.ipcRenderer.invoke('update-customer', editCustomer);
         setEditCustomer(null);
-        fetch();
+        fetchCustomers(currentPage, searchTerm);
     };
 
     const handleChange = (e) => {
@@ -36,13 +61,26 @@ const CustomerList = ({ refresh }) => {
 
     return (
         <div style={cardStyle}>
-            <h2><FaUsers /> Customer List</h2>
+            <div style={headerStyle}>
+                <h2><FaUsers /> Customer List</h2>
+                <div style={searchContainerStyle}>
+                    <input
+                        type="text"
+                        placeholder="Search by name, phone, tax, uakam..."
+                        value={searchTerm}
+                        onChange={handleSearchChange}
+                        style={searchInputStyle}
+                    />
+                </div>
+            </div>
             <table style={tableStyle}>
                 <thead style={tableHeaderStyle}>
                     <tr>
                         <th style={{ ...thStyle, textAlign: 'left' }}>Name</th>
                         <th style={thStyle}>Phone</th>
                         <th style={thStyle}>Email</th>
+                        <th style={thStyle}>Tax Number</th>
+                        <th style={thStyle}>Uakam No</th>
                         <th style={{ ...thStyle, textAlign: 'center' }}>Actions</th>
                     </tr>
                 </thead>
@@ -52,6 +90,8 @@ const CustomerList = ({ refresh }) => {
                             <td style={{ ...tdStyle, textAlign: 'left' }}>{c.name}</td>
                             <td style={tdStyle}>{c.phone}</td>
                             <td style={tdStyle}>{c.email}</td>
+                            <td style={tdStyle}>{c.tax_number}</td>
+                            <td style={tdStyle}>{c.Uakam_no}</td>
                             <td style={{ ...tdStyle, textAlign: 'center' }}>
                                 <button onClick={() => setEditCustomer(c)} className="action-button"><FaEdit /></button>
                                 <button onClick={() => deleteCustomer(c.id)} className="action-button"><FaTrash /></button>
@@ -60,6 +100,18 @@ const CustomerList = ({ refresh }) => {
                     ))}
                 </tbody>
             </table>
+
+            {totalPages > 1 && (
+                <div style={paginationStyle}>
+                    <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} className="default-button">
+                        <FaChevronLeft />
+                    </button>
+                    <span>Page {currentPage} of {totalPages}</span>
+                    <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} className="default-button">
+                        <FaChevronRight />
+                    </button>
+                </div>
+            )}
 
             {editCustomer && (
                 <div style={modalOverlay}>
@@ -103,6 +155,10 @@ const CustomerList = ({ refresh }) => {
                                 <input name="tax_number" value={editCustomer.tax_number} onChange={handleChange} placeholder="Tax Number" style={inputStyle} />
                             </div>
                             <div style={inputGroupStyle}>
+                                <label style={labelStyle}>Uakam No</label>
+                                <input name="Uakam_no" value={editCustomer.Uakam_no} onChange={handleChange} placeholder="Enter Uakam No" style={inputStyle} />
+                            </div>
+                            <div style={inputGroupStyle}>
                                 <label style={labelStyle}>Status</label>
                                 <Switch name="status" checked={editCustomer.status} onChange={handleChange} />
                             </div>
@@ -124,6 +180,28 @@ const cardStyle = {
     padding: '20px',
     borderRadius: '4px',
     color: '#fff'
+};
+
+const headerStyle = {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '20px'
+};
+
+const searchContainerStyle = {
+    display: 'flex',
+    alignItems: 'center'
+};
+
+const searchInputStyle = {
+    padding: '10px',
+    borderRadius: '5px',
+    border: '1px solid #A0AEC0',
+    backgroundColor: '#fff',
+    color: '#333',
+    fontSize: '14px',
+    minWidth: '300px'
 };
 
 const tableStyle = {
@@ -155,6 +233,14 @@ const tableRowStyle = (index) => ({
 const tdStyle = {
     padding: '12px 15px',
     textAlign: 'right',
+};
+
+const paginationStyle = {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: '10px',
+    marginTop: '20px'
 };
 
 const modalOverlay = {

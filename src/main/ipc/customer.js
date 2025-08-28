@@ -2,16 +2,37 @@ const db = require('../database/db');
 
 module.exports = (ipcMain) => {
     // IPC for get-customers
-    ipcMain.handle('get-customers', async () => {
+    ipcMain.handle('get-customers', async (event, { page = 1, limit = 10, searchTerm = '' }) => {
         return new Promise((resolve, reject) => {
-            const sql = `SELECT * FROM customers ORDER BY id DESC`;
-            db.all(sql, [], (err, rows) => {
+            const offset = (page - 1) * limit;
+            let whereClause = '';
+            const params = [];
+
+            if (searchTerm) {
+                whereClause = `WHERE name LIKE ? OR phone LIKE ? OR tax_number LIKE ? OR Uakam_no LIKE ?`;
+                const searchTermLike = `%${searchTerm}%`;
+                params.push(searchTermLike, searchTermLike, searchTermLike, searchTermLike);
+            }
+
+            const countSql = `SELECT COUNT(*) as count FROM customers ${whereClause}`;
+            db.get(countSql, params, (err, row) => {
                 if (err) {
                     console.error(err.message);
-                    reject('Error loading customers');
-                } else {
-                    resolve(rows);
+                    return reject('Error counting customers');
                 }
+
+                const totalCount = row.count;
+                const queryParams = [...params, limit, offset];
+                const sql = `SELECT * FROM customers ${whereClause} ORDER BY id DESC LIMIT ? OFFSET ?`;
+
+                db.all(sql, queryParams, (err, rows) => {
+                    if (err) {
+                        console.error(err.message);
+                        reject('Error loading customers');
+                    } else {
+                        resolve({ rows, totalCount });
+                    }
+                });
             });
         });
     });
