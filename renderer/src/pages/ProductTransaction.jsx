@@ -59,8 +59,8 @@ const ProductTransaction = () => {
         try {
             const { rows, totalCount } = await window.electron.ipcRenderer.invoke('get-product-transactions', {
                 productId: productId,
-                startDate: start.toISOString().split('T')[0],
-                endDate: end.toISOString().split('T')[0],
+                startDate: format(start, 'yyyy-MM-dd'),
+                endDate: format(end, 'yyyy-MM-dd'),
                 page: page,
                 limit: PAGE_SIZE
             });
@@ -106,10 +106,13 @@ const ProductTransaction = () => {
         }
         setLoading(true);
         try {
+            const startDate = format(dateRange[0].startDate, 'yyyy-MM-dd');
+            const endDate = format(dateRange[0].endDate, 'yyyy-MM-dd');
+
             const { totalCount } = await window.electron.ipcRenderer.invoke('get-product-transactions', {
                 productId: selectedProduct.value,
-                startDate: dateRange[0].startDate.toISOString().split('T')[0],
-                endDate: dateRange[0].endDate.toISOString().split('T')[0],
+                startDate,
+                endDate,
                 page: 1,
                 limit: 1
             });
@@ -119,8 +122,8 @@ const ProductTransaction = () => {
             for (let i = 1; i <= totalPagesToFetch; i++) {
                 const { rows } = await window.electron.ipcRenderer.invoke('get-product-transactions', {
                     productId: selectedProduct.value,
-                    startDate: dateRange[0].startDate.toISOString().split('T')[0],
-                    endDate: dateRange[0].endDate.toISOString().split('T')[0],
+                    startDate,
+                    endDate,
                     page: i,
                     limit: PAGE_SIZE
                 });
@@ -314,5 +317,3 @@ const styles = {
 };
 
 export default ProductTransaction;
-
-
