@@ -1,17 +1,20 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaClipboardList, FaEye, FaFilter } from 'react-icons/fa';
+import { FaClipboardList, FaEye, FaFilter, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import { format } from 'date-fns';
 
 const PaymentHistory = () => {
     const [payments, setPayments] = useState([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(0);
     const [filters, setFilters] = useState({
         paymentDate: null,
         customerName: '',
     });
     const navigate = useNavigate();
+    const limit = 10;
 
     useEffect(() => {
         async function fetchPaymentHistory() {
@@ -19,11 +22,12 @@ const PaymentHistory = () => {
                 ...filters,
                 paymentDate: filters.paymentDate ? format(filters.paymentDate, 'yyyy-MM-dd') : null,
             };
-            const res = await window.electron.ipcRenderer.invoke('get-payment-history', formattedFilters);
-            setPayments(res);
+            const res = await window.electron.ipcRenderer.invoke('get-payment-history', { filters: formattedFilters, page: currentPage, limit });
+            setPayments(res.payments);
+            setTotalPages(Math.ceil(res.total / limit));
         }
         fetchPaymentHistory();
-    }, [filters]);
+    }, [filters, currentPage]);
 
     const handleViewReceipt = (invoiceId) => {
         navigate(`/due-receipt/${invoiceId}`);
@@ -32,10 +36,12 @@ const PaymentHistory = () => {
     const handleFilterChange = (e) => {
         const { name, value } = e.target;
         setFilters(prev => ({ ...prev, [name]: value }));
+        setCurrentPage(1); // Reset to first page on filter change
     };
     
     const handleDateChange = (date) => {
         setFilters(prev => ({ ...prev, paymentDate: date }));
+        setCurrentPage(1); // Reset to first page on filter change
     };
 
     const clearFilters = () => {
@@ -43,6 +49,13 @@ const PaymentHistory = () => {
             paymentDate: null,
             customerName: '',
         });
+        setCurrentPage(1); // Reset to first page on filter change
+    };
+
+    const handlePageChange = (newPage) => {
+        if (newPage > 0 && newPage <= totalPages) {
+            setCurrentPage(newPage);
+        }
     };
 
     return (
@@ -109,6 +122,16 @@ const PaymentHistory = () => {
                     ))}
                 </tbody>
             </table>
+
+            <div style={paginationStyle}>
+                <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} style={paginationButtonStyle}>
+                    <FaChevronLeft />
+                </button>
+                <span>Page {currentPage} of {totalPages}</span>
+                <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} style={paginationButtonStyle}>
+                    <FaChevronRight />
+                </button>
+            </div>
         </div>
     );
 };
@@ -200,6 +223,24 @@ const clearButtonStyle = {
     background: '#f7fafc',
     cursor: 'pointer',
     height: '35px',
+};
+
+const paginationStyle = {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    marginTop: '20px',
+    gap: '10px',
+};
+
+const paginationButtonStyle = {
+    background: '#f7fafc',
+    border: '1px solid #e2e8f0',
+    borderRadius: '4px',
+    padding: '8px 12px',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
 };
 
 export default PaymentHistory;

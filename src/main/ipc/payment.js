@@ -1,17 +1,9 @@
 const db = require('../database/db');
 
 module.exports = (ipcMain) => {
-    ipcMain.handle('get-payment-history', async (event, filters) => {
+    ipcMain.handle('get-payment-history', async (event, { filters, page = 1, limit = 10 }) => {
         return new Promise((resolve, reject) => {
-            let sql = `
-                SELECT
-                    ph.id,
-                    ph.payment_date,
-                    ph.paid_amount,
-                    ph.due_amount,
-                    i.id as invoice_id_pk,
-                    i.invoice_id,
-                    c.name as customer_name
+            let baseSql = `
                 FROM
                     customer_payment_history ph
                 JOIN
@@ -35,17 +27,39 @@ module.exports = (ipcMain) => {
             }
 
             if (whereClauses.length > 0) {
-                sql += " WHERE " + whereClauses.join(" AND ");
+                baseSql += " WHERE " + whereClauses.join(" AND ");
             }
 
-            sql += " ORDER BY ph.id DESC";
+            const countSql = `SELECT COUNT(*) as total ${baseSql}`;
 
-            db.all(sql, params, (err, rows) => {
+            db.get(countSql, params, (err, row) => {
                 if (err) {
-                    reject(err);
-                } else {
-                    resolve(rows);
+                    return reject(err);
                 }
+                const total = row.total;
+
+                const offset = (page - 1) * limit;
+                const dataSql = `
+                    SELECT
+                        ph.id,
+                        ph.payment_date,
+                        ph.paid_amount,
+                        ph.due_amount,
+                        i.id as invoice_id_pk,
+                        i.invoice_id,
+                        c.name as customer_name
+                    ${baseSql}
+                    ORDER BY ph.id DESC
+                    LIMIT ? OFFSET ?
+                `;
+
+                db.all(dataSql, [...params, limit, offset], (err, rows) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve({ payments: rows, total });
+                    }
+                });
             });
         });
     });
