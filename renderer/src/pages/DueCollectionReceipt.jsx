@@ -4,6 +4,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 function DueCollectionReceipt() {
     const { invoiceId } = useParams();
     const [paymentDetails, setPaymentDetails] = useState(null);
+    const [settings, setSettings] = useState(null);
+    const [logoDataUrl, setLogoDataUrl] = useState('');
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -11,8 +13,15 @@ function DueCollectionReceipt() {
             try {
                 const res = await window.electron.ipcRenderer.invoke('get-last-payment-details', parseInt(invoiceId));
                 setPaymentDetails(res);
+
+                const settingsData = await window.electron.ipcRenderer.invoke('get-settings');
+                setSettings(settingsData);
+
+                if (settingsData && settingsData.shop_logo) {
+                    setLogoDataUrl(settingsData.shop_logo);
+                }
             } catch (e) {
-                console.error('Error fetching payment details:', e);
+                console.error('Error fetching data:', e);
             }
         }
         fetchData();
@@ -29,25 +38,27 @@ function DueCollectionReceipt() {
         navigate('/collect-due');
     };
 
-    if (!paymentDetails) return <div style={{ padding: '20px' }}>Loading...</div>;
+    if (!paymentDetails || !settings) return <div style={{ padding: '20px' }}>Loading...</div>;
 
     return (
         <div style={{ maxWidth: '800px', margin: 'auto', padding: '20px', fontFamily: 'sans-serif', color: '#333' }}>
             {/* Header */}
-            <div style={{ backgroundColor: '#003366', color: 'white', padding: '40px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div style={{ backgroundColor: '#003366', color: 'white', padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div style={{ flex: 1 }}>
                     <h1 style={{ fontSize: '48px', margin: 0 }}>Payment Receipt</h1>
-                    <div style={{ border: '1px solid white', padding: '20px', marginTop: '20px', width: '150px', textAlign: 'center' }}>
-                        Your Company Logo
+                    <div style={{ border: '1px solid white', padding: '20px', marginTop: '10px', width: '150px', textAlign: 'center', height: '100px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        {logoDataUrl ? (
+                            <img src={logoDataUrl} alt="Company Logo" style={{ maxWidth: '100%', maxHeight: '100%' }} />
+                        ) : (
+                            'Your Company Logo'
+                        )}
                     </div>
                 </div>
                 <div style={{ textAlign: 'right', flex: 1 }}>
-                    <h2>Business Name</h2>
-                    <p>Street Address Line 01</p>
-                    <p>Street Address Line 02</p>
-                    <p>+1 (999)-999-9999</p>
-                    <p>Email Address</p>
-                    <p>Website</p>
+                    <h2>{settings.shop_name}</h2>
+                    <p>{settings.shop_address}</p>
+                    <p>{settings.shop_phone}</p>
+                    <p>{settings.shop_email}</p>
                 </div>
             </div>
 
@@ -62,6 +73,8 @@ function DueCollectionReceipt() {
                     <p><strong>Name:</strong> {paymentDetails.customer_name}</p>
                     <p><strong>Phone:</strong> {paymentDetails.customer_phone}</p>
                     <p><strong>Address:</strong> {paymentDetails.customer_address}</p>
+                    {paymentDetails.customer_tax_number && <p><strong>Tax No:</strong> {paymentDetails.customer_tax_number}</p>}
+                    {paymentDetails.customer_Uakam_no && <p><strong>Uakam No:</strong> {paymentDetails.customer_Uakam_no}</p>}
                 </div>
 
                 <h3>Payment Summary for Invoice: {paymentDetails.invoice_id}</h3>
@@ -75,6 +88,24 @@ function DueCollectionReceipt() {
                             <td style={{ padding: '8px' }}>Amount Paid</td>
                             <td style={{ textAlign: 'right', padding: '8px' }}>{paymentDetails.paid_amount.toFixed(2)}</td>
                         </tr>
+                        {paymentDetails.paid_amount_cash > 0 && (
+                            <tr style={{ borderBottom: '1px solid #eee' }}>
+                                <td style={{ padding: '5px 8px 5px 20px', fontSize: '14px' }}>↳ by Cash</td>
+                                <td style={{ textAlign: 'right', padding: '5px 8px', fontSize: '14px' }}>{paymentDetails.paid_amount_cash.toFixed(2)}</td>
+                            </tr>
+                        )}
+                        {paymentDetails.paid_amount_card > 0 && (
+                            <tr style={{ borderBottom: '1px solid #eee' }}>
+                                <td style={{ padding: '5px 8px 5px 20px', fontSize: '14px' }}>↳ by Card</td>
+                                <td style={{ textAlign: 'right', padding: '5px 8px', fontSize: '14px' }}>{paymentDetails.paid_amount_card.toFixed(2)}</td>
+                            </tr>
+                        )}
+                        {paymentDetails.paid_amount_bank > 0 && (
+                            <tr style={{ borderBottom: '1px solid #eee' }}>
+                                <td style={{ padding: '5px 8px 5px 20px', fontSize: '14px' }}>↳ by Bank</td>
+                                <td style={{ textAlign: 'right', padding: '5px 8px', fontSize: '14px' }}>{paymentDetails.paid_amount_bank.toFixed(2)}</td>
+                            </tr>
+                        )}
                         <tr style={{ borderBottom: '1px solid #ccc', fontWeight: 'bold' }}>
                             <td style={{ padding: '8px' }}>New Due Amount</td>
                             <td style={{ textAlign: 'right', padding: '8px' }}>{paymentDetails.due_amount.toFixed(2)}</td>

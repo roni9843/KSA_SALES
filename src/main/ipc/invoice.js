@@ -337,7 +337,7 @@ module.exports = (ipcMain) => {
     });
   });
 
-  ipcMain.handle('collect-due-payment', async (event, { invoiceId, paidAmount, paymentMethod, createdBy }) => {
+  ipcMain.handle('collect-due-payment', async (event, { invoiceId, paidByCash, paidByCard, paidByBank, createdBy }) => {
     return new Promise((resolve, reject) => {
       db.get('SELECT * FROM invoice WHERE id = ?', [invoiceId], (err, invoice) => {
         if (err) {
@@ -347,25 +347,34 @@ module.exports = (ipcMain) => {
           return reject(new Error('Invoice not found'));
         }
 
-        const newPaidAmount = invoice.paid_amount + paidAmount;
-        const newDueAmount = invoice.due_amount - paidAmount;
+        const paidAmount = paidByCash + paidByCard + paidByBank;
+
+        const newPaidAmount = (invoice.paid_amount || 0) + paidAmount;
+        const newDueAmount = (invoice.due_amount || 0) - paidAmount;
         const changeAmount = newDueAmount < 0 ? Math.abs(newDueAmount) : 0;
         const finalDueAmount = newDueAmount < 0 ? 0 : newDueAmount;
         const now = new Date().toISOString();
+
+        const newPaidAmountCash = (invoice.paid_amount_cash || 0) + paidByCash;
+        const newPaidAmountCard = (invoice.paid_amount_card || 0) + paidByCard;
+        const newPaidAmountBank = (invoice.paid_amount_bank || 0) + paidByBank;
 
         db.serialize(() => {
           db.run('BEGIN TRANSACTION');
 
           const updateInvoiceStmt = db.prepare(`
-                    UPDATE invoice
-                    SET
-                        paid_amount = ?,
-                        due_amount = ?,
-                        updated_at = ?
-                    WHERE
-                        id = ?
-                `);
-          updateInvoiceStmt.run([newPaidAmount, finalDueAmount, now, invoiceId], function (err) {
+            UPDATE invoice
+            SET
+                paid_amount = ?,
+                due_amount = ?,
+                paid_amount_cash = ?,
+                paid_amount_card = ?,
+                paid_amount_bank = ?,
+                updated_at = ?
+            WHERE
+                id = ?
+          `);
+          updateInvoiceStmt.run([newPaidAmount, finalDueAmount, newPaidAmountCash, newPaidAmountCard, newPaidAmountBank, now, invoiceId], function (err) {
             if (err) {
               db.run('ROLLBACK');
               return reject(err);
@@ -373,20 +382,22 @@ module.exports = (ipcMain) => {
             updateInvoiceStmt.finalize();
 
             const paymentHistoryStmt = db.prepare(`
-                        INSERT INTO customer_payment_history (
-                            invoice_id, payment_date, pre_due_amount, paid_amount, due_amount,
-                            change_amount, payment_method, created_by,
-                            paid_amount_cash, paid_amount_card, paid_amount_bank
-                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    `);
+              INSERT INTO customer_payment_history (
+                  invoice_id, payment_date, pre_due_amount, paid_amount, due_amount,
+                  change_amount, payment_method, created_by,
+                  paid_amount_cash, paid_amount_card, paid_amount_bank
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `);
 
-            const paid_amount_cash = paymentMethod === 'Cash' ? paidAmount : 0;
-            const paid_amount_card = paymentMethod === 'Card' ? paidAmount : 0;
-            const paid_amount_bank = paymentMethod === 'Bank' ? paidAmount : 0;
+            const paymentMethods = [];
+            if (paidByCash > 0) paymentMethods.push('Cash');
+            if (paidByCard > 0) paymentMethods.push('Card');
+            if (paidByBank > 0) paymentMethods.push('Bank');
 
             paymentHistoryStmt.run([
-                invoiceId, now, invoice.due_amount, paidAmount, finalDueAmount, changeAmount, paymentMethod, createdBy,
-                paid_amount_cash, paid_amount_card, paid_amount_bank
+                invoiceId, now, invoice.due_amount, paidAmount, finalDueAmount, changeAmount, 
+                paymentMethods.join(', '), createdBy,
+                paidByCash, paidByCard, paidByBank
             ], function (err) {
               if (err) {
                 db.run('ROLLBACK');
@@ -417,10 +428,15 @@ module.exports = (ipcMain) => {
                 ph.paid_amount,
                 ph.due_amount,
                 ph.change_amount,
+                ph.paid_amount_cash,
+                ph.paid_amount_card,
+                ph.paid_amount_bank,
                 i.invoice_id,
                 c.name as customer_name,
                 c.phone as customer_phone,
-                c.address as customer_address
+                c.address as customer_address,
+                c.tax_number as customer_tax_number,
+                c.Uakam_no as customer_Uakam_no
             FROM
                 customer_payment_history ph
             JOIN
