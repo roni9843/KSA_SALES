@@ -28,6 +28,7 @@ The renderer application implements the following user-facing features:
 - Product transaction history report.
 - Stock adjustment creation and a detailed, filterable list of adjustments.
 - Database backup and restore functionality.
+- **Licensing:** A dedicated page to view license status (trial, active, expired) and remaining trial days.
 
 ## Getting Started
 

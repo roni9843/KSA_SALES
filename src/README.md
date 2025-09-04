@@ -24,12 +24,13 @@ The backend is structured to be modular and maintainable, separating concerns in
   - Defining and creating the entire database schema upon application startup.
   - Seeding the database with initial data, such as creating a default `supperAdmin` user, roles, and permissions.
 
-- **`main/ipc/*.js`**: This directory contains the core business logic of the application, broken down by feature. Each file registers a set of IPC handlers for a specific domain (e.g., `invoice.js`, `product.js`, `auth.js`, `database.js`). This keeps the `main.js` file clean and makes the application logic easy to navigate and manage.
+- **`main/ipc/*.js`**: This directory contains the core business logic of the application, broken down by feature. Each file registers a set of IPC handlers for a specific domain (e.g., `invoice.js`, `product.js`, `auth.js`, `license.js`). This keeps the `main.js` file clean and makes the application logic easy to navigate and manage.
 
 ## Database Schema
 
 The application uses a SQLite database (`moto_pos.db`) to store all its data. The schema is defined in `database/db.js` and includes the following key tables:
 
+- `settings`: Stores global application settings, including licensing information like `trial_start_date`, `license_key`, `subscription_end_date`, and `license_status`.
 - `users`, `roles`, `permissions`, `user_roles`, `role_permissions`: For handling role-based access control (RBAC).
 - `product_category`, `product`: For product and inventory management.
 - `customers`, `suppliers`: For managing customer and supplier information.

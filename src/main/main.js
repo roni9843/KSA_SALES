@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const db = require('./database/db');
+const licenseModule = require('./ipc/license.js');
 
 function createWindow() {
     const win = new BrowserWindow({
@@ -21,7 +22,52 @@ function createWindow() {
     win.loadURL(startUrl);
 }
 
-app.whenReady().then(createWindow);
+const isTrialExpired = (trialStartDate) => {
+    if (!trialStartDate) return false; // Should not happen if trial_start_date is properly set
+    const start = new Date(trialStartDate);
+    const now = new Date();
+    const diffTime = Math.abs(now - start);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays > 10; // 10-day trial
+};
+
+app.whenReady().then(async () => {
+    // Ensure license module is initialized with ipcMain
+    licenseModule(ipcMain); 
+
+    // Get license info and set trial start date if necessary
+    let licenseInfo = null;
+    try {
+        let licenseInfoResult = await licenseModule.getLicenseInfo();
+        licenseInfo = licenseInfoResult.data;
+
+        if (!licenseInfo.trial_start_date) {
+            await licenseModule.setTrialStartDate();
+            // Re-fetch license info after setting trial start date
+            licenseInfoResult = await licenseModule.getLicenseInfo();
+            licenseInfo = licenseInfoResult.data;
+        }
+    } catch (error) {
+        console.error('Error during initial license check:', error);
+        // If there's an error fetching/setting license info, treat it as expired
+        licenseInfo = { trial_start_date: null, license_status: 'expired' };
+    }
+
+    if (isTrialExpired(licenseInfo.trial_start_date) && licenseInfo.license_status !== 'active') {
+        const expiredWin = new BrowserWindow({
+            width: 600,
+            height: 400,
+            resizable: false,
+            webPreferences: {
+                nodeIntegration: true,
+                contextIsolation: false,
+            }
+        });
+        expiredWin.loadFile(path.join(__dirname, 'expired.html'));
+    } else {
+        createWindow();
+    }
+});
 
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') app.quit();
@@ -85,6 +131,7 @@ require('./ipc/reporting.js')(ipcMain);
 require('./ipc/transaction.js')(ipcMain);
 require('./ipc/stock.js')(ipcMain);
 require('./ipc/database.js')(ipcMain);
+
 
 
 // settings

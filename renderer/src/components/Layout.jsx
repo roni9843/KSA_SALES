@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import { useTranslation } from 'react-i18next';
+import LicenseStatusBanner from './LicenseStatusBanner';
 
 
 const Clock = () => {
@@ -132,6 +133,7 @@ const Layout = ({ children }) => {
                         width: showSidebar ? 'calc(100% - 250px)' : '100%',
                     }}
                 >
+                    <LicenseStatusBanner />
                     {children}
                 </main>
             </div>

@@ -35,6 +35,7 @@ import ProductTransaction from './pages/ProductTransaction';
 import StockAdjust from './pages/StockAdjust';
 import StockAdjustmentList from './pages/StockAdjustmentList';
 import DatabaseBackup from './pages/DatabaseBackup';
+import Licensing from './pages/Licensing';
 
 function App() {
   return (
@@ -75,6 +76,7 @@ function App() {
                   <Route path="/stock-adjust" element={<StockAdjust />} />
                   <Route path="/stock-adjustment-list" element={<StockAdjustmentList />} />
                   <Route path="/database-backup" element={<DatabaseBackup />} />
+                  <Route path="/licensing" element={<Licensing />} />
                   <Route path="*" element={<p>404 Not Found</p>} />
                 </Routes>
               </Layout>

@@ -379,9 +379,41 @@ db.serialize(() => {
       shop_address TEXT NOT NULL,
       shop_phone TEXT NOT NULL,
       shop_email TEXT NOT NULL,
-      shop_logo TEXT NOT NULL
+      shop_logo TEXT NOT NULL,
+      trial_start_date TEXT DEFAULT NULL,
+      license_key TEXT DEFAULT NULL,
+      subscription_end_date TEXT DEFAULT NULL,
+      license_status TEXT DEFAULT 'unlicensed'
     )
   `);
+
+  // Add new columns if they don't exist
+  db.all("PRAGMA table_info(settings)", (err, columns) => {
+    if (err) return console.error("PRAGMA error:", err.message);
+    const existingColumns = columns.map(c => c.name);
+    const newSettingsColumns = [
+      { name: 'trial_start_date', type: 'TEXT', default: 'NULL' },
+      { name: 'license_key', type: 'TEXT', default: 'NULL' },
+      { name: 'subscription_end_date', type: 'TEXT', default: 'NULL' },
+      { name: 'license_status', type: 'TEXT', default: 'unlicensed' }
+    ];
+
+    newSettingsColumns.forEach(col => {
+      if (!existingColumns.includes(col.name)) {
+        let query = `ALTER TABLE settings ADD COLUMN ${col.name} ${col.type}`;
+        if (col.default !== undefined) {
+          query += ` DEFAULT ${col.default}`;
+        }
+        db.run(query, (err) => {
+          if (err) {
+            console.error(`Error adding ${col.name} column to settings:`, err.message);
+          } else {
+            console.log(`✅ '${col.name}' column added to settings table`);
+          }
+        });
+      }
+    });
+  });
 
   // default settings data
     db.get('SELECT * FROM settings WHERE id = ?', [1], (err, settings) => {
@@ -390,9 +422,9 @@ db.serialize(() => {
         }
         if (!settings) {
             db.run(`
-                INSERT INTO settings (id, language, writing_direction, color_scheme, shop_name, shop_address, shop_phone, shop_email, shop_logo)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            `, [1, 'en', 'ltr', 'light', 'Moto POS', 'Mirpur 10, Dhaka', '01700000000', 'example@email.com', ''])
+                INSERT INTO settings (id, language, writing_direction, color_scheme, shop_name, shop_address, shop_phone, shop_email, shop_logo, trial_start_date, license_key, subscription_end_date, license_status)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `, [1, 'en', 'ltr', 'light', 'Moto POS', 'Mirpur 10, Dhaka', '01700000000', 'example@email.com', '', null, null, null, 'unlicensed'])
         }
     });
 });

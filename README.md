@@ -16,6 +16,7 @@ Moto POS is a feature-rich, cross-platform desktop point-of-sale (POS) applicati
 - **Due Collection:** Keep track of outstanding payments and manage due collections efficiently.
 - **Database Backup & Restore:** Easily export your entire database for backup and import it to restore your application data.
 - **Multi-language Support:** The UI supports internationalization (i18n) for easy translation.
+- **Subscription Licensing:** Includes a 10-day free trial, license status notifications, and an activation mechanism.
 
 ## Tech Stack
 
