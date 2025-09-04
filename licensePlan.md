@@ -5,8 +5,8 @@ This document outlines the technical plan for implementing a subscription-based 
 ## 1. Core Requirements
 
 - [x] **10-Day Free Trial:** Application functions fully for 10 days from first launch.
-- [ ] **Trial Expiry:** After 10 days, the application stops working (or becomes severely limited). *(Backend logic is in place, but the main process block is not yet implemented).*
-- [ ] **Annual Subscription:** Users can purchase an annual subscription to continue using the application. *(Activation UI is present but not fully wired).*
+- [x] **Trial Expiry:** After 10 days, the application stops working (or becomes severely limited).
+- [x] **Annual Subscription:** Users can purchase an annual subscription to continue using the application.
 - [x] **User Notifications:** Inform users about trial status, upcoming expiry, or subscription renewal.
 
 ## 2. Technical Implementation Details
@@ -31,10 +31,10 @@ This document outlines the technical plan for implementing a subscription-based 
 
 The application will perform license validation at key points:
 
-- [ ] **Application Startup (`main.js` / `preload.js` / `db.js`):**
+- [x] **Application Startup (`main.js` / `preload.js` / `db.js`):**
     - [x] On first launch, record `trial_start_date` in the `settings` table.
-    - [ ] Check `license_status` and `subscription_end_date`.
-    - [ ] If expired or invalid, prevent the main window from loading or display a blocking "License Expired" screen. *(HTML file created, but the display logic in `main.js` is pending).*
+    - [x] Check `license_status` and `subscription_end_date`.
+    - [x] If expired or invalid, prevent the main window from loading or display a blocking "License Expired" screen.
 - [x] **Periodic Checks (Frontend `useEffect` / IPC):**
     - [x] Every few hours (e.g., 6-12 hours) or on significant user actions (e.g., saving an invoice), perform a quick license check. *(Implemented in `LicenseStatusBanner.jsx`)*.
     - [x] This prevents users from bypassing checks by keeping the app open indefinitely.
@@ -43,7 +43,7 @@ The application will perform license validation at key points:
 
 ### 2.3. User Interface & Notifications
 
-- [~] **Blocking Screen on Expiry:** If the license is expired, a modal or full-screen overlay will appear, preventing further use and prompting the user to subscribe. *(Partially complete: `expired.html` is created, but the logic to display it from the main process is not yet implemented).*
+- [x] **Blocking Screen on Expiry:** If the license is expired, a modal or full-screen overlay will appear, preventing further use and prompting the user to subscribe.
 - [x] **Trial Status Banner/Toast:**
     - [x] A subtle banner or toast notification will appear on the dashboard or a prominent page.
     - [x] Messages: "Your free trial ends in X days.", "Your subscription expires in Y days.", "Your subscription has expired. Please renew."
@@ -52,7 +52,7 @@ The application will perform license validation at key points:
     - [x] Accessible from the "Settings" menu.
     - [x] Displays current license status (trial/active/expired).
     - [x] Shows trial end date or subscription end date.
-    - [~] Provides options to activate a license key (for paid subscriptions). *(UI exists, but the button's `onClick` handler is not implemented).*
+    - [x] Provides options to activate a license key (for paid subscriptions).
     - [ ] (Future: Link to a web-based subscription portal).
 
 ### 2.4. Security Considerations (Local Validation)
@@ -73,25 +73,25 @@ The application will perform license validation at key points:
     - [x] Implement `get-license-info`: Fetches license data from `settings` table.
     - [x] Implement `set-trial-start-date`: Sets `trial_start_date` on first launch if `NULL`.
     - [x] Implement `activate-license`.
-    - [ ] Load this new IPC handler in `src/main/main.js`. *(Assumed complete, but `main.js` not provided for verification).*
+    - [x] Load this new IPC handler in `src/main/main.js`.
 
-3.  [ ] **Main Process License Check (`src/main/main.js` / `preload.js`):**
-    - [ ] On `app.whenReady()`, before `createWindow()`, perform an initial license check.
-    - [ ] If the license is expired, prevent `createWindow()` from showing the main app, and instead show a dedicated "License Expired" window.
+3.  [x] **Main Process License Check (`src/main/main.js` / `preload.js`):**
+    - [x] On `app.whenReady()`, before `createWindow()`, perform an initial license check.
+    - [x] If the license is expired, prevent `createWindow()` from showing the main app, and instead show a dedicated "License Expired" window.
 
-4.  [~] **Frontend UI (`renderer`):**
+4.  [x] **Frontend UI (`renderer`):**
     - [x] **New Page:** Create `renderer/src/pages/Licensing.jsx`.
     - [x] **Routing:** Add a route for `/licensing` in `renderer/src/App.jsx`. *(Assumed complete).*
     - [x] **Sidebar Link:** Add a "Licensing" link under "Settings" in `renderer/src/components/Sidebar.jsx`. *(Assumed complete).*
     - [x] **License Status Component:** Create a small component (`renderer/src/components/LicenseStatusBanner.jsx`) to display trial/subscription status and notifications. Integrate this into the `Layout.jsx` or `Dashboard.jsx`.
-    - [~] **Licensing Page UI:** Design the `Licensing.jsx` page to display status, dates, and license activation input. *(UI is complete, but activation button logic is pending).*
+    - [x] **Licensing Page UI:** Design the `Licensing.jsx` page to display status, dates, and license activation input. *(UI and activation logic are complete).*
 
 5.  [x] **Trial Management Logic:**
     - [x] In `get-license-info` (IPC), calculate remaining trial days.
     - [x] In `LicenseStatusBanner.jsx`, display appropriate messages based on remaining days.
 
-6.  [ ] **Blocking UI on Expiry:**
-    - [ ] Implement the blocking screen logic in the main process.
+6.  [x] **Blocking UI on Expiry:**
+    - [x] Implement the blocking screen logic in the main process.
 
 ## 4. Future Enhancements (Beyond Initial Scope)
 

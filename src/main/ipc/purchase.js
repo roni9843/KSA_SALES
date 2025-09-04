@@ -141,4 +141,29 @@ module.exports = (ipcMain) => {
       });
     });
   });
+
+  ipcMain.handle('generate-purchase-id', async () => {
+    return new Promise((resolve, reject) => {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        const datePrefix = `${year}${month}${day}`;
+
+        const sql = `SELECT COUNT(*) as count FROM product_purchase WHERE purchase_id LIKE ?`;
+        db.get(sql, [`${datePrefix}%`], (err, row) => {
+            if (err) {
+                console.error(err.message);
+                return reject('Error generating purchase ID');
+            }
+
+            const count = row.count + 1;
+            const sequence = String(count).padStart(4, '0');
+            const randomPart = Math.random().toString(36).substring(2, 6).toUpperCase();
+            const purchaseId = `${datePrefix}-${sequence}-${randomPart}`;
+
+            resolve(purchaseId);
+        });
+    });
+  });
 };

@@ -6,33 +6,68 @@ const Licensing = () => {
     const [licenseInfo, setLicenseInfo] = useState(null);
     const [loading, setLoading] = useState(true);
     const [remainingDays, setRemainingDays] = useState(null);
+    const [licenseKey, setLicenseKey] = useState('');
+
+    const fetchLicenseInfo = async () => {
+        try {
+            setLoading(true);
+            const res = await window.electron.ipcRenderer.invoke('get-license-info');
+            if (res.success) {
+                setLicenseInfo(res.data);
+                if (res.data.trial_start_date) {
+                    const start = new Date(res.data.trial_start_date);
+                    const now = new Date();
+                    const diffTime = Math.abs(now - start);
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    setRemainingDays(10 - diffDays); // Assuming 10-day trial
+                }
+            } else {
+                toast.error(res.message || 'Failed to fetch license info.');
+            }
+        } catch (error) {
+            console.error('Error fetching license info:', error);
+            toast.error('An error occurred while fetching license info.');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchLicenseInfo = async () => {
-            try {
-                const res = await window.electron.ipcRenderer.invoke('get-license-info');
-                if (res.success) {
-                    setLicenseInfo(res.data);
-                    if (res.data.trial_start_date) {
-                        const start = new Date(res.data.trial_start_date);
-                        const now = new Date();
-                        const diffTime = Math.abs(now - start);
-                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                        setRemainingDays(10 - diffDays); // Assuming 10-day trial
-                    }
-                } else {
-                    toast.error(res.message || 'Failed to fetch license info.');
-                }
-            } catch (error) {
-                console.error('Error fetching license info:', error);
-                toast.error('An error occurred while fetching license info.');
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchLicenseInfo();
     }, []);
+
+    const handleActivate = async () => {
+        if (!licenseKey.trim()) {
+            return toast.error('Please enter a license key.');
+        }
+
+        const loadingToast = toast.loading('Activating license...');
+
+        try {
+            // For local validation, we'll set the expiry to one year from now.
+            const subscriptionEndDate = new Date();
+            subscriptionEndDate.setFullYear(subscriptionEndDate.getFullYear() + 1);
+
+            const res = await window.electron.ipcRenderer.invoke('activate-license', {
+                licenseKey: licenseKey.trim(),
+                subscriptionEndDate: subscriptionEndDate.toISOString(),
+            });
+
+            toast.dismiss(loadingToast);
+
+            if (res.success && res.changes > 0) {
+                toast.success('License activated successfully! Application will now restart.');
+                // Reload the page to reflect the new license status
+                setTimeout(() => window.location.reload(), 2000);
+            } else {
+                toast.error(res.message || 'Failed to activate license. The key may be invalid or already used.');
+            }
+        } catch (error) {
+            toast.dismiss(loadingToast);
+            console.error('Error activating license:', error);
+            toast.error('An error occurred during activation.');
+        }
+    };
 
     if (loading) {
         return <div style={cardStyle}>Loading license information...</div>;
@@ -78,8 +113,14 @@ const Licensing = () => {
                 <div style={actionSectionStyle}>
                     <h3>Activate Your License</h3>
                     <p>Enter your license key below to activate your full subscription.</p>
-                    <input type="text" placeholder="Enter License Key" style={inputStyle} />
-                    <button style={buttonStyle}>Activate License</button>
+                    <input 
+                        type="text" 
+                        placeholder="Enter License Key" 
+                        style={inputStyle} 
+                        value={licenseKey}
+                        onChange={(e) => setLicenseKey(e.target.value)}
+                    />
+                    <button style={buttonStyle} onClick={handleActivate}>Activate License</button>
                 </div>
             )}
 
