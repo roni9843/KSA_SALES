@@ -41,31 +41,50 @@ const Licensing = () => {
             return toast.error('Please enter a license key.');
         }
 
-        const loadingToast = toast.loading('Activating license...');
+        const loadingToast = toast.loading('Validating license key with server...');
+        const validationUrl = 'https://araflogix.com/motopos_backend/api/license/validate.php';
 
         try {
-            // For local validation, we'll set the expiry to one year from now.
-            const subscriptionEndDate = new Date();
-            subscriptionEndDate.setFullYear(subscriptionEndDate.getFullYear() + 1);
+            // Step 1: Validate with the remote server
+            const response = await fetch(validationUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ licenseKey: licenseKey.trim() }),
+            });
 
-            const res = await window.electron.ipcRenderer.invoke('activate-license', {
+            const result = await response.json();
+
+            if (!response.ok || !result.success) {
+                toast.dismiss(loadingToast);
+                return toast.error(result.message || 'Invalid license key.');
+            }
+
+            toast.dismiss(loadingToast);
+            toast.loading('Saving license to device...');
+
+            // Step 2: If server validation is successful, activate it locally
+            const { status, subscriptionEndDate } = result.data;
+
+            const localRes = await window.electron.ipcRenderer.invoke('activate-license', {
                 licenseKey: licenseKey.trim(),
-                subscriptionEndDate: subscriptionEndDate.toISOString(),
+                subscriptionEndDate: subscriptionEndDate,
             });
 
             toast.dismiss(loadingToast);
 
-            if (res.success && res.changes > 0) {
+            if (localRes.success && localRes.changes > 0) {
                 toast.success('License activated successfully! Application will now restart.');
-                // Reload the page to reflect the new license status
                 setTimeout(() => window.location.reload(), 2000);
             } else {
-                toast.error(res.message || 'Failed to activate license. The key may be invalid or already used.');
+                toast.error(localRes.message || 'Failed to save license locally.');
             }
+
         } catch (error) {
             toast.dismiss(loadingToast);
-            console.error('Error activating license:', error);
-            toast.error('An error occurred during activation.');
+            console.error('Error during activation:', error);
+            toast.error('Could not connect to the activation server. Please check your internet connection.');
         }
     };
 

@@ -22,8 +22,10 @@ Moto POS is a feature-rich, cross-platform desktop point-of-sale (POS) applicati
 
 - **Desktop Framework:** [Electron](https://www.electronjs.org/)
 - **Frontend:** [React](https://reactjs.org/) (bootstrapped with [Vite](https://vitejs.dev/))
-- **Backend Logic:** [Node.js](https://nodejs.org/) (running in the Electron main process)
-- **Database:** [SQLite3](https://www.sqlite.org/index.html) for local, file-based data storage.
+- **Backend Logic (Local):** [Node.js](https://nodejs.org/) (running in the Electron main process)
+- **Backend Logic (Remote):** [PHP](https://www.php.net/) for license validation.
+- **Database (Local):** [SQLite3](https://www.sqlite.org/index.html) for local, file-based data storage.
+- **Database (Remote):** [MySQL](https://www.mysql.com/) for the license database.
 - **Routing:** [React Router](https://reactrouter.com/)
 - **Internationalization:** [i18next](https://www.i18next.com/)
 
@@ -105,3 +107,4 @@ npm run build
 ```
 
 This will first build the React application for production and then use `electron-builder` to package it into an executable file for your current operating system (e.g., `.exe`, `.dmg`, `.AppImage`).
+on-builder` to package it into an executable file for your current operating system (e.g., `.exe`, `.dmg`, `.AppImage`).

@@ -95,7 +95,7 @@ The application will perform license validation at key points:
 
 ## 4. Future Enhancements (Beyond Initial Scope)
 
-- [ ] **Remote License Server:** Implement a secure backend API for license management.
+- [x] **Remote License Server:** Implement a secure backend API for license management. The current plan is to use a PHP/MySQL backend. The API will handle validating license keys upon activation.
 - [ ] **Payment Gateway Integration:** Integrate with Stripe, PayPal, etc., for subscription payments.
 - [ ] **Advanced Anti-Tampering:** More sophisticated checks (e.g., code integrity checks, remote time sync).
 - [ ] **Offline Grace Period:** Allow limited offline use for active subscriptions.
