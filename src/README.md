@@ -30,7 +30,7 @@ The backend is structured to be modular and maintainable, separating concerns in
 
 The application uses a SQLite database (`moto_pos.db`) to store all its data. The schema is defined in `database/db.js` and includes the following key tables:
 
-- `settings`: Stores global application settings, including licensing information like `trial_start_date`, `license_key`, `subscription_end_date`, and `license_status`.
+- `settings`: Stores global application settings, including licensing information like `trial_start_date`, `license_key`, `subscription_end_date`, `license_status`, and `last_successful_validation_date`.
 - `users`, `roles`, `permissions`, `user_roles`, `role_permissions`: For handling role-based access control (RBAC).
 - `product_category`, `product`: For product and inventory management.
 - `customers`, `suppliers`: For managing customer and supplier information.

@@ -99,4 +99,4 @@ The application will perform license validation at key points:
 - [x] **Remote License Server:** Implement a secure backend API for license management. The current plan is to use a PHP/MySQL backend. The API will handle validating license keys upon activation.
 - [ ] **Payment Gateway Integration:** Integrate with Stripe, PayPal, etc., for subscription payments.
 - [ ] **Advanced Anti-Tampering:** More sophisticated checks (e.g., code integrity checks, remote time sync).
-- [ ] **Offline Grace Period:** Allow limited offline use for active subscriptions.
+- [x] **Offline Grace Period:** The application must connect to the validation server at least once every 7 days. If it fails to do so, it will lock until an internet connection is available.

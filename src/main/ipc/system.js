@@ -28,8 +28,7 @@ const getMachineId = () => {
     return createHash('sha256').update(macAddress).digest('hex');
 };
 
-
-module.exports = function(ipcMain) {
+const registerSystemIpcHandlers = function(ipcMain) {
     ipcMain.handle('get-machine-id', async () => {
         try {
             const machineId = getMachineId();
@@ -40,3 +39,6 @@ module.exports = function(ipcMain) {
         }
     });
 };
+
+module.exports = registerSystemIpcHandlers;
+module.exports.getMachineId = getMachineId;

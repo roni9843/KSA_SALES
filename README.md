@@ -16,7 +16,7 @@ Moto POS is a feature-rich, cross-platform desktop point-of-sale (POS) applicati
 - **Due Collection:** Keep track of outstanding payments and manage due collections efficiently.
 - **Database Backup & Restore:** Easily export your entire database for backup and import it to restore your application data.
 - **Multi-language Support:** The UI supports internationalization (i18n) for easy translation.
-- **Subscription Licensing:** Includes a 10-day free trial and a secure, one-time activation per machine.
+- **Subscription Licensing:** Includes a 10-day free trial and a secure, one-time activation per machine with a 7-day offline grace period.
 
 ## Tech Stack
 
@@ -31,19 +31,24 @@ Moto POS is a feature-rich, cross-platform desktop point-of-sale (POS) applicati
 
 ## Project Structure
 
-The project is organized into two main parts. See the README files in each directory for more detailed information.
+The project is organized into three main parts. See the README files in each directory for more detailed information.
 
-- **`/src` (Main Process / Backend):**
-  - Contains all the backend logic running in Electron's main process.
-  - Manages the database (SQLite), handles business logic, and responds to IPC requests from the frontend.
+- **`/src` (Main Process / Local Backend):**
+  - Contains all the local backend logic running in Electron's main process.
+  - Manages the local SQLite database, handles business logic, and responds to IPC requests from the frontend.
   - Interacts with the operating system and manages the application windows.
-  - **[Backend README](./src/README.md)**
+  - **[Local Backend README](./src/README.md)**
 
 - **`/renderer` (Renderer Process / Frontend):**
   - A complete React application that constitutes the User Interface (UI).
   - It runs in a sandboxed browser environment (an Electron `BrowserWindow`).
-  - Communicates with the backend via a secure preload script to invoke business logic.
+  - Communicates with the local backend via IPC and the remote backend via HTTP.
   - **[Frontend README](./renderer/README.md)**
+
+- **`/backend` (Remote API / Remote Backend):**
+  - A PHP-based API responsible for remotely validating license keys against a MySQL database.
+  - This component must be deployed to a separate web host that supports PHP and MySQL.
+  - **[Remote Backend README](./backend/README.md)**
 
 ## Getting Started
 

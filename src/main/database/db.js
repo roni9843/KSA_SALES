@@ -395,7 +395,8 @@ db.serialize(() => {
       { name: 'trial_start_date', type: 'TEXT', default: 'NULL' },
       { name: 'license_key', type: 'TEXT', default: 'NULL' },
       { name: 'subscription_end_date', type: 'TEXT', default: 'NULL' },
-      { name: 'license_status', type: 'TEXT', default: 'unlicensed' }
+      { name: 'license_status', type: 'TEXT', default: 'unlicensed' },
+      { name: 'last_successful_validation_date', type: 'TEXT', default: 'NULL' }
     ];
 
     newSettingsColumns.forEach(col => {
@@ -422,9 +423,9 @@ db.serialize(() => {
         }
         if (!settings) {
             db.run(`
-                INSERT INTO settings (id, language, writing_direction, color_scheme, shop_name, shop_address, shop_phone, shop_email, shop_logo, trial_start_date, license_key, subscription_end_date, license_status)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            `, [1, 'en', 'ltr', 'light', 'Moto POS', 'Mirpur 10, Dhaka', '01700000000', 'example@email.com', '', null, null, null, 'unlicensed'])
+                INSERT INTO settings (id, language, writing_direction, color_scheme, shop_name, shop_address, shop_phone, shop_email, shop_logo, trial_start_date, license_key, subscription_end_date, license_status, last_successful_validation_date)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `, [1, 'en', 'ltr', 'light', 'Moto POS', 'Mirpur 10, Dhaka', '01700000000', 'example@email.com', '', null, null, null, 'unlicensed', null])
         }
     });
 });
