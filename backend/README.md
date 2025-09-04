@@ -5,7 +5,7 @@ This directory contains the remote backend API for Moto POS. It is a simple PHP 
 ## Structure
 
 - **/api**: Contains the public-facing API endpoint scripts.
-  - **/license/validate.php**: The script that receives a license key from the Electron application and validates it.
+  - **/license/validate.php**: The script that receives a license key and a unique machine ID from the Electron application and validates it.
 - **/config**: Contains configuration files.
   - **database.php**: Handles the connection to the MySQL database.
 
@@ -35,6 +35,7 @@ CREATE TABLE licenses (
     license_key VARCHAR(255) NOT NULL UNIQUE,
     status ENUM('active', 'expired', 'inactive') NOT NULL DEFAULT 'inactive',
     subscription_end_date DATE NOT NULL,
+    machine_id VARCHAR(255) NULL UNIQUE,
     customer_name VARCHAR(255) NULL,
     customer_email VARCHAR(255) NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

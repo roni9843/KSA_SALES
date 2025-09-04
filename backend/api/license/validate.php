@@ -18,66 +18,74 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 // Get posted data
 $data = json_decode(file_get_contents("php://input"));
 
-if (!isset($data->licenseKey) || empty($data->licenseKey)) {
+if (!isset($data->licenseKey) || !isset($data->machineId) || empty($data->licenseKey) || empty($data->machineId)) {
     http_response_code(400); // Bad Request
-    echo json_encode(['success' => false, 'message' => 'License key not provided.']);
+    echo json_encode(['success' => false, 'message' => 'License key or machine ID not provided.']);
     exit();
 }
 
 $licenseKey = htmlspecialchars(strip_tags($data->licenseKey));
+$machineId = htmlspecialchars(strip_tags($data->machineId));
 
 // Instantiate DB & connect
 $database = new Database();
 $db = $database->connect();
 
-// Create query
-$query = 'SELECT 
-            id, 
-            license_key, 
-            status, 
-            subscription_end_date
-          FROM 
-            licenses 
-          WHERE 
-            license_key = :license_key
-          LIMIT 1';
-
-// Prepare statement
+// Check if license key exists
+$query = 'SELECT id, license_key, status, subscription_end_date, machine_id FROM licenses WHERE license_key = :license_key LIMIT 1';
 $stmt = $db->prepare($query);
-
-// Bind data
 $stmt->bindParam(':license_key', $licenseKey);
-
-// Execute query
 $stmt->execute();
 
 if ($stmt->rowCount() > 0) {
-    // License key found
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
-    extract($row);
+    $db_machine_id = $row['machine_id'];
+    $db_status = $row['status'];
+    $db_subscription_end_date = $row['subscription_end_date'];
 
-    $endDate = new DateTime($subscription_end_date);
+    $endDate = new DateTime($db_subscription_end_date);
     $now = new DateTime();
 
-    if ($status === 'active' && $endDate > $now) {
-        // License is active and not expired
-        http_response_code(200); // OK
-        echo json_encode([
-            'success' => true,
-            'data' => [
-                'status' => $status,
-                'subscriptionEndDate' => $subscription_end_date
-            ]
-        ]);
-    } else {
-        // License is expired or not active
-        http_response_code(403); // Forbidden
-        echo json_encode(['success' => false, 'message' => 'License is expired or inactive.']);
-    }
+    if ($db_machine_id === null) {
+        // First time activation for this key
+        if ($db_status === 'active' && $endDate > $now) {
+            // Key is valid, lock it to this machine
+            $update_query = 'UPDATE licenses SET machine_id = :machine_id WHERE license_key = :license_key';
+            $update_stmt = $db->prepare($update_query);
+            $update_stmt->bindParam(':machine_id', $machineId);
+            $update_stmt->bindParam(':license_key', $licenseKey);
 
+            if ($update_stmt->execute()) {
+                http_response_code(200);
+                echo json_encode(['success' => true, 'data' => ['status' => 'active', 'subscriptionEndDate' => $db_subscription_end_date]]);
+            } else {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Failed to lock license to machine.']);
+            }
+        } else {
+            http_response_code(403);
+            echo json_encode(['success' => false, 'message' => 'License is expired or inactive.']);
+        }
+    } else {
+        // Key has already been activated
+        if ($db_machine_id === $machineId) {
+            // It's the same machine, check if still valid
+            if ($db_status === 'active' && $endDate > $now) {
+                http_response_code(200);
+                echo json_encode(['success' => true, 'data' => ['status' => 'active', 'subscriptionEndDate' => $db_subscription_end_date]]);
+            } else {
+                http_response_code(403);
+                echo json_encode(['success' => false, 'message' => 'License is expired or inactive.']);
+            }
+        } else {
+            // Key is being used on another machine
+            http_response_code(403);
+            echo json_encode(['success' => false, 'message' => 'License key is already in use on another computer.']);
+        }
+    }
 } else {
     // No license key found
-    http_response_code(404); // Not Found
+    http_response_code(404);
     echo json_encode(['success' => false, 'message' => 'License key not found.']);
 }
 

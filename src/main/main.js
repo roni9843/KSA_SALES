@@ -101,6 +101,7 @@ require('./ipc/roles.js')(ipcMain);
 require('./ipc/settings.js')(ipcMain);
 require('./ipc/stock.js')(ipcMain);
 require('./ipc/supplier.js')(ipcMain);
+require('./ipc/system.js')(ipcMain); // <-- Add this line
 require('./ipc/tax.js')(ipcMain);
 require('./ipc/transaction.js')(ipcMain);
 require('./ipc/users.js')(ipcMain);

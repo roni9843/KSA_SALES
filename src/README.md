@@ -24,7 +24,7 @@ The backend is structured to be modular and maintainable, separating concerns in
   - Defining and creating the entire database schema upon application startup.
   - Seeding the database with initial data, such as creating a default `supperAdmin` user, roles, and permissions.
 
-- **`main/ipc/*.js`**: This directory contains the core business logic of the application, broken down by feature. Each file registers a set of IPC handlers for a specific domain (e.g., `invoice.js`, `product.js`, `auth.js`, `license.js`). This keeps the `main.js` file clean and makes the application logic easy to navigate and manage.
+- **`main/ipc/*.js`**: This directory contains the core business logic of the application, broken down by feature. Each file registers a set of IPC handlers for a specific domain (e.g., `invoice.js`, `product.js`, `system.js`). This keeps the `main.js` file clean and makes the application logic easy to navigate and manage.
 
 ## Database Schema
 

@@ -57,6 +57,7 @@ The application will perform license validation at key points:
 
 ### 2.4. Security Considerations (Local Validation)
 
+- [x] **Machine-ID Locking:** The license key is locked to a specific machine on activation to prevent reuse.
 - [ ] **Obfuscation:** The license validation logic in the Electron main process should be obfuscated to make reverse engineering harder.
 - [ ] **Checksums/Hashes:** Store a hash of critical license data (e.g., `trial_start_date`) to detect simple tampering.
 - [ ] **Time Tampering:** Detect system clock changes.
