@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
     FaHome, FaFolder, FaBox, FaFileInvoice, FaUsers, FaTruck,
     FaChartBar, FaPercent, FaCog, FaShoppingCart, FaBoxes,
-    FaChevronDown, FaChevronRight, FaSignOutAlt, FaUserCheck, FaStore, FaShieldAlt, FaMoneyBillWave, FaWarehouse, FaBook, FaUserTie
+    FaChevronDown, FaChevronRight, FaSignOutAlt, FaUserCheck, FaStore, FaShieldAlt, FaMoneyBillWave, FaWarehouse, FaBook, FaUserTie, FaIndustry
 } from 'react-icons/fa';
 
 import { useAuthStore } from '../store/authStore';
@@ -106,6 +106,12 @@ const Sidebar = () => {
                         { path: '/supplier-list', label: 'Supplier List' },
                     ]
                 }
+            ]
+        },
+        {
+            title: 'MANUFACTURING & ASSEMBLY',
+            items: [
+                { path: '/manufacturing', label: 'BOM Recipes & Work Orders', icon: <FaIndustry />, permission: 'page:view:products' }
             ]
         },
         {
