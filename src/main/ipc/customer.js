@@ -9,9 +9,9 @@ module.exports = (ipcMain) => {
             const params = [];
 
             if (searchTerm) {
-                whereClause = `WHERE name LIKE ? OR phone LIKE ? OR tax_number LIKE ? OR Uakam_no LIKE ?`;
+                whereClause = `WHERE name LIKE ? OR phone LIKE ? OR tax_number LIKE ? OR Uakam_no LIKE ? OR cr_number LIKE ?`;
                 const searchTermLike = `%${searchTerm}%`;
-                params.push(searchTermLike, searchTermLike, searchTermLike, searchTermLike);
+                params.push(searchTermLike, searchTermLike, searchTermLike, searchTermLike, searchTermLike);
             }
 
             const countSql = `SELECT COUNT(*) as count FROM customers ${whereClause}`;
@@ -21,7 +21,7 @@ module.exports = (ipcMain) => {
                     return reject('Error counting customers');
                 }
 
-                const totalCount = row.count;
+                const totalCount = row ? row.count : 0;
                 const queryParams = [...params, limit, offset];
                 const sql = `SELECT * FROM customers ${whereClause} ORDER BY id DESC LIMIT ? OFFSET ?`;
 
@@ -30,7 +30,12 @@ module.exports = (ipcMain) => {
                         console.error(err.message);
                         reject('Error loading customers');
                     } else {
-                        resolve({ rows, totalCount });
+                        const parsedRows = (rows || []).map(r => ({
+                            ...r,
+                            addresses: r.addresses_json ? JSON.parse(r.addresses_json) : [],
+                            notes: r.notes_json ? JSON.parse(r.notes_json) : []
+                        }));
+                        resolve({ rows: parsedRows, totalCount });
                     }
                 });
             });
@@ -40,8 +45,24 @@ module.exports = (ipcMain) => {
     // IPC for update-customer
     ipcMain.handle('update-customer', async (event, customer) => {
         return new Promise((resolve, reject) => {
-            const sql = `UPDATE customers SET name = ?, code = ?, phone = ?, email = ?, address = ?, zip_code = ?, city = ?, country = ?, tax_number = ?, status = ?, Uakam_no = ? WHERE id = ?`;
-            const params = [customer.name, customer.code, customer.phone, customer.email, customer.address, customer.zip_code, customer.city, customer.country, customer.tax_number, customer.status, customer.Uakam_no, customer.id];
+            const addressesJson = Array.isArray(customer.addresses) ? JSON.stringify(customer.addresses) : (customer.addresses_json || '[]');
+            const notesJson = Array.isArray(customer.notes) ? JSON.stringify(customer.notes) : (customer.notes_json || '[]');
+
+            const sql = `
+                UPDATE customers SET 
+                name = ?, code = ?, phone = ?, email = ?, address = ?, zip_code = ?, city = ?, country = ?, 
+                tax_number = ?, status = ?, Uakam_no = ?, client_type = ?, cr_number = ?, 
+                opening_balance = ?, opening_balance_type = ?, credit_limit = ?, credit_period_days = ?, 
+                wallet_balance = ?, loyalty_points = ?, addresses_json = ?, notes_json = ? 
+                WHERE id = ?
+            `;
+            const params = [
+                customer.name, customer.code, customer.phone, customer.email, customer.address, customer.zip_code, customer.city, customer.country,
+                customer.tax_number, customer.status, customer.Uakam_no, customer.client_type || 'INDIVIDUAL', customer.cr_number || '',
+                customer.opening_balance || 0, customer.opening_balance_type || 'DEBIT', customer.credit_limit || 0, customer.credit_period_days || 0,
+                customer.wallet_balance || 0, customer.loyalty_points || 0, addressesJson, notesJson,
+                customer.id
+            ];
             db.run(sql, params, function (err) {
                 if (err) {
                     console.error(err.message);
@@ -71,11 +92,16 @@ module.exports = (ipcMain) => {
     // IPC for add-customer
     ipcMain.handle('add-customer', async (event, customer) => {
         return new Promise((resolve, reject) => {
+            const addressesJson = Array.isArray(customer.addresses) ? JSON.stringify(customer.addresses) : '[]';
+            const notesJson = Array.isArray(customer.notes) ? JSON.stringify(customer.notes) : '[]';
+
             const sql = `
-          INSERT INTO customers
-          (name, code, phone, email, address, zip_code, city, country, tax_number, status, Uakam_no)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `;
+              INSERT INTO customers
+              (name, code, phone, email, address, zip_code, city, country, tax_number, status, Uakam_no, 
+               client_type, cr_number, opening_balance, opening_balance_type, credit_limit, credit_period_days, 
+               wallet_balance, loyalty_points, addresses_json, notes_json)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `;
             const params = [
                 customer.name,
                 customer.code,
@@ -86,8 +112,18 @@ module.exports = (ipcMain) => {
                 customer.city,
                 customer.country,
                 customer.tax_number,
-                customer.status,
-                customer.Uakam_no
+                customer.status !== undefined ? customer.status : 'ACTIVE',
+                customer.Uakam_no,
+                customer.client_type || 'INDIVIDUAL',
+                customer.cr_number || '',
+                customer.opening_balance || 0,
+                customer.opening_balance_type || 'DEBIT',
+                customer.credit_limit || 0,
+                customer.credit_period_days || 0,
+                customer.wallet_balance || 0,
+                customer.loyalty_points || 0,
+                addressesJson,
+                notesJson
             ];
             db.run(sql, params, function (err) {
                 if (err) {
@@ -100,21 +136,25 @@ module.exports = (ipcMain) => {
         });
     });
 
+    // IPC for search-customers
     ipcMain.handle('search-customers', async (event, searchTerm) => {
         return new Promise((resolve, reject) => {
             const sql = `
-        SELECT * FROM customers
-        WHERE (name LIKE ? OR phone LIKE ? OR email LIKE ?)
-        AND status = 1
-        ORDER BY name
-      `;
-            const params = [`%${searchTerm}%`, `%${searchTerm}%`, `%${searchTerm}%`];
+                SELECT * FROM customers
+                WHERE (name LIKE ? OR phone LIKE ? OR email LIKE ? OR tax_number LIKE ?)
+                ORDER BY name
+            `;
+            const params = [`%${searchTerm}%`, `%${searchTerm}%`, `%${searchTerm}%`, `%${searchTerm}%`];
             db.all(sql, params, (err, rows) => {
                 if (err) {
                     console.error(err.message);
                     reject('Error searching customers');
                 } else {
-                    resolve(rows);
+                    const parsedRows = (rows || []).map(r => ({
+                        ...r,
+                        addresses: r.addresses_json ? JSON.parse(r.addresses_json) : []
+                    }));
+                    resolve(parsedRows);
                 }
             });
         });

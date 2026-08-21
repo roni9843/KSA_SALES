@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import Switch from './common/Switch';
-import { FaEdit, FaTrash, FaUsers, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import ClientProfileView from './ClientProfileView';
+import { FaEdit, FaTrash, FaUsers, FaChevronLeft, FaChevronRight, FaEye, FaWhatsapp } from 'react-icons/fa';
 
 const PAGE_SIZE = 10;
 
 const CustomerList = ({ refresh }) => {
     const [list, setList] = useState([]);
     const [editCustomer, setEditCustomer] = useState(null);
+    const [viewCustomer, setViewCustomer] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
     const [searchTerm, setSearchTerm] = useState('');
@@ -40,7 +42,7 @@ const CustomerList = ({ refresh }) => {
     };
 
     const deleteCustomer = async (id) => {
-        if (confirm('Delete this customer?')) {
+        if (confirm('Delete this customer profile?')) {
             await window.electron.ipcRenderer.invoke('delete-customer', id);
             fetchCustomers(currentPage, searchTerm);
         }
@@ -62,12 +64,12 @@ const CustomerList = ({ refresh }) => {
         <div style={cardStyle}>
             <div style={headerStyle}>
                 <h2 className="text-xl font-extrabold text-slate-900 flex items-center gap-2">
-                    <FaUsers className="text-blue-600" /> Customer List
+                    <FaUsers className="text-blue-600" /> Client Directory & CRM
                 </h2>
                 <div style={searchContainerStyle}>
                     <input
                         type="text"
-                        placeholder="Search by name, phone, tax, uakam..."
+                        placeholder="Search by name, phone, tax, CR, Iqama..."
                         value={searchTerm}
                         onChange={handleSearchChange}
                         style={searchInputStyle}
@@ -79,33 +81,59 @@ const CustomerList = ({ refresh }) => {
                 <table style={tableStyle}>
                     <thead style={tableHeaderStyle}>
                         <tr>
-                            <th style={{ ...thStyle, textAlign: 'left' }}>Customer Name</th>
-                            <th style={thStyle}>Phone</th>
-                            <th style={thStyle}>Email</th>
-                            <th style={thStyle}>Tax Number</th>
-                            <th style={thStyle}>Uakam No</th>
+                            <th style={{ ...thStyle, textAlign: 'left' }}>Client Info</th>
+                            <th style={thStyle}>Type</th>
+                            <th style={thStyle}>Phone & WhatsApp</th>
+                            <th style={thStyle}>Tax / CR / Iqama</th>
+                            <th style={thStyle}>Credit Limit</th>
                             <th style={{ ...thStyle, textAlign: 'center' }}>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {list.length === 0 ? (
                             <tr>
-                                <td colSpan="6" className="p-8 text-center text-slate-500 text-sm">No customers registered yet.</td>
+                                <td colSpan="6" className="p-8 text-center text-slate-500 text-sm">No clients registered yet.</td>
                             </tr>
                         ) : (
-                            list.map((c, index) => (
-                                <tr key={c.id} style={tableRowStyle(index)}>
-                                    <td style={{ ...tdStyle, textAlign: 'left', fontWeight: '700', color: '#0f172a' }}>{c.name}</td>
-                                    <td style={{ ...tdStyle, fontWeight: '600' }}>{c.phone || '-'}</td>
-                                    <td style={tdStyle}>{c.email || '-'}</td>
-                                    <td style={tdStyle}>{c.tax_number || '-'}</td>
-                                    <td style={tdStyle}>{c.Uakam_no || '-'}</td>
-                                    <td style={{ ...tdStyle, textAlign: 'center' }}>
-                                        <button onClick={() => setEditCustomer(c)} className="p-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors mr-2"><FaEdit /></button>
-                                        <button onClick={() => deleteCustomer(c.id)} className="p-2 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 transition-colors"><FaTrash /></button>
-                                    </td>
-                                </tr>
-                            ))
+                            list.map((c, index) => {
+                                const waUrl = c.phone ? `https://wa.me/${c.phone.replace(/[^0-9]/g, '')}` : '#';
+                                return (
+                                    <tr key={c.id} style={tableRowStyle(index)}>
+                                        <td style={{ ...tdStyle, textAlign: 'left' }}>
+                                            <div className="font-extrabold text-slate-900">{c.name}</div>
+                                            <div className="text-[11px] text-slate-400">Code: {c.code || 'CLI-' + c.id}</div>
+                                        </td>
+                                        <td style={tdStyle}>
+                                            <span className={`px-2 py-0.5 rounded-md text-[11px] font-bold ${c.client_type === 'CORPORATE' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
+                                                {c.client_type || 'INDIVIDUAL'}
+                                            </span>
+                                        </td>
+                                        <td style={{ ...tdStyle, fontWeight: '600' }}>
+                                            <div className="flex items-center gap-2">
+                                                <span>{c.phone || '-'}</span>
+                                                {c.phone && (
+                                                    <a href={waUrl} target="_blank" rel="noreferrer" title="Chat on WhatsApp" className="text-emerald-600 hover:text-emerald-700 text-sm">
+                                                        <FaWhatsapp />
+                                                    </a>
+                                                )}
+                                            </div>
+                                        </td>
+                                        <td style={tdStyle}>
+                                            <div className="text-xs">{c.tax_number ? `VAT: ${c.tax_number}` : (c.cr_number ? `CR: ${c.cr_number}` : (c.Uakam_no ? `Iqama: ${c.Uakam_no}` : '-'))}</div>
+                                        </td>
+                                        <td style={tdStyle}>
+                                            <div className="text-xs font-semibold text-slate-700">
+                                                {c.credit_limit ? `${c.credit_limit} SAR` : 'No Limit'}
+                                            </div>
+                                        </td>
+                                        <td style={{ ...tdStyle, textAlign: 'center' }}>
+                                            <button onClick={() => setViewCustomer(c)} title="View Profile" className="p-2 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors mr-1.5"><FaEye /></button>
+                                            <button onClick={() => setEditCustomer(c)} title="Edit Client" className="p-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors mr-1.5"><FaEdit /></button>
+                                            <button onClick={() => deleteCustomer(c.id)} title="Delete Client" className="p-2 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 transition-colors"><FaTrash /></button>
+                                        </td>
+                                    </tr>
+                                );
+                            })
                         )}
                     </tbody>
                 </table>
@@ -123,19 +151,27 @@ const CustomerList = ({ refresh }) => {
                 </div>
             )}
 
-            {/* Modal */}
+            {/* Profile Drawer View Modal */}
+            {viewCustomer && (
+                <ClientProfileView client={viewCustomer} onClose={() => setViewCustomer(null)} onRefresh={() => fetchCustomers(currentPage, searchTerm)} />
+            )}
+
+            {/* Edit Modal */}
             {editCustomer && (
                 <div style={modalOverlay}>
                     <div style={modalBox}>
-                        <h3 style={modalHeaderStyle}>Edit Customer</h3>
+                        <h3 style={modalHeaderStyle}>Edit Client Profile</h3>
                         <form onSubmit={handleEditSubmit} style={formStyle}>
                             <div style={inputGroupStyle}>
-                                <label style={labelStyle}>Name <span style={{ color: 'red' }}>*</span></label>
+                                <label style={labelStyle}>Client Name <span style={{ color: 'red' }}>*</span></label>
                                 <input name="name" value={editCustomer.name} onChange={handleChange} placeholder="Name" required style={inputStyle} />
                             </div>
                             <div style={inputGroupStyle}>
-                                <label style={labelStyle}>Code</label>
-                                <input name="code" value={editCustomer.code} onChange={handleChange} placeholder="Code" style={inputStyle} />
+                                <label style={labelStyle}>Client Type</label>
+                                <select name="client_type" value={editCustomer.client_type || 'INDIVIDUAL'} onChange={handleChange} style={inputStyle}>
+                                    <option value="INDIVIDUAL">INDIVIDUAL</option>
+                                    <option value="CORPORATE">CORPORATE</option>
+                                </select>
                             </div>
                             <div style={inputGroupStyle}>
                                 <label style={labelStyle}>Phone <span style={{ color: 'red' }}>*</span></label>
@@ -146,32 +182,28 @@ const CustomerList = ({ refresh }) => {
                                 <input type="email" name="email" value={editCustomer.email} onChange={handleChange} placeholder="Email" style={inputStyle} />
                             </div>
                             <div style={inputGroupStyle}>
-                                <label style={labelStyle}>Address</label>
-                                <input name="address" value={editCustomer.address} onChange={handleChange} placeholder="Address" style={inputStyle} />
+                                <label style={labelStyle}>Tax Registration Number (VAT)</label>
+                                <input name="tax_number" value={editCustomer.tax_number || ''} onChange={handleChange} placeholder="Tax Number" style={inputStyle} />
                             </div>
                             <div style={inputGroupStyle}>
-                                <label style={labelStyle}>Zip Code</label>
-                                <input name="zip_code" value={editCustomer.zip_code} onChange={handleChange} placeholder="Zip Code" style={inputStyle} />
+                                <label style={labelStyle}>Commercial Register (CR No)</label>
+                                <input name="cr_number" value={editCustomer.cr_number || ''} onChange={handleChange} placeholder="CR Number" style={inputStyle} />
                             </div>
                             <div style={inputGroupStyle}>
-                                <label style={labelStyle}>City</label>
-                                <input name="city" value={editCustomer.city} onChange={handleChange} placeholder="City" style={inputStyle} />
+                                <label style={labelStyle}>Iqama / National ID (Uakam No)</label>
+                                <input name="Uakam_no" value={editCustomer.Uakam_no || ''} onChange={handleChange} placeholder="Uakam No" style={inputStyle} />
                             </div>
                             <div style={inputGroupStyle}>
-                                <label style={labelStyle}>Country</label>
-                                <input name="country" value={editCustomer.country} onChange={handleChange} placeholder="Country" style={inputStyle} />
+                                <label style={labelStyle}>Credit Limit Amount</label>
+                                <input type="number" step="0.01" name="credit_limit" value={editCustomer.credit_limit || 0} onChange={handleChange} placeholder="Credit Limit" style={inputStyle} />
                             </div>
                             <div style={inputGroupStyle}>
-                                <label style={labelStyle}>Tax Number</label>
-                                <input name="tax_number" value={editCustomer.tax_number} onChange={handleChange} placeholder="Tax Number" style={inputStyle} />
-                            </div>
-                            <div style={inputGroupStyle}>
-                                <label style={labelStyle}>Uakam No</label>
-                                <input name="Uakam_no" value={editCustomer.Uakam_no} onChange={handleChange} placeholder="Enter Uakam No" style={inputStyle} />
+                                <label style={labelStyle}>Opening Balance</label>
+                                <input type="number" step="0.01" name="opening_balance" value={editCustomer.opening_balance || 0} onChange={handleChange} placeholder="Opening Balance" style={inputStyle} />
                             </div>
                             <div style={inputGroupStyle}>
                                 <label style={labelStyle}>Status</label>
-                                <Switch name="status" checked={editCustomer.status} onChange={handleChange} />
+                                <Switch name="status" checked={editCustomer.status === 1 || editCustomer.status === 'ACTIVE'} onChange={handleChange} />
                             </div>
 
                             <div style={{ gridColumn: '1 / span 2', display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
@@ -273,7 +305,7 @@ const modalBox = {
     background: '#ffffff',
     padding: '28px',
     borderRadius: '20px',
-    width: 'clamp(400px, 50vw, 600px)',
+    width: 'clamp(400px, 50vw, 650px)',
     color: '#0f172a',
     border: '1px solid #e2e8f0',
     boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',

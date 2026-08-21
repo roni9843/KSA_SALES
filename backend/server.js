@@ -17,6 +17,7 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/categories', require('./routes/category'));
 app.use('/api/products', require('./routes/product'));
 app.use('/api/customers', require('./routes/customer'));
+app.use('/api/client-groups', require('./routes/clientGroup'));
 app.use('/api/suppliers', require('./routes/supplier'));
 app.use('/api/invoices', require('./routes/invoice'));
 app.use('/api/purchases', require('./routes/purchase'));
