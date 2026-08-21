@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
     FaHome, FaFolder, FaBox, FaFileInvoice, FaUsers, FaTruck,
     FaChartBar, FaPercent, FaCog, FaShoppingCart, FaBoxes,
-    FaChevronDown, FaChevronRight, FaSignOutAlt, FaUserCheck, FaStore, FaShieldAlt, FaMoneyBillWave, FaWarehouse, FaBook, FaUserTie, FaIndustry, FaTasks
+    FaChevronDown, FaChevronRight, FaSignOutAlt, FaUserCheck, FaStore, FaShieldAlt, FaMoneyBillWave, FaWarehouse, FaBook, FaUserTie, FaIndustry, FaTasks, FaCode
 } from 'react-icons/fa';
 
 import { useAuthStore } from '../store/authStore';
@@ -169,6 +169,7 @@ const Sidebar = () => {
                     icon: <FaCog />,
                     permission: 'manage:users',
                     subItems: [
+                        { path: '/developer-api', label: 'Developer API & Webhooks' },
                         { path: '/system-settings', label: 'System Sequences & VAT' },
                         { path: '/manage-merchants', label: 'Store SaaS Management' },
                         { path: '/manage-roles', label: 'Role & Permissions' },

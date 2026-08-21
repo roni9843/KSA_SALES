@@ -49,6 +49,7 @@ import PayrollManager from './components/PayrollManager';
 import ManufacturingManager from './components/ManufacturingManager';
 import TaskManager from './components/TaskManager';
 import SettingsManager from './components/SettingsManager';
+import DeveloperApiManager from './components/DeveloperApiManager';
 
 import MerchantRegister from './pages/MerchantRegister';
 import MerchantManagement from './pages/MerchantManagement';
@@ -90,6 +91,7 @@ function App() {
                 <Route path="/manufacturing" element={<ManufacturingManager />} />
                 <Route path="/tasks-operations" element={<TaskManager />} />
                 <Route path="/system-settings" element={<SettingsManager />} />
+                <Route path="/developer-api" element={<DeveloperApiManager />} />
                 <Route path="/reporting" element={<Reporting />} />
                 <Route path="/product-sales-report" element={<ProductSalesReport />} />
                 <Route path="/product-transaction" element={<ProductTransaction />} />

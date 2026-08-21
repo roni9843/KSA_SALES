@@ -41,6 +41,7 @@ app.use('/api/rental-meters', require('./routes/rentalMeter'));
 app.use('/api/auto-sequences', require('./routes/autoSequence'));
 app.use('/api/tax-exemptions', require('./routes/taxExemption'));
 app.use('/api/currency-rates', require('./routes/currencyRate'));
+app.use('/api/developers', require('./routes/developerApi'));
 app.use('/api/stock', require('./routes/stock'));
 app.use('/api/tax', require('./routes/tax'));
 app.use('/api/settings', require('./routes/settings'));
