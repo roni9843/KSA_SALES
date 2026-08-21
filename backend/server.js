@@ -23,6 +23,7 @@ app.use('/api/price-lists', require('./routes/priceList'));
 app.use('/api/pos-shifts', require('./routes/posShift'));
 app.use('/api/installments', require('./routes/installment'));
 app.use('/api/suppliers', require('./routes/supplier'));
+app.use('/api/purchase-orders', require('./routes/purchaseOrder'));
 app.use('/api/invoices', require('./routes/invoice'));
 app.use('/api/purchases', require('./routes/purchase'));
 app.use('/api/stock', require('./routes/stock'));

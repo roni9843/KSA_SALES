@@ -25,7 +25,8 @@ const generatePurchaseId = async () => {
 router.get('/', protect, async (req, res) => {
   try {
     const purchases = await Purchase.find()
-      .populate('supplier', 'name')
+      .populate('supplier', 'name phone taxNumber')
+      .populate('warehouse', 'name code')
       .sort({ createdAt: -1 });
     res.json({ success: true, purchases });
   } catch (error) {
@@ -34,16 +35,20 @@ router.get('/', protect, async (req, res) => {
 });
 
 // @route   POST /api/purchases
-// @desc    Create a new purchase
+// @desc    Create a new purchase bill with Landed Cost allocation
 router.post('/', protect, authorize('page:view:purchase'), async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();
 
   const {
     supplier_id,
+    po_number,
+    warehouse_id,
     supplier_invoice_no,
     supplier_invoice_date,
     purchase_date,
+    landed_cost_shipping = 0,
+    landed_cost_customs = 0,
     grand_total,
     grand_total_before_tax,
     tax_amount = 0,
@@ -55,6 +60,11 @@ router.post('/', protect, authorize('page:view:purchase'), async (req, res) => {
     const purchaseId = await generatePurchaseId();
     const purchaseItems = [];
 
+    // Compute total units for Landed Cost unit allocation
+    const totalQty = items.reduce((sum, i) => sum + Number(i.quantity), 0);
+    const totalLandedCost = Number(landed_cost_shipping) + Number(landed_cost_customs);
+    const landedCostPerUnit = totalQty > 0 ? (totalLandedCost / totalQty) : 0;
+
     for (const item of items) {
       const product = await Product.findById(item.product_id).session(session);
       if (!product) {
@@ -64,14 +74,21 @@ router.post('/', protect, authorize('page:view:purchase'), async (req, res) => {
       const preStock = product.quantityInStock;
       const newStock = preStock + Number(item.quantity);
 
+      const baseUnitPrice = Number(item.price);
+      const effectiveUnitCost = baseUnitPrice + landedCostPerUnit;
+
+      // Update product stock & cost price
       product.quantityInStock = newStock;
+      product.purchasePrice = effectiveUnitCost;
       await product.save({ session });
 
       purchaseItems.push({
         product: product._id,
         productName: product.name,
         quantity: Number(item.quantity),
-        price: Number(item.price),
+        price: baseUnitPrice,
+        allocatedLandedCost: landedCostPerUnit,
+        effectiveUnitCost: effectiveUnitCost,
         taxPercentage: Number(item.tax_percentage || 0),
         discountPercentage: Number(item.discount_percentage || 0),
         totalBeforeTax: Number(item.total_before_tax),
@@ -83,11 +100,15 @@ router.post('/', protect, authorize('page:view:purchase'), async (req, res) => {
 
     const purchase = new Purchase({
       purchaseId,
+      poNumber: po_number,
       supplier: supplier_id,
+      warehouse: warehouse_id,
       supplierInvoiceNo: supplier_invoice_no,
       supplierInvoiceDate: supplier_invoice_date,
       purchaseDate: purchase_date || Date.now(),
-      grandTotal: Number(grand_total),
+      landedCostShipping: Number(landed_cost_shipping),
+      landedCostCustoms: Number(landed_cost_customs),
+      grandTotal: Number(grand_total) + totalLandedCost,
       grandTotalBeforeTax: Number(grand_total_before_tax),
       taxAmount: Number(tax_amount),
       discountAmount: Number(discount_amount),
@@ -96,15 +117,15 @@ router.post('/', protect, authorize('page:view:purchase'), async (req, res) => {
 
     const newPurchase = await purchase.save({ session });
 
-    // Auto log CashFlow Outflow for Supplier Purchase Payout
+    // Log CashFlow Outflow
     if (Number(grand_total) > 0) {
       await CashFlow.create([{
         type: 'outflow',
         category: 'Supplier Purchase Payout',
-        amount: Number(grand_total),
+        amount: Number(grand_total) + totalLandedCost,
         paymentMethod: 'Cash',
         referenceNo: newPurchase.purchaseId,
-        description: `Supplier Purchase Payment (${newPurchase.supplierInvoiceNo || newPurchase.purchaseId})`,
+        description: `Supplier Bill Payment (${newPurchase.supplierInvoiceNo || newPurchase.purchaseId})`,
         createdBy: req.user._id
       }], { session });
     }
@@ -120,37 +141,14 @@ router.post('/', protect, authorize('page:view:purchase'), async (req, res) => {
   }
 });
 
-// @route   PUT /api/purchases/:id
-// @desc    Update a purchase metadata
-router.put('/:id', protect, authorize('page:view:purchase'), async (req, res) => {
-  try {
-    const purchase = await Purchase.findById(req.params.id);
-    if (!purchase) {
-      return res.status(404).json({ success: false, message: 'Purchase not found' });
-    }
-
-    const updated = await Purchase.findByIdAndUpdate(
-      req.params.id,
-      { $set: req.body },
-      { new: true }
-    ).populate('supplier');
-
-    res.json({ success: true, purchase: updated });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-});
-
 // @route   DELETE /api/purchases/:id
-// @desc    Delete a purchase (Warning: does not reverse stock for simplicity, matching original desktop logic)
+// @desc    Delete a purchase
 router.delete('/:id', protect, authorize('page:view:purchase'), async (req, res) => {
   try {
-    const purchase = await Purchase.findById(req.params.id);
+    const purchase = await Purchase.findByIdAndDelete(req.params.id);
     if (!purchase) {
       return res.status(404).json({ success: false, message: 'Purchase not found' });
     }
-
-    await Purchase.findByIdAndDelete(req.params.id);
     res.json({ success: true, message: 'Purchase deleted successfully' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
