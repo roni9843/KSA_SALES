@@ -1,12 +1,9 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
-    FaHome, FaFileInvoice, FaShoppingCart, FaIndustry, FaCalendarCheck,
-    FaCreditCard, FaChartLine, FaBuilding, FaTools, FaPrint, FaUsers,
-    FaCoins, FaIdCard, FaUserClock, FaBoxes, FaTruck, FaClock,
-    FaMoneyBillWave, FaBook, FaClipboardList, FaUserTie, FaSitemap,
-    FaCalendarAlt, FaFileInvoiceDollar, FaChartBar, FaFileAlt, FaCog,
-    FaChevronDown, FaChevronRight, FaSignOutAlt, FaUserCheck, FaStore, FaShieldAlt
+    FaHome, FaFolder, FaBox, FaFileInvoice, FaUsers, FaTruck,
+    FaChartBar, FaPercent, FaCog, FaShoppingCart, FaBoxes,
+    FaChevronDown, FaChevronRight, FaSignOutAlt, FaUserCheck, FaStore, FaShieldAlt, FaMoneyBillWave, FaWarehouse, FaBook, FaUserTie, FaIndustry, FaTasks, FaCode
 } from 'react-icons/fa';
 
 import { useAuthStore } from '../store/authStore';
@@ -26,452 +23,271 @@ const Sidebar = () => {
         navigate('/login');
     };
 
-    // 27-Section Enterprise ERP Menu Hierarchy
+    // Organized Sectioned Menu Structure for Ultra-Professional POS
     const menuSections = [
         {
-            title: '1. DASHBOARD',
+            title: 'MAIN MENU',
             items: [
-                {
-                    label: 'Dashboard',
-                    icon: <FaHome />,
-                    subItems: [
-                        { path: '/', label: 'Sales Dashboard' },
-                        { path: '/employees', label: 'Human Resources Dashboard' }
-                    ]
-                }
+                { path: '/', label: 'Dashboard', icon: <FaHome />, permission: 'page:view:dashboard' },
             ]
         },
         {
-            title: '2. SALES',
+            title: 'INVENTORY & CATALOG',
             items: [
+                { path: '/category', label: 'Categories', icon: <FaFolder />, permission: 'page:view:category' },
                 {
-                    label: 'Sales Invoicing & Estimates',
-                    icon: <FaFileInvoice />,
+                    label: 'Products',
+                    icon: <FaBox />,
+                    permission: 'page:view:products',
                     subItems: [
-                        { path: '/invoices', label: 'Manage Invoices' },
-                        { path: '/create-invoice', label: '+ Create Invoice' },
-                        { path: '/quotation', label: 'Manage Estimates' },
-                        { path: '/quotation', label: '+ Create Estimate' },
-                        { path: '/sales-return', label: 'Credit Notes & Refunds' },
-                        { path: '/draft-invoices', label: 'Recurring & Draft Invoices' },
-                        { path: '/collect-due', label: 'Client Payments' },
-                        { path: '/tax-rates', label: 'Sales Settings' }
+                        { path: '/products', label: 'Add Product' },
+                        { path: '/product-list', label: 'Product Catalog' },
                     ]
-                }
-            ]
-        },
-        {
-            title: '3. POS (POINT OF SALE)',
-            items: [
+                },
+                { path: '/warehouses', label: 'Warehouses & Stock Transfers', icon: <FaWarehouse />, permission: 'page:view:products' },
                 {
-                    label: 'Point of Sale (POS)',
-                    icon: <FaShoppingCart />,
-                    subItems: [
-                        { path: '/create-invoice', label: '⚡ Start Selling (POS Terminal)' },
-                        { path: '/create-invoice', label: 'POS Sessions & Cash Shifts' },
-                        { path: '/product-sales-report', label: 'POS Reports' },
-                        { path: '/general-setting', label: 'POS Settings' }
-                    ]
-                }
-            ]
-        },
-        {
-            title: '4. MANUFACTURING',
-            items: [
-                {
-                    label: 'Manufacturing & Assembly',
-                    icon: <FaIndustry />,
-                    subItems: [
-                        { path: '/manufacturing', label: 'Bill of Materials (BOM)' },
-                        { path: '/manufacturing', label: 'Production Plans & Orders' },
-                        { path: '/manufacturing', label: 'Indirect Costs & Workstations' },
-                        { path: '/manufacturing', label: 'Manufacturing Settings' }
-                    ]
-                }
-            ]
-        },
-        {
-            title: '5. BOOKINGS',
-            items: [
-                {
-                    label: 'Bookings & Appointments',
-                    icon: <FaCalendarCheck />,
-                    subItems: [
-                        { path: '/tasks-operations', label: 'Manage Bookings' },
-                        { path: '/system-settings', label: 'Booking Settings' }
-                    ]
-                }
-            ]
-        },
-        {
-            title: '6. INSTALLMENTS MANAGEMENT',
-            items: [
-                {
-                    label: 'Installment Agreements',
-                    icon: <FaCreditCard />,
-                    subItems: [
-                        { path: '/create-invoice', label: 'Installment Agreements' },
-                        { path: '/collect-due', label: 'Installments Due Log' }
-                    ]
-                }
-            ]
-        },
-        {
-            title: '7. SALES TARGET & COMMISSIONS',
-            items: [
-                {
-                    label: 'Target & Commissions',
-                    icon: <FaChartLine />,
-                    subItems: [
-                        { path: '/product-sales-report', label: 'Commission Rules' },
-                        { path: '/product-sales-report', label: 'Sales Commissions & Periods' }
-                    ]
-                }
-            ]
-        },
-        {
-            title: '8. RENTAL AND UNIT MANAGEMENT',
-            items: [
-                {
-                    label: 'Rental & Meters',
-                    icon: <FaBuilding />,
-                    subItems: [
-                        { path: '/tasks-operations', label: 'Units & Reservation Orders' },
-                        { path: '/tasks-operations', label: 'Rental Pricing & Lease Contracts' },
-                        { path: '/tasks-operations', label: 'Rental Meter Readings' },
-                        { path: '/system-settings', label: 'Rental Settings' }
-                    ]
-                }
-            ]
-        },
-        {
-            title: '9. WORK ORDERS',
-            items: [
-                {
-                    label: 'Work Orders & Job Cards',
-                    icon: <FaTools />,
-                    subItems: [
-                        { path: '/manufacturing', label: 'Manage Work Orders' },
-                        { path: '/manufacturing', label: '+ Add Work Order' },
-                        { path: '/system-settings', label: 'Work Order Settings' }
-                    ]
-                }
-            ]
-        },
-        {
-            title: '10. PRINTING ORDERS',
-            items: [
-                {
-                    label: 'Printing Orders',
-                    icon: <FaPrint />,
-                    subItems: [
-                        { path: '/invoice/1', label: 'Manage Printing Orders' },
-                        { path: '/general-setting', label: 'Printing Templates' }
-                    ]
-                }
-            ]
-        },
-        {
-            title: '11. CLIENTS & CRM',
-            items: [
-                {
-                    label: 'Clients & CRM Directory',
-                    icon: <FaUsers />,
-                    subItems: [
-                        { path: '/customer-list', label: 'Manage Clients' },
-                        { path: '/customers', label: '+ Add New Client' },
-                        { path: '/customer-list', label: 'Appointments & Contacts List' },
-                        { path: '/system-settings', label: 'Client Settings' }
-                    ]
-                }
-            ]
-        },
-        {
-            title: '12. POINTS & CREDITS',
-            items: [
-                {
-                    label: 'Points & Credits',
-                    icon: <FaCoins />,
-                    subItems: [
-                        { path: '/customer-list', label: 'Manage Credit Charges & Usages' },
-                        { path: '/customer-list', label: 'Credit Packages & Types' }
-                    ]
-                }
-            ]
-        },
-        {
-            title: '13. MEMBERSHIPS',
-            items: [
-                {
-                    label: 'Memberships & Subscriptions',
-                    icon: <FaIdCard />,
-                    subItems: [
-                        { path: '/customer-list', label: 'Manage Memberships' },
-                        { path: '/customer-list', label: 'Manage Subscriptions' }
-                    ]
-                }
-            ]
-        },
-        {
-            title: '14. CLIENTS ATTENDANCE',
-            items: [
-                {
-                    label: 'Clients Attendance',
-                    icon: <FaUserClock />,
-                    subItems: [
-                        { path: '/customer-list', label: 'Clients Attendance Logs' }
-                    ]
-                }
-            ]
-        },
-        {
-            title: '15. INVENTORY',
-            items: [
-                {
-                    label: 'Inventory Catalog',
+                    label: 'Stock Adjustments',
                     icon: <FaBoxes />,
+                    permission: 'page:view:stock',
                     subItems: [
-                        { path: '/product-list', label: 'Products & Services' },
-                        { path: '/products', label: '+ Add Product' },
-                        { path: '/warehouses', label: 'Warehouses & Stock Transfers' },
-                        { path: '/stock-adjust', label: 'Manage Stocktakings & Requisitions' },
-                        { path: '/general-setting', label: 'Inventory Settings' }
+                        { path: '/stock-adjust', label: 'New Stock Adjust' },
+                        { path: '/stock-adjustment-list', label: 'Adjustment History' },
                     ]
                 }
             ]
         },
         {
-            title: '16. PURCHASES',
+            title: 'SALES & CUSTOMERS',
             items: [
                 {
-                    label: 'Purchases & Suppliers',
+                    label: 'POS Sales Invoice',
+                    icon: <FaFileInvoice />,
+                    permission: 'page:view:invoice',
+                    subItems: [
+                        { path: '/create-invoice', label: '+ Create Invoice' },
+                        { path: '/draft-invoices', label: 'Draft Invoices' },
+                        { path: '/invoices', label: 'Invoice History' },
+                        { path: '/sales-return', label: 'Sales Return & Refund' },
+                        { path: '/collect-due', label: 'Collect Customer Due' },
+                        { path: '/payment-history', label: 'Payment Logs' },
+                    ]
+                },
+                {
+                    label: 'Customers',
+                    icon: <FaUsers />,
+                    permission: 'page:view:customers',
+                    subItems: [
+                        { path: '/customers', label: 'Add Customer' },
+                        { path: '/customer-list', label: 'Customer Directory' },
+                    ]
+                },
+                { path: '/tax-rates', label: 'Tax Rates', icon: <FaPercent />, permission: 'page:view:tax-rates' },
+            ]
+        },
+        {
+            title: 'SUPPLIERS & PURCHASES',
+            items: [
+                {
+                    label: 'Purchase Orders & Landed Cost',
+                    icon: <FaShoppingCart />,
+                    permission: 'page:view:purchase',
+                    subItems: [
+                        { path: '/purchase-orders', label: 'PO & Landed Cost Manager' },
+                        { path: '/product-purchase', label: 'New Purchase' },
+                        { path: '/purchase-list', label: 'Purchase History' },
+                    ]
+                },
+                {
+                    label: 'Suppliers',
                     icon: <FaTruck />,
+                    permission: 'page:view:suppliers',
                     subItems: [
-                        { path: '/purchase-orders', label: 'Purchase Orders & Landed Cost' },
-                        { path: '/product-purchase', label: '+ New Purchase Invoice' },
-                        { path: '/purchase-list', label: 'Purchase History & Requests' },
-                        { path: '/supplier-list', label: 'Manage Suppliers & Payments' }
+                        { path: '/suppliers', label: 'Add Supplier' },
+                        { path: '/supplier-list', label: 'Supplier List' },
                     ]
                 }
             ]
         },
         {
-            title: '17. TIME TRACKING',
+            title: 'MANUFACTURING & ASSEMBLY',
             items: [
-                {
-                    label: 'Time Tracking',
-                    icon: <FaClock />,
-                    subItems: [
-                        { path: '/tasks-operations', label: 'Time Tracking & Logs' },
-                        { path: '/create-invoice', label: 'Generate Time Invoice' }
-                    ]
-                }
+                { path: '/manufacturing', label: 'BOM Recipes & Work Orders', icon: <FaIndustry />, permission: 'page:view:products' }
             ]
         },
         {
-            title: '18. FINANCE',
+            title: 'PROJECTS & OPERATIONS',
             items: [
-                {
-                    label: 'Finance & Treasuries',
-                    icon: <FaMoneyBillWave />,
-                    subItems: [
-                        { path: '/cash-flow', label: 'Expenses & Incomes' },
-                        { path: '/cash-flow', label: 'Treasuries & Bank Accounts' },
-                        { path: '/accounting', label: 'Employee Custody' }
-                    ]
-                }
+                { path: '/tasks-operations', label: 'Kanban Tasks & Meter Billing', icon: <FaTasks />, permission: 'page:view:dashboard' }
             ]
         },
         {
-            title: '19. ACCOUNTING',
+            title: 'FINANCIAL & ACCOUNTING',
             items: [
-                {
-                    label: 'Double-Entry Accounting',
-                    icon: <FaBook />,
-                    subItems: [
-                        { path: '/accounting', label: 'Chart of Accounts (COA)' },
-                        { path: '/accounting', label: 'Journal Entries & Postings' },
-                        { path: '/accounting', label: 'Cheques & Assets Ledger' }
-                    ]
-                }
+                { path: '/accounting', label: 'Chart of Accounts & Cheques', icon: <FaBook />, permission: 'page:view:reporting' },
+                { path: '/cash-flow', label: 'Cash Flow & Register', icon: <FaMoneyBillWave />, permission: 'page:view:reporting' }
             ]
         },
         {
-            title: '20. REQUESTS',
+            title: 'HUMAN RESOURCES (HR)',
             items: [
                 {
-                    label: 'Manage Requests',
-                    icon: <FaClipboardList />,
-                    subItems: [
-                        { path: '/tasks-operations', label: 'Manage Requests & Types' }
-                    ]
-                }
-            ]
-        },
-        {
-            title: '21. EMPLOYEES',
-            items: [
-                {
-                    label: 'Employee Management',
+                    label: 'HR & Payroll Engine',
                     icon: <FaUserTie />,
+                    permission: 'page:view:dashboard',
                     subItems: [
-                        { path: '/employees', label: 'Manage Employees' },
-                        { path: '/employees', label: 'Employee Roles & Assets' }
+                        { path: '/employees', label: 'Employee Directory & Expiry' },
+                        { path: '/payroll', label: 'Payroll Run & WPS Export' },
                     ]
                 }
             ]
         },
         {
-            title: '22. ORGANIZATIONAL STRUCTURE',
+            title: 'REPORTS & ANALYTICS',
             items: [
                 {
-                    label: 'Organization Chart',
-                    icon: <FaSitemap />,
-                    subItems: [
-                        { path: '/employees', label: 'Manage Designations & Departments' },
-                        { path: '/employees', label: 'Organizational Chart' }
-                    ]
-                }
-            ]
-        },
-        {
-            title: '23. ATTENDANCE',
-            items: [
-                {
-                    label: 'Attendance & Leaves',
-                    icon: <FaCalendarAlt />,
-                    subItems: [
-                        { path: '/employees', label: 'Attendance Logs & Sheets' },
-                        { path: '/employees', label: 'Leave Applications & Shift Schedule' }
-                    ]
-                }
-            ]
-        },
-        {
-            title: '24. PAYROLL',
-            items: [
-                {
-                    label: 'HR Payroll Engine',
-                    icon: <FaFileInvoiceDollar />,
-                    subItems: [
-                        { path: '/payroll', label: 'Pay Runs & Monthly Payslips' },
-                        { path: '/payroll', label: 'Saudi WPS Bank CSV Exporter' }
-                    ]
-                }
-            ]
-        },
-        {
-            title: '25. REPORTS',
-            items: [
-                {
-                    label: 'Reports & Analytics',
+                    label: 'Reports',
                     icon: <FaChartBar />,
+                    permission: 'page:view:reporting',
                     subItems: [
-                        { path: '/reporting', label: 'Sales & Purchase Reports' },
-                        { path: '/reporting', label: 'Accounting & Financial Reports' },
-                        { path: '/product-sales-report', label: 'Manufacturing & Stock Reports' },
-                        { path: '/product-transaction', label: 'System Activity & Audit Log' }
-                    ]
-                }
-            ]
-        },
-        {
-            title: '26. TEMPLATES',
-            items: [
-                {
-                    label: 'Templates & Reminders',
-                    icon: <FaFileAlt />,
-                    subItems: [
-                        { path: '/general-setting', label: 'Printable & Prefilled Templates' },
-                        { path: '/system-settings', label: 'Terms & Auto Reminder Rules' }
-                    ]
-                }
-            ]
-        },
-        {
-            title: '27. SETTINGS',
-            items: [
-                {
-                    label: 'Administration Settings',
-                    icon: <FaCog />,
-                    subItems: [
-                        { path: '/system-settings', label: 'System Sequences & Tax Settings' },
-                        { path: '/developer-api', label: 'Developer Open API & Webhooks' },
-                        { path: '/manage-merchants', label: 'Store SaaS Management' },
-                        { path: '/manage-users', label: 'Staff Users & Roles' },
-                        { path: '/database-backup', label: 'Database Backup & Restore' }
+                        { path: '/product-sales-report', label: 'Product Sales Report' },
+                        { path: '/product-transaction', label: 'Inventory Log' },
                     ]
                 }
             ]
         }
     ];
 
+    const userPermissions = user?.permissions || [];
+
+    // Add Administration Settings Section
+    if (user && (userPermissions.includes('*') || userPermissions.includes('manage:users'))) {
+        menuSections.push({
+            title: 'ADMINISTRATION',
+            items: [
+                {
+                    label: 'Settings & Security',
+                    icon: <FaCog />,
+                    permission: 'manage:users',
+                    subItems: [
+                        { path: '/developer-api', label: 'Developer API & Webhooks' },
+                        { path: '/system-settings', label: 'System Sequences & VAT' },
+                        { path: '/manage-merchants', label: 'Store SaaS Management' },
+                        { path: '/manage-roles', label: 'Role & Permissions' },
+                        { path: '/manage-users', label: 'Staff Users' },
+                        { path: '/general-setting', label: 'General Setting' },
+                        { path: '/database-backup', label: 'Database Backup' },
+                    ]
+                }
+            ]
+        });
+    }
+
     return (
         <div className="flex flex-col h-full bg-white border-r border-slate-200 text-slate-700 font-['Plus_Jakarta_Sans',sans-serif] select-none">
-            {/* Sidebar Header */}
+            {/* Sidebar Search/Quick Status Header */}
             <div className="p-3 pb-1 border-b border-slate-100">
                 <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-600">
                     <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span className="truncate">Enterprise ERP 27 Modules Active</span>
+                    <span className="truncate">SaaS Cloud POS Connected</span>
                 </div>
             </div>
 
             {/* Menu List */}
             <div className="flex-1 overflow-y-auto px-3 py-3 space-y-4">
-                {menuSections.map((section, idx) => (
-                    <div key={idx} className="space-y-1">
-                        <div className="px-3 text-[10px] font-extrabold text-blue-600 uppercase tracking-widest bg-blue-50/50 py-1 rounded-md mb-1">
-                            {section.title}
-                        </div>
+                {menuSections.map((section, idx) => {
+                    const filteredItems = section.items.filter(item =>
+                        !user || userPermissions.includes('*') || userPermissions.includes(item.permission)
+                    );
 
-                        <div className="space-y-1">
-                            {section.items.map(item => {
-                                const isOpen = openMenu === item.label || (item.subItems && item.subItems.some(sub => sub.path === location.pathname));
+                    if (filteredItems.length === 0) return null;
 
-                                return (
-                                    <div key={item.label}>
-                                        <button
-                                            onClick={() => handleMenuClick(item.label)}
-                                            className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-50 hover:text-blue-700 transition-all"
-                                        >
-                                            <div className="flex items-center gap-2.5">
-                                                <div className="h-6 w-6 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center text-xs">
-                                                    {item.icon}
+                    return (
+                        <div key={idx} className="space-y-1">
+                            <div className="px-3 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">
+                                {section.title}
+                            </div>
+
+                            <div className="space-y-1 mt-1">
+                                {filteredItems.map(item => {
+                                    const isParentActive = item.subItems && item.subItems.some(sub => sub.path === location.pathname);
+                                    const isSelfActive = location.pathname === item.path;
+                                    const isOpen = openMenu === item.label || isParentActive;
+
+                                    return (
+                                        <div key={item.label || item.path}>
+                                            {item.subItems ? (
+                                                <div>
+                                                    <button
+                                                        onClick={() => handleMenuClick(item.label)}
+                                                        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 group ${
+                                                            isParentActive
+                                                                ? 'bg-blue-50 text-blue-700 shadow-sm border border-blue-200/60'
+                                                                : 'text-slate-700 hover:bg-slate-50 hover:text-blue-700'
+                                                        }`}
+                                                    >
+                                                        <div className="flex items-center gap-2.5">
+                                                            <div className={`h-7 w-7 rounded-lg flex items-center justify-center text-xs transition-colors ${
+                                                                isParentActive
+                                                                    ? 'bg-blue-600 text-white shadow-sm shadow-blue-500/30'
+                                                                    : 'bg-slate-100 text-slate-500 group-hover:bg-blue-100 group-hover:text-blue-600'
+                                                            }`}>
+                                                                {item.icon}
+                                                            </div>
+                                                            <span>{item.label}</span>
+                                                        </div>
+                                                        <span className="text-[10px] text-slate-400 group-hover:text-blue-600">
+                                                            {isOpen ? <FaChevronDown /> : <FaChevronRight />}
+                                                        </span>
+                                                    </button>
+
+                                                    {isOpen && (
+                                                        <div className="ml-5 pl-3 border-l-2 border-blue-500/30 mt-1.5 space-y-1 py-0.5">
+                                                            {item.subItems.map(subItem => {
+                                                                const isSubActive = location.pathname === subItem.path;
+                                                                return (
+                                                                    <Link
+                                                                        key={subItem.path}
+                                                                        to={subItem.path}
+                                                                        className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+                                                                            isSubActive
+                                                                                ? 'bg-blue-600 text-white font-extrabold shadow-md shadow-blue-600/20'
+                                                                                : 'text-slate-600 hover:text-blue-700 hover:bg-blue-50/80'
+                                                                        }`}
+                                                                    >
+                                                                        <span className={`h-1.5 w-1.5 rounded-full ${isSubActive ? 'bg-white' : 'bg-slate-300'}`}></span>
+                                                                        {subItem.label}
+                                                                    </Link>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    )}
                                                 </div>
-                                                <span className="text-xs font-extrabold text-slate-800">{item.label}</span>
-                                            </div>
-                                            <span className="text-[10px] text-slate-400">
-                                                {isOpen ? <FaChevronDown /> : <FaChevronRight />}
-                                            </span>
-                                        </button>
-
-                                        {isOpen && item.subItems && (
-                                            <div className="ml-5 pl-2 border-l-2 border-blue-500/30 mt-1 space-y-1">
-                                                {item.subItems.map(subItem => {
-                                                    const isSubActive = location.pathname === subItem.path;
-                                                    return (
-                                                        <Link
-                                                            key={subItem.label + subItem.path}
-                                                            to={subItem.path}
-                                                            className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                                                                isSubActive
-                                                                    ? 'bg-blue-600 text-white font-extrabold shadow-sm'
-                                                                    : 'text-slate-600 hover:text-blue-700 hover:bg-blue-50'
-                                                            }`}
-                                                        >
-                                                            <span className={`h-1.5 w-1.5 rounded-full ${isSubActive ? 'bg-white' : 'bg-slate-300'}`}></span>
-                                                            {subItem.label}
-                                                        </Link>
-                                                    );
-                                                })}
-                                            </div>
-                                        )}
-                                    </div>
-                                );
-                            })}
+                                            ) : (
+                                                <Link
+                                                    to={item.path}
+                                                    className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 group ${
+                                                        isSelfActive
+                                                            ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-600/25'
+                                                            : 'text-slate-700 hover:bg-slate-50 hover:text-blue-700'
+                                                    }`}
+                                                >
+                                                    <div className={`h-7 w-7 rounded-lg flex items-center justify-center text-xs transition-colors ${
+                                                        isSelfActive
+                                                            ? 'bg-white/20 text-white'
+                                                            : 'bg-slate-100 text-slate-500 group-hover:bg-blue-100 group-hover:text-blue-600'
+                                                    }`}>
+                                                        {item.icon}
+                                                    </div>
+                                                    <span>{item.label}</span>
+                                                </Link>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
 
             {/* Merchant User Footer Card */}
@@ -495,13 +311,13 @@ const Sidebar = () => {
 
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2 overflow-hidden">
-                            <div className="h-8 w-8 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white text-xs font-bold shrink-0 shadow-sm">
+                            <div className="h-8 w-8 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white text-xs font-bold shrink-0 shadow-sm shadow-blue-500/20">
                                 <FaUserCheck />
                             </div>
                             <div className="truncate">
                                 <div className="text-xs font-extrabold text-slate-900 truncate">{user.username}</div>
                                 <div className="text-[10px] text-blue-600 font-semibold flex items-center gap-1">
-                                    <FaShieldAlt className="text-[9px]" /> Staff Member
+                                    <FaShieldAlt className="text-[9px]" /> Staff Cashier
                                 </div>
                             </div>
                         </div>
