@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { FaCode, FaKey, FaNetworkWired, FaPlus, FaCopy, FaCheckCircle, FaBan } from 'react-icons/fa';
 import toast from 'react-hot-toast';
+import InfoTooltip from './common/InfoTooltip';
 
 const DeveloperApiManager = () => {
     const [activeTab, setActiveTab] = useState('keys'); // 'keys' | 'webhooks'
@@ -108,6 +109,11 @@ const DeveloperApiManager = () => {
             <div style={headerStyle}>
                 <h2 className="text-xl font-extrabold text-slate-900 flex items-center gap-2">
                     <FaCode className="text-blue-600" /> Developers Open API & Webhooks Engine
+                    <InfoTooltip 
+                        title="ডেভেলপার এপিআই ও HMAC সাইনড ওয়েবহুক লজিক" 
+                        content="থার্ড-পার্টি সিস্টেম বা ই-কমার্স সাইট কানেক্ট করার জন্য এপিআই কি জেনারেট করা হয় এবং রিয়েল-টাইম ইভেন্টে (যেমন ইনভয়েস তৈরি হলে) HMAC SHA-256 এনক্রিপ্টেড পে-লোড তৈরি করে টার্গেট ইউআরএল-এ অটো সেন্ড করা হয়।" 
+                        formula="X-Webhook-Signature = HMAC-SHA256(PayloadData, WebhookSecretKey)"
+                    />
                 </h2>
             </div>
 

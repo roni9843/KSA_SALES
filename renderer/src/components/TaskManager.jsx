@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { FaTasks, FaProjectDiagram, FaTachometerAlt, FaPlus, FaCheckCircle, FaExclamationCircle } from 'react-icons/fa';
 import toast from 'react-hot-toast';
+import InfoTooltip from './common/InfoTooltip';
 
 const TaskManager = () => {
     const [activeTab, setActiveTab] = useState('kanban'); // 'kanban' | 'projects' | 'meters'
@@ -144,7 +145,12 @@ const TaskManager = () => {
         <div style={cardStyle}>
             <div style={headerStyle}>
                 <h2 className="text-xl font-extrabold text-slate-900 flex items-center gap-2">
-                    <FaTasks className="text-blue-600" /> Tasks, Projects & Operations Hub
+                    <FaTasks className="text-blue-600" /> Tasks, Projects & Meter Operations Hub
+                    <InfoTooltip 
+                        title="রেন্টাল মিটার ও কানবান টাস্ক হিসাব" 
+                        content="দোকান/ফ্ল্যাট ভাড়ার বিদ্যুৎ বা পানির মিটার রিডিংয়ের ব্যবধানের ওপর নির্ধারিত দর গুণ করে বিল টাকার পরিমাণ তৈরি করা হয়। এবং কানবান বোর্ডে টাস্কের ধাপ সচল রাখা হয়।" 
+                        formula="Billed Amount = (Current Reading - Previous Reading) × Rate Per Unit"
+                    />
                 </h2>
             </div>
 

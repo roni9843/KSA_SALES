@@ -1,18 +1,21 @@
 import { useEffect, useState } from 'react';
-import { FaWarehouse, FaExchangeAlt, FaPlus, FaCheckCircle, FaExclamationTriangle } from 'react-icons/fa';
+import { FaWarehouse, FaExchangeAlt, FaPlus, FaBoxes, FaCheckCircle, FaExclamationTriangle } from 'react-icons/fa';
 import toast from 'react-hot-toast';
+import InfoTooltip from './common/InfoTooltip';
 
 const WarehouseManager = () => {
-    const [activeTab, setActiveTab] = useState('list'); // 'list' | 'add' | 'transfer'
     const [warehouses, setWarehouses] = useState([]);
-    const [transfers, setTransfers] = useState([]);
     const [products, setProducts] = useState([]);
+    const [activeTab, setActiveTab] = useState('list'); // 'list' | 'create' | 'transfer'
+    
+    // Create Warehouse Form
+    const [whForm, setWhForm] = useState({ code: '', name: '', address: '', managerName: '', phone: '' });
 
-    const [whForm, setWhForm] = useState({ name: '', code: '', location: '', phone: '' });
-    const [trfForm, setTrfForm] = useState({
-        sourceWarehouse: '',
-        destinationWarehouse: '',
+    // Transfer Stock Form
+    const [transferForm, setTransferForm] = useState({
         productId: '',
+        fromWarehouse: '',
+        toWarehouse: '',
         quantity: 1,
         notes: ''
     });
@@ -24,12 +27,6 @@ const WarehouseManager = () => {
             });
             const whData = await whRes.json();
             if (whData.success) setWarehouses(whData.warehouses || []);
-
-            const trfRes = await fetch('http://localhost:5000/api/warehouses/transfers', {
-                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-            });
-            const trfData = await trfRes.json();
-            if (trfData.success) setTransfers(trfData.transfers || []);
 
             const prodRes = await fetch('http://localhost:5000/api/products', {
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
@@ -45,7 +42,7 @@ const WarehouseManager = () => {
         fetchData();
     }, []);
 
-    const handleAddWarehouse = async (e) => {
+    const handleCreateWarehouse = async (e) => {
         e.preventDefault();
         try {
             const res = await fetch('http://localhost:5000/api/warehouses', {
@@ -58,8 +55,8 @@ const WarehouseManager = () => {
             });
             const data = await res.json();
             if (data.success) {
-                toast.success('Warehouse created successfully');
-                setWhForm({ name: '', code: '', location: '', phone: '' });
+                toast.success('Warehouse created successfully!');
+                setWhForm({ code: '', name: '', address: '', managerName: '', phone: '' });
                 fetchData();
                 setActiveTab('list');
             }
@@ -68,29 +65,25 @@ const WarehouseManager = () => {
         }
     };
 
-    const handleCreateTransfer = async (e) => {
+    const handleTransferStock = async (e) => {
         e.preventDefault();
-        if (trfForm.sourceWarehouse === trfForm.destinationWarehouse) {
-            return toast.error('Source and Destination Warehouses cannot be the same!');
+        if (transferForm.fromWarehouse === transferForm.toWarehouse) {
+            return toast.error('Source and Destination Warehouses must be different!');
         }
+
         try {
-            const res = await fetch('http://localhost:5000/api/warehouses/transfers', {
+            const res = await fetch('http://localhost:5000/api/warehouses/transfer', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 },
-                body: JSON.stringify({
-                    sourceWarehouse: trfForm.sourceWarehouse,
-                    destinationWarehouse: trfForm.destinationWarehouse,
-                    items: [{ productId: trfForm.productId, quantity: parseFloat(trfForm.quantity) }],
-                    notes: trfForm.notes
-                })
+                body: JSON.stringify(transferForm)
             });
             const data = await res.json();
             if (data.success) {
-                toast.success('Stock Transfer order created!');
-                setTrfForm({ sourceWarehouse: '', destinationWarehouse: '', productId: '', quantity: 1, notes: '' });
+                toast.success('Stock transfer completed successfully!');
+                setTransferForm({ productId: '', fromWarehouse: '', toWarehouse: '', quantity: 1, notes: '' });
                 fetchData();
                 setActiveTab('list');
             }
@@ -103,111 +96,125 @@ const WarehouseManager = () => {
         <div style={cardStyle}>
             <div style={headerStyle}>
                 <h2 className="text-xl font-extrabold text-slate-900 flex items-center gap-2">
-                    <FaWarehouse className="text-blue-600" /> Multi-Warehouse & Stock Transfers
+                    <FaWarehouse className="text-blue-600" /> Multi-Warehouse & Inter-Stock Transfer Engine
+                    <InfoTooltip 
+                        title="মাল্টি-ওয়্যারহাউস ও ইনভেন্টরি ট্রান্সফার লজিক" 
+                        content="এই মডিউলের মাধ্যমে একাধিক গুদাম/শাখা পরিচালনা করা যায় এবং এক গুদাম থেকে অন্য গুদামে পণ্যের রিয়েল-টাইম স্টক স্থানান্তর করা হয়। ট্রান্সফার সফল হলে উৎস গুদামের স্টক কমে এবং গন্তব্য গুদামে যোগ হয়।" 
+                        formula="Destination Stock = Previous Stock + Transferred Qty"
+                    />
                 </h2>
             </div>
 
             <div style={tabNav}>
-                <button onClick={() => setActiveTab('list')} style={activeTab === 'list' ? activeTabBtn : tabBtn}>Warehouse Directory ({warehouses.length})</button>
-                <button onClick={() => setActiveTab('add')} style={activeTab === 'add' ? activeTabBtn : tabBtn}>+ Add New Warehouse</button>
-                <button onClick={() => setActiveTab('transfer')} style={activeTab === 'transfer' ? activeTabBtn : tabBtn}><FaExchangeAlt className="mr-1 text-xs inline" /> Inter-Warehouse Transfer</button>
+                <button onClick={() => setActiveTab('list')} style={activeTab === 'list' ? activeTabBtn : tabBtn}>Warehouses List ({warehouses.length})</button>
+                <button onClick={() => setActiveTab('create')} style={activeTab === 'create' ? activeTabBtn : tabBtn}>+ Add Warehouse</button>
+                <button onClick={() => setActiveTab('transfer')} style={activeTab === 'transfer' ? activeTabBtn : tabBtn}><FaExchangeAlt className="mr-1 inline text-xs" /> Inter-Warehouse Stock Transfer</button>
             </div>
 
+            {/* TAB 1: LIST */}
             {activeTab === 'list' && (
-                <div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                        {warehouses.length === 0 ? (
-                            <p className="text-xs text-slate-400 italic col-span-2">No warehouses added yet. Default central warehouse active.</p>
-                        ) : (
-                            warehouses.map(w => (
-                                <div key={w._id} style={whCardStyle}>
-                                    <div className="flex justify-between items-start">
-                                        <div>
-                                            <h4 className="font-extrabold text-slate-900 text-sm">{w.name}</h4>
-                                            <span className="text-[11px] text-slate-400 font-bold">Code: {w.code}</span>
-                                        </div>
-                                        {w.isDefault && <span className="px-2 py-0.5 rounded bg-blue-50 text-blue-700 text-[10px] font-bold">DEFAULT</span>}
-                                    </div>
-                                    <p className="text-xs text-slate-600 mt-2">{w.location || 'Central Location'}</p>
-                                </div>
-                            ))
-                        )}
-                    </div>
-
-                    <h3 className="text-sm font-extrabold text-slate-800 mb-3 flex items-center gap-1.5 border-t border-slate-200 pt-4">
-                        <FaExchangeAlt className="text-blue-600" /> Inter-Warehouse Stock Transfer History ({transfers.length})
-                    </h3>
-                    <div className="overflow-x-auto rounded-xl border border-slate-200">
-                        <table style={tableStyle}>
-                            <thead style={tableHeaderStyle}>
-                                <tr>
-                                    <th style={thStyle}>Transfer Order No</th>
-                                    <th style={thStyle}>From Warehouse</th>
-                                    <th style={thStyle}>To Warehouse</th>
-                                    <th style={thStyle}>Items</th>
-                                    <th style={thStyle}>Status</th>
+                <div className="overflow-x-auto rounded-xl border border-slate-200">
+                    <table style={tableStyle}>
+                        <thead style={tableHeaderStyle}>
+                            <tr>
+                                <th style={thStyle}>Code</th>
+                                <th style={thStyle}>Warehouse Name</th>
+                                <th style={thStyle}>Location Address</th>
+                                <th style={thStyle}>Manager</th>
+                                <th style={thStyle}>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {warehouses.map(w => (
+                                <tr key={w._id}>
+                                    <td style={tdStyle}><strong>{w.code}</strong></td>
+                                    <td style={tdStyle}>{w.name}</td>
+                                    <td style={tdStyle}>{w.address || '-'}</td>
+                                    <td style={tdStyle}>{w.managerName} ({w.phone})</td>
+                                    <td style={tdStyle}>
+                                        {w.isDefault ? (
+                                            <span className="px-2 py-0.5 rounded bg-blue-100 text-blue-700 font-extrabold text-[10px]">DEFAULT HUB</span>
+                                        ) : (
+                                            <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 font-extrabold text-[10px]">ACTIVE</span>
+                                        )}
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                {transfers.length === 0 ? (
-                                    <tr><td colSpan="5" className="p-4 text-center text-xs text-slate-400">No stock transfer orders recorded.</td></tr>
-                                ) : (
-                                    transfers.map(t => (
-                                        <tr key={t._id}>
-                                            <td style={tdStyle}><strong>{t.transferNo}</strong></td>
-                                            <td style={tdStyle}>{t.sourceWarehouse?.name || '-'}</td>
-                                            <td style={tdStyle}>{t.destinationWarehouse?.name || '-'}</td>
-                                            <td style={tdStyle}>{t.items?.length || 0} Products</td>
-                                            <td style={tdStyle}>
-                                                <span className="px-2 py-0.5 rounded bg-amber-50 text-amber-700 text-[11px] font-bold">{t.status}</span>
-                                            </td>
-                                        </tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
+                            ))}
+                        </tbody>
+                    </table>
                 </div>
             )}
 
-            {activeTab === 'add' && (
-                <form onSubmit={handleAddWarehouse} style={formStyle}>
-                    <input placeholder="Warehouse Name (e.g. Dammam Store)" value={whForm.name} onChange={e => setWhForm({ ...whForm, name: e.target.value })} required style={inputStyle} />
-                    <input placeholder="Warehouse Code (e.g. WH-002)" value={whForm.code} onChange={e => setWhForm({ ...whForm, code: e.target.value })} required style={inputStyle} />
-                    <input placeholder="Location Address" value={whForm.location} onChange={e => setWhForm({ ...whForm, location: e.target.value })} style={inputStyle} />
-                    <input placeholder="Contact Phone" value={whForm.phone} onChange={e => setWhForm({ ...whForm, phone: e.target.value })} style={inputStyle} />
-                    <button type="submit" style={submitBtnStyle}>Create Warehouse</button>
+            {/* TAB 2: CREATE */}
+            {activeTab === 'create' && (
+                <form onSubmit={handleCreateWarehouse} className="space-y-4 max-w-xl">
+                    <div>
+                        <label className="block text-xs font-extrabold mb-1">Warehouse Code</label>
+                        <input required placeholder="e.g. WH-RUH-01" value={whForm.code} onChange={e => setWhForm({ ...whForm, code: e.target.value })} style={inputStyle} />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-extrabold mb-1">Warehouse Name</label>
+                        <input required placeholder="e.g. Riyadh Central Logistics Hub" value={whForm.name} onChange={e => setWhForm({ ...whForm, name: e.target.value })} style={inputStyle} />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-extrabold mb-1">Location Address</label>
+                        <input placeholder="e.g. Exit 18, Industrial Area, Riyadh" value={whForm.address} onChange={e => setWhForm({ ...whForm, address: e.target.value })} style={inputStyle} />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-xs font-extrabold mb-1">Manager Name</label>
+                            <input placeholder="Manager Name" value={whForm.managerName} onChange={e => setWhForm({ ...whForm, managerName: e.target.value })} style={inputStyle} />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-extrabold mb-1">Contact Phone</label>
+                            <input placeholder="+966 50 123 4567" value={whForm.phone} onChange={e => setWhForm({ ...whForm, phone: e.target.value })} style={inputStyle} />
+                        </div>
+                    </div>
+                    <button type="submit" style={addBtnStyle}>Save Warehouse</button>
                 </form>
             )}
 
+            {/* TAB 3: TRANSFER */}
             {activeTab === 'transfer' && (
-                <form onSubmit={handleCreateTransfer} style={formStyle}>
-                    <div style={inputGroupStyle}>
-                        <label style={labelStyle}>Source Warehouse (From)</label>
-                        <select value={trfForm.sourceWarehouse} onChange={e => setTrfForm({ ...trfForm, sourceWarehouse: e.target.value })} required style={inputStyle}>
-                            <option value="">Select Source Warehouse</option>
-                            {warehouses.map(w => <option key={w._id} value={w._id}>{w.name} ({w.code})</option>)}
+                <form onSubmit={handleTransferStock} className="space-y-4 max-w-xl bg-slate-50 p-5 rounded-2xl border border-slate-200">
+                    <div>
+                        <label className="block text-xs font-extrabold mb-1">Select Product to Transfer</label>
+                        <select required value={transferForm.productId} onChange={e => setTransferForm({ ...transferForm, productId: e.target.value })} style={inputStyle}>
+                            <option value="">-- Choose Product --</option>
+                            {products.map(p => (
+                                <option key={p._id} value={p._id}>{p.name} (In Stock: {p.quantityInStock} {p.unit})</option>
+                            ))}
                         </select>
                     </div>
-                    <div style={inputGroupStyle}>
-                        <label style={labelStyle}>Destination Warehouse (To)</label>
-                        <select value={trfForm.destinationWarehouse} onChange={e => setTrfForm({ ...trfForm, destinationWarehouse: e.target.value })} required style={inputStyle}>
-                            <option value="">Select Destination Warehouse</option>
-                            {warehouses.map(w => <option key={w._id} value={w._id}>{w.name} ({w.code})</option>)}
-                        </select>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-xs font-extrabold mb-1">Source Warehouse (From)</label>
+                            <select required value={transferForm.fromWarehouse} onChange={e => setTransferForm({ ...transferForm, fromWarehouse: e.target.value })} style={inputStyle}>
+                                <option value="">-- Select Source --</option>
+                                {warehouses.map(w => <option key={w._id} value={w._id}>{w.name}</option>)}
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-xs font-extrabold mb-1">Destination Warehouse (To)</label>
+                            <select required value={transferForm.toWarehouse} onChange={e => setTransferForm({ ...transferForm, toWarehouse: e.target.value })} style={inputStyle}>
+                                <option value="">-- Select Destination --</option>
+                                {warehouses.map(w => <option key={w._id} value={w._id}>{w.name}</option>)}
+                            </select>
+                        </div>
                     </div>
-                    <div style={inputGroupStyle}>
-                        <label style={labelStyle}>Product Item</label>
-                        <select value={trfForm.productId} onChange={e => setTrfForm({ ...trfForm, productId: e.target.value })} required style={inputStyle}>
-                            <option value="">Select Product</option>
-                            {products.map(p => <option key={p._id} value={p._id}>{p.name} (SKU: {p.sku})</option>)}
-                        </select>
+
+                    <div>
+                        <label className="block text-xs font-extrabold mb-1">Quantity to Transfer</label>
+                        <input type="number" min="1" required value={transferForm.quantity} onChange={e => setTransferForm({ ...transferForm, quantity: e.target.value })} style={inputStyle} />
                     </div>
-                    <div style={inputGroupStyle}>
-                        <label style={labelStyle}>Transfer Quantity</label>
-                        <input type="number" value={trfForm.quantity} onChange={e => setTrfForm({ ...trfForm, quantity: e.target.value })} required style={inputStyle} />
+
+                    <div>
+                        <label className="block text-xs font-extrabold mb-1">Transfer Memo / Remarks</label>
+                        <textarea placeholder="e.g. Urgently needed for Neom Project site" value={transferForm.notes} onChange={e => setTransferForm({ ...transferForm, notes: e.target.value })} style={{ ...inputStyle, height: '70px' }} />
                     </div>
-                    <button type="submit" style={submitBtnStyle} className="col-span-2">Dispatch Stock Transfer Order</button>
+
+                    <button type="submit" style={addBtnStyle}>Execute Stock Transfer</button>
                 </form>
             )}
         </div>
@@ -257,35 +264,10 @@ const tabBtn = {
     cursor: 'pointer'
 };
 
-const whCardStyle = {
-    background: '#f8fafc',
-    padding: '14px',
-    borderRadius: '12px',
-    border: '1px solid #e2e8f0'
-};
-
-const formStyle = {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: '14px'
-};
-
-const inputGroupStyle = {
-    display: 'flex',
-    flexDirection: 'column',
-};
-
-const labelStyle = {
-    marginBottom: '4px',
-    fontSize: '12px',
-    fontWeight: '700',
-    color: '#334155',
-};
-
 const inputStyle = {
     width: '100%',
-    padding: '10px 12px',
-    borderRadius: '10px',
+    padding: '8px 12px',
+    borderRadius: '8px',
     border: '1px solid #cbd5e1',
     backgroundColor: '#ffffff',
     color: '#0f172a',
@@ -293,9 +275,9 @@ const inputStyle = {
     outline: 'none',
 };
 
-const submitBtnStyle = {
-    padding: '12px',
-    borderRadius: '10px',
+const addBtnStyle = {
+    padding: '8px 14px',
+    borderRadius: '8px',
     border: 'none',
     backgroundColor: '#2563eb',
     color: '#ffffff',

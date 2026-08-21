@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { FaCog, FaHashtag, FaPercent, FaCoins, FaPlus, FaCheckCircle } from 'react-icons/fa';
 import toast from 'react-hot-toast';
+import InfoTooltip from './common/InfoTooltip';
 
 const SettingsManager = () => {
     const [activeTab, setActiveTab] = useState('sequences'); // 'sequences' | 'taxes' | 'currencies'
@@ -115,6 +116,11 @@ const SettingsManager = () => {
             <div style={headerStyle}>
                 <h2 className="text-xl font-extrabold text-slate-900 flex items-center gap-2">
                     <FaCog className="text-blue-600" /> Enterprise System Settings & Auto-Sequences
+                    <InfoTooltip 
+                        title="ডকুমেন্ট অটো-সিকোয়েন্স নাম্বারিং লজিক" 
+                        content="ইনভয়েস, পিও, কাস্টমার এবং ভাউচারের নাম্বার কাস্টম প্রিফিক্স ও প্যাডিং কারেন্ট পজিশন অনুযায়ী তৈরি করা হয়। যেমন প্রিফিক্স KSA-INV এবং প্যাডিং 5 হলে পরবর্তী ইনভয়েস নাম্বার হবে KSA-INV-00103।" 
+                        formula="Formatted Document No = Prefix + '-' + padStart(NextNumber, ZeroPad)"
+                    />
                 </h2>
             </div>
 

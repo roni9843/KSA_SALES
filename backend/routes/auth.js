@@ -10,7 +10,7 @@ const Merchant = require('../models/Merchant');
 
 // Generate JWT Token
 const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
+  return jwt.sign({ id }, process.env.JWT_SECRET || 'secret123', {
     expiresIn: '30d'
   });
 };
