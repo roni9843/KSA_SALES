@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { FaClipboardList, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { DateRange } from 'react-date-range';
 import { format } from 'date-fns';
@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import 'react-date-range/dist/styles.css';
 import 'react-date-range/dist/theme/default.css';
 
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 10;
 
 const StockAdjustmentList = () => {
     const [adjustments, setAdjustments] = useState([]);
@@ -40,7 +40,7 @@ const StockAdjustmentList = () => {
             setLoading(false);
         }
     };
-    
+
     useEffect(() => {
         fetchAdjustments(1);
     }, []);
@@ -69,11 +69,13 @@ const StockAdjustmentList = () => {
 
     return (
         <div style={styles.card}>
-            <h2><FaClipboardList /> Stock Adjustment List</h2>
+            <h2 className="text-xl font-extrabold text-slate-900 flex items-center gap-2 mb-4 border-b border-slate-200 pb-3">
+                <FaClipboardList className="text-blue-600" /> Stock Adjustment Log History
+            </h2>
 
             <div style={styles.filters}>
                 <div style={{ flex: 2, position: 'relative' }}>
-                    <label>Date Range</label>
+                    <label className="block text-xs font-semibold text-slate-600 mb-1">Date Range</label>
                     <input
                         type="text"
                         readOnly
@@ -82,7 +84,7 @@ const StockAdjustmentList = () => {
                         style={styles.dateInput}
                     />
                     {isCalendarOpen && (
-                        <div ref={dateRangeRef} style={{ position: 'absolute', zIndex: 10, top: '100%', left: 0, color: '#000' }}>
+                        <div ref={dateRangeRef} style={{ position: 'absolute', zIndex: 10, top: '100%', left: 0 }}>
                             <DateRange
                                 editableDateInputs={true}
                                 onChange={item => setDateRange([item.selection])}
@@ -92,15 +94,15 @@ const StockAdjustmentList = () => {
                         </div>
                     )}
                 </div>
-                <button onClick={handleGenerateReport} disabled={loading} className="default-button">
-                    {loading ? 'Loading...' : 'Generate'}
+                <button onClick={handleGenerateReport} disabled={loading} className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm shadow-md transition-all">
+                    {loading ? 'Loading...' : 'Filter Log'}
                 </button>
             </div>
 
-            <div style={styles.tableContainer}>
+            <div className="overflow-x-auto rounded-xl border border-slate-200 mt-4">
                 <table style={styles.table}>
                     <thead>
-                        <tr>
+                        <tr style={{ backgroundColor: '#f8fafc' }}>
                             <th style={styles.th}>Date</th>
                             <th style={styles.th}>Adjustment No</th>
                             <th style={styles.th}>Product Name</th>
@@ -112,18 +114,18 @@ const StockAdjustmentList = () => {
                     </thead>
                     <tbody>
                         {adjustments.length > 0 ? adjustments.map((adj, index) => (
-                            <tr key={adj.id || index} style={styles.tr(index)}>
+                            <tr key={adj.id || index} style={{ backgroundColor: index % 2 === 0 ? '#ffffff' : '#f8fafc' }}>
                                 <td style={styles.td}>{new Date(adj.stock_adjustment_date).toLocaleDateString()}</td>
-                                <td style={styles.td}>{adj.stock_adjustment_no}</td>
-                                <td style={styles.td}>{adj.product_name}</td>
+                                <td style={{ ...styles.td, fontWeight: '700', color: '#2563eb' }}>{adj.stock_adjustment_no}</td>
+                                <td style={{ ...styles.td, fontWeight: '700', color: '#0f172a' }}>{adj.product_name}</td>
                                 <td style={styles.td}>{adj.pre_stock}</td>
-                                <td style={styles.td}>{adj.quantity}</td>
-                                <td style={styles.td}>{adj.new_stock}</td>
-                                <td style={styles.td}>{adj.adjusted_by}</td>
+                                <td style={{ ...styles.td, fontWeight: '700' }}>{adj.quantity}</td>
+                                <td style={{ ...styles.td, fontWeight: '700', color: '#10b981' }}>{adj.new_stock}</td>
+                                <td style={styles.td}>{adj.adjusted_by || 'Admin'}</td>
                             </tr>
                         )) : (
                             <tr>
-                                <td colSpan="7" style={{ textAlign: 'center', padding: '20px' }}>No adjustments found for the selected criteria.</td>
+                                <td colSpan="7" style={{ textAlign: 'center', padding: '24px', color: '#64748b' }}>No stock adjustments found for the selected criteria.</td>
                             </tr>
                         )}
                     </tbody>
@@ -132,11 +134,11 @@ const StockAdjustmentList = () => {
 
             {totalPages > 1 && (
                 <div style={styles.pagination}>
-                    <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} className="default-button">
+                    <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg text-sm disabled:opacity-50">
                         <FaChevronLeft />
                     </button>
-                    <span>Page {currentPage} of {totalPages}</span>
-                    <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} className="default-button">
+                    <span className="text-xs font-semibold text-slate-600">Page {currentPage} of {totalPages}</span>
+                    <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg text-sm disabled:opacity-50">
                         <FaChevronRight />
                     </button>
                 </div>
@@ -146,15 +148,13 @@ const StockAdjustmentList = () => {
 };
 
 const styles = {
-    card: { background: '#2D3748', padding: '20px', borderRadius: '4px', color: '#fff' },
-    filters: { display: 'flex', gap: '20px', alignItems: 'flex-end', marginBottom: '20px' },
-    dateInput: { width: '100%', padding: '10px', borderRadius: '5px', border: 'none', backgroundColor: '#eeeeee', color: '#333', boxSizing: 'border-box', cursor: 'pointer' },
-    tableContainer: { marginTop: '20px' },
+    card: { background: '#ffffff', padding: '24px', borderRadius: '16px', border: '1px solid #e2e8f0', color: '#0f172a', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' },
+    filters: { display: 'flex', gap: '16px', alignItems: 'flex-end', marginBottom: '20px' },
+    dateInput: { width: '100%', padding: '9px 12px', borderRadius: '10px', border: '1px solid #cbd5e1', backgroundColor: '#f8fafc', color: '#0f172a', fontSize: '13px', cursor: 'pointer', outline: 'none' },
     table: { width: '100%', borderCollapse: 'collapse' },
-    th: { padding: '12px', textAlign: 'left', borderBottom: '2px solid #4A5568', textTransform: 'uppercase', fontSize: '12px' },
-    tr: (index) => ({ backgroundColor: index % 2 === 0 ? '#374151' : '#2D3748' }),
-    td: { padding: '12px', borderBottom: '1px solid #4A5568' },
-    pagination: { display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', marginTop: '20px' },
+    th: { padding: '12px 16px', textAlign: 'left', borderBottom: '1px solid #e2e8f0', textTransform: 'uppercase', fontSize: '11px', fontWeight: '700', color: '#475569' },
+    td: { padding: '12px 16px', borderBottom: '1px solid #e2e8f0', color: '#334155', fontSize: '14px' },
+    pagination: { display: 'flex', justify: 'center', alignItems: 'center', gap: '12px', marginTop: '20px' },
 };
 
 export default StockAdjustmentList;

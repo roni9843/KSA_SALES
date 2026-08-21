@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import { useTranslation } from 'react-i18next';
-import LicenseStatusBanner from './LicenseStatusBanner';
-
+import { useAuthStore } from '../store/authStore';
+import { Link } from 'react-router-dom';
+import { FaPlusCircle, FaStore, FaClock, FaGlobe, FaBars } from 'react-icons/fa';
 
 const Clock = () => {
     const [date, setDate] = useState(new Date());
@@ -13,91 +14,82 @@ const Clock = () => {
     }, []);
 
     const formatDateTime = (date) => {
-        const year = date.getFullYear();
         const day = date.getDate();
         const month = date.toLocaleString('default', { month: 'short' });
-
-        const getDayWithSuffix = (d) => {
-            if (d > 3 && d < 21) return `${d}th`;
-            switch (d % 10) {
-                case 1: return `${d}st`;
-                case 2: return `${d}nd`;
-                case 3: return `${d}rd`;
-                default: return `${d}th`;
-            }
-        };
-
-        const dayWithSuffix = getDayWithSuffix(day);
-
         let hours = date.getHours();
         const minutes = date.getMinutes().toString().padStart(2, '0');
         const ampm = hours >= 12 ? 'PM' : 'AM';
-        hours = hours % 12;
-        hours = hours ? hours : 12; // the hour '0' should be '12'
+        hours = hours % 12 || 12;
 
-        const strTime = `${hours}:${minutes} ${ampm}`;
-
-        return `${dayWithSuffix} ${month} ${year} | ${strTime}`;
+        return `${day} ${month} &bull; ${hours}:${minutes} ${ampm}`;
     };
 
     return (
-        <div style={{ fontSize: '16px', color: '#fff' }}>
-            {formatDateTime(date)}
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 border border-slate-200 text-xs font-semibold text-blue-700 shadow-sm">
+            <FaClock className="text-blue-600" />
+            <span dangerouslySetInnerHTML={{ __html: formatDateTime(date) }}></span>
         </div>
     );
 };
 
-
 const Layout = ({ children }) => {
     const { i18n } = useTranslation();
-    const changeLanguage = (lng) => i18n.changeLanguage(lng);
-
-    const { t } = useTranslation();
+    const { user } = useAuthStore();
     const [showSidebar, setShowSidebar] = useState(true);
 
+    const changeLanguage = (lng) => i18n.changeLanguage(lng);
     const toggleSidebar = () => setShowSidebar(!showSidebar);
 
     return (
-        <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <div className="h-screen flex flex-col bg-slate-50 text-slate-900 overflow-hidden font-['Plus_Jakarta_Sans',sans-serif]">
 
-            {/* 🔝 Topbar */}
-            <header
-                style={{
-                    height: '50px',
-                    backgroundColor: '#282A35',
-                    color: '#fff',
-                    display: 'flex',
-                    alignItems: 'center',
-                    padding: '0 20px',
-                    justifyContent: 'space-between',
-                    position: 'sticky',
-                    top: 0,
-                    zIndex: 1000,
-                }}
-            >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            {/* 🔝 White Mode Modern POS Topbar */}
+            <header className="h-14 bg-white border-b border-slate-200/90 shadow-sm flex items-center justify-between px-5 sticky top-0 z-50">
+                <div className="flex items-center gap-3">
                     <button
                         onClick={toggleSidebar}
-                        style={{
-                            fontSize: '22px',
-                            background: '#282A35',
-                            color: '#fff',
-                            border: 'none',
-                            padding: '4px 10px',
-                            cursor: 'pointer',
-                            borderRadius: '4px'
-                        }}
+                        className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors"
+                        title="Toggle Navigation"
                     >
-                        ☰
+                        <FaBars className="text-base" />
                     </button>
-                    <h2 style={{ margin: 0 }}>{t('title')} </h2>
+
+                    <div className="flex items-center gap-2.5">
+                        <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-blue-600 to-cyan-500 flex items-center justify-center text-white font-black shadow-md shadow-blue-500/20">
+                            <FaStore className="text-base" />
+                        </div>
+                        <div>
+                            <h2 className="text-sm font-extrabold text-slate-900 tracking-wide flex items-center gap-2">
+                                {user?.merchant?.shopName || 'Moto POS'}
+                            </h2>
+                            <p className="text-[10px] text-blue-600 font-semibold uppercase tracking-wider">
+                                Cloud POS Terminal
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                {/* Quick Actions & Header Items */}
+                <div className="flex items-center gap-4">
+                    {/* Quick Sale Button */}
+                    <Link
+                        to="/create-invoice"
+                        className="hidden sm:inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs shadow-md shadow-blue-500/20 transition-all"
+                    >
+                        <FaPlusCircle /> + Quick Sale
+                    </Link>
+
+                    {/* Clock Pill */}
                     <Clock />
+
                     {/* Language Selector */}
-                    <div >
-                        <select onChange={(e) => changeLanguage(e.target.value)} defaultValue={i18n.language}>
+                    <div className="flex items-center gap-1.5 bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-xl text-xs">
+                        <FaGlobe className="text-slate-500 text-xs" />
+                        <select
+                            onChange={(e) => changeLanguage(e.target.value)}
+                            defaultValue={i18n.language}
+                            className="bg-transparent text-slate-800 focus:outline-none cursor-pointer text-xs"
+                        >
                             <option value="en">English</option>
                             <option value="bn">বাংলা</option>
                             <option value="ar">العربية</option>
@@ -107,52 +99,30 @@ const Layout = ({ children }) => {
             </header>
 
             {/* 📦 Main Body */}
-            <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-                {/* 📂 Sidebar */}
+            <div className="flex-1 flex overflow-hidden">
+                {/* 📂 White Mode POS Sidebar */}
                 <aside
-                    style={{
-                        width: showSidebar ? '250px' : '0px',
-                        background: '#282A35',
-                        color: '#fff',
-                        overflowX: 'hidden',
-                        transition: 'width 0.3s ease-in-out'
-                    }}
+                    className={`bg-white border-r border-slate-200 transition-all duration-300 flex flex-col ${
+                        showSidebar ? 'w-64' : 'w-0'
+                    } overflow-hidden`}
                 >
                     {showSidebar && <Sidebar />}
                 </aside>
 
-                {/* 📄 Main Content */}
-                <main
-                    style={{
-                        flex: 1,
-                        padding: '20px',
-                        background: '#eeeeee',
-                        color: '#ecf0f1',
-                        overflowY: 'auto',
-                        transition: 'all 0.3s ease',
-                        width: showSidebar ? 'calc(100% - 250px)' : '100%',
-                    }}
-                >
-                    <LicenseStatusBanner />
+                {/* 📄 Main Content Area */}
+                <main className="flex-1 bg-slate-50 p-6 overflow-y-auto">
                     {children}
                 </main>
             </div>
 
-            {/* 🦶 Footer */}
-            <footer
-                style={{
-                    height: '40px',
-                    backgroundColor: '#282A35',
-                    color: '#ecf0f1',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: '0 20px',
-                    flexShrink: 0
-                }}
-            >
+            {/* 🦶 White Mode Footer */}
+            <footer className="h-9 bg-white border-t border-slate-200 flex items-center justify-between px-6 text-[11px] text-slate-500 shrink-0">
+                <span className="flex items-center gap-1.5">
+                    <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    POS Cloud Connected &bull; System Online
+                </span>
                 <span>
-                    Developed by <a href="https://araflogix.com/" target="_blank" rel="noopener noreferrer" style={{ color: '#1abc9c', textDecoration: 'none' }}>ArafLogix</a>
+                    Developed by <a href="https://araflogix.com/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline font-semibold">ArafLogix</a>
                 </span>
             </footer>
         </div>

@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import AsyncSelect from 'react-select/async';
 import toast from 'react-hot-toast';
 import { FaMoneyBillWave, FaCreditCard, FaUniversity } from 'react-icons/fa';
-import { useAuth } from '../context/AuthContext';
+import { useAuthStore } from '../store/authStore';
 
 const CollectDue = () => {
-    const { user } = useAuth();
+    const { user } = useAuthStore();
     const navigate = useNavigate();
     const [selectedInvoice, setSelectedInvoice] = useState(null);
     const [invoiceDetails, setInvoiceDetails] = useState(null);

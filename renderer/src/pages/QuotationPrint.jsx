@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { QRCodeSVG } from 'qrcode.react';
+import { generateZatcaTlvBase64 } from '../utils/zatcaEncoder';
 
 function QuotationPrint() {
     const location = useLocation();
@@ -50,6 +52,14 @@ function QuotationPrint() {
     }
 
     const { customer, items, subtotal, itemDiscount, itemTax, cartDiscount, total, date } = quotation;
+
+    const zatcaQrBase64 = generateZatcaTlvBase64({
+        sellerName: settings?.shop_name || 'Moto POS Merchant',
+        vatNumber: settings?.tax_number || '310123456700003',
+        timestamp: date,
+        totalAmount: total,
+        vatAmount: itemTax
+    });
 
     return (
         <div style={{ maxWidth: '800px', margin: 'auto', padding: '20px', fontFamily: 'sans-serif', color: '#333' }}>
@@ -121,8 +131,18 @@ function QuotationPrint() {
                 </tbody>
             </table>
 
-            {/* Totals Section */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
+            {/* Totals & ZATCA QR Code Section */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: '10px' }}>
+                <div style={{ textAlign: 'center', border: '1px solid #e2e8f0', padding: '10px', borderRadius: '12px', backgroundColor: '#f8fafc', width: '150px' }}>
+                    {zatcaQrBase64 ? (
+                        <QRCodeSVG value={zatcaQrBase64} size={120} level="M" includeMargin={false} />
+                    ) : (
+                        <div style={{ width: '120px', height: '120px', backgroundColor: '#eee' }} />
+                    )}
+                    <p style={{ fontSize: '10px', fontWeight: 'bold', margin: '6px 0 0 0', color: '#003366' }}>ZATCA E-INVOICE QR</p>
+                    <p style={{ fontSize: '9px', margin: 0, color: '#64748b' }}>رمز الاستجابة السريعة</p>
+                </div>
+
                 <div style={{ width: '250px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}>
                         <span>Subtotal</span>

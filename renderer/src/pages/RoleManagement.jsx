@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
+import { FaUserShield, FaPlus, FaSave } from 'react-icons/fa';
 
 const RoleManagement = () => {
     const [roles, setRoles] = useState([]);
@@ -11,12 +12,12 @@ const RoleManagement = () => {
 
     const fetchRoles = useCallback(async () => {
         const fetchedRoles = await window.electron.ipcRenderer.invoke('get-roles');
-        setRoles(fetchedRoles);
+        setRoles(fetchedRoles || []);
     }, []);
 
     const fetchPermissions = useCallback(async () => {
         const fetchedPermissions = await window.electron.ipcRenderer.invoke('get-permissions');
-        setPermissions(fetchedPermissions);
+        setPermissions(fetchedPermissions || []);
     }, []);
 
     useEffect(() => {
@@ -29,7 +30,7 @@ const RoleManagement = () => {
             if (selectedRole) {
                 setIsLoading(true);
                 const fetchedPermissions = await window.electron.ipcRenderer.invoke('get-role-permissions', selectedRole.id);
-                setRolePermissions(fetchedPermissions);
+                setRolePermissions(fetchedPermissions || []);
                 setIsLoading(false);
             }
         };
@@ -49,6 +50,7 @@ const RoleManagement = () => {
         setIsLoading(true);
         await window.electron.ipcRenderer.invoke('update-role-permissions', {
             roleId: selectedRole.id,
+            roleName: selectedRole.name,
             permissionIds: rolePermissions
         });
         setIsLoading(false);
@@ -63,81 +65,95 @@ const RoleManagement = () => {
         }
         await window.electron.ipcRenderer.invoke('add-role', newRoleName);
         setNewRoleName('');
-        fetchRoles(); // Refresh role list
+        fetchRoles();
         toast.success(`Role '${newRoleName}' added successfully!`);
     };
 
-    // Styles
-    const containerStyle = { display: 'flex', gap: '20px', padding: '20px', fontFamily: 'Arial, sans-serif', color: '#333' };
-    const listContainerStyle = { flex: 1, border: '1px solid #ccc', borderRadius: '8px', padding: '10px' };
-    const listItemStyle = (isSelected) => ({
-        padding: '10px',
-        margin: '5px 0',
-        borderRadius: '4px',
-        cursor: 'pointer',
-        background: isSelected ? '#282A35' : '#f0f0f0',
-        color: isSelected ? 'white' : '#333'
-    });
-    const permissionsContainerStyle = { flex: 2, border: '1px solid #ccc', borderRadius: '8px', padding: '20px' };
-    const checkboxLabelStyle = { display: 'block', margin: '10px 0', cursor: 'pointer' };
-    const saveButtonStyle = { background: '#282A35', color: 'white', padding: '10px 20px', border: 'none', borderRadius: '4px', cursor: 'pointer', marginTop: '20px' };
-    const formInputStyle = { padding: '8px', margin: '5px 0', width: 'calc(100% - 16px)' };
-
     return (
-        <div>
-            <h1 style={{color: '#333'}}>Role Management</h1>
-            <div style={containerStyle}>
-                <div style={listContainerStyle}>
-                    <h2>Roles</h2>
-                    {roles.map(role => (
-                        <div
-                            key={role.id}
-                            style={listItemStyle(selectedRole?.id === role.id)}
-                            onClick={() => setSelectedRole(role)}
-                        >
-                            {role.name}
-                        </div>
-                    ))}
-                    <hr style={{ margin: '20px 0' }} />
-                    <h3>Add New Role</h3>
-                    <form onSubmit={handleAddRole}>
+        <div className="p-6 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-6">
+            <h1 className="text-xl font-extrabold text-slate-900 flex items-center gap-2 border-b border-slate-200 pb-3">
+                <FaUserShield className="text-blue-600" /> Role & Permission Management
+            </h1>
+
+            <div className="flex flex-col lg:flex-row gap-6">
+                {/* Roles List Box */}
+                <div className="w-full lg:w-1/3 bg-slate-50 border border-slate-200 rounded-2xl p-5 space-y-4">
+                    <h2 className="text-sm font-extrabold uppercase text-slate-700 tracking-wider">User Roles</h2>
+                    <div className="space-y-1.5">
+                        {roles.map(role => {
+                            const isSelected = selectedRole?.id === role.id;
+                            return (
+                                <div
+                                    key={role.id}
+                                    onClick={() => setSelectedRole(role)}
+                                    className={`px-4 py-3 rounded-xl cursor-pointer font-bold text-sm transition-all ${
+                                        isSelected
+                                            ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
+                                            : 'bg-white text-slate-800 border border-slate-200 hover:bg-slate-100'
+                                    }`}
+                                >
+                                    {role.name}
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    <hr className="border-slate-200 my-4" />
+
+                    <h3 className="text-xs font-extrabold uppercase text-slate-600 tracking-wider">Create New Role</h3>
+                    <form onSubmit={handleAddRole} className="space-y-3">
                         <input
                             type="text"
                             placeholder="New role name"
                             value={newRoleName}
                             onChange={(e) => setNewRoleName(e.target.value)}
-                            style={formInputStyle}
+                            className="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-sm text-slate-900 outline-none focus:border-blue-600"
                         />
-                        <button type="submit" style={{...saveButtonStyle, marginTop: '10px', width: '100%'}}>Add Role</button>
+                        <button type="submit" className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm shadow-md transition-all flex items-center justify-center gap-2">
+                            <FaPlus /> Add Role
+                        </button>
                     </form>
                 </div>
 
-                <div style={permissionsContainerStyle}>
+                {/* Permissions Matrix Box */}
+                <div className="w-full lg:w-2/3 bg-slate-50 border border-slate-200 rounded-2xl p-6">
                     {selectedRole ? (
-                        <>
-                            <h2>Permissions for {selectedRole.name}</h2>
-                            {isLoading ? <p>Loading...</p> : (
-                                <div>
+                        <div className="space-y-4">
+                            <h2 className="text-base font-extrabold text-slate-900 border-b border-slate-200 pb-3">
+                                Permissions for Role: <span className="text-blue-600">{selectedRole.name}</span>
+                            </h2>
+                            {isLoading ? <p className="text-sm text-slate-500">Loading permissions...</p> : (
+                                <div className="space-y-3">
                                     {permissions.map(permission => (
-                                        <label key={permission.id} style={checkboxLabelStyle}>
-                                            <input
-                                                type="checkbox"
-                                                checked={rolePermissions.includes(permission.id)}
-                                                onChange={() => handlePermissionChange(permission.id)}
-                                                style={{ marginRight: '10px' }}
-                                            />
-                                            {permission.name}
-                                            <p style={{fontSize: '0.8em', color: '#666', margin: '0 0 0 25px'}}>{permission.description}</p>
+                                        <label key={permission.id} className="block p-3.5 bg-white border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-100 transition-colors">
+                                            <div className="flex items-center gap-3">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={rolePermissions.includes(permission.id)}
+                                                    onChange={() => handlePermissionChange(permission.id)}
+                                                    className="h-4 w-4 text-blue-600 rounded focus:ring-blue-500"
+                                                />
+                                                <span className="text-sm font-bold text-slate-900">{permission.name}</span>
+                                            </div>
+                                            {permission.description && (
+                                                <p className="text-xs text-slate-500 ml-7 mt-0.5">{permission.description}</p>
+                                            )}
                                         </label>
                                     ))}
-                                    <button onClick={handleSaveChanges} style={saveButtonStyle} disabled={isLoading}>
-                                        Save Changes
+                                    <button
+                                        onClick={handleSaveChanges}
+                                        disabled={isLoading}
+                                        className="mt-4 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm shadow-md transition-all flex items-center gap-2"
+                                    >
+                                        <FaSave /> Save Role Permissions
                                     </button>
                                 </div>
                             )}
-                        </>
+                        </div>
                     ) : (
-                        <p>Select a role to see its permissions.</p>
+                        <div className="p-12 text-center text-slate-400 text-sm font-medium">
+                            Select a role from the left list to configure its permissions.
+                        </div>
                     )}
                 </div>
             </div>

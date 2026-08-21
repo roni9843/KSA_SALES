@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-
 import Switch from './common/Switch';
 import { FaBox } from 'react-icons/fa';
 
@@ -27,11 +26,11 @@ const AddProduct = ({ onAdded }) => {
     useEffect(() => {
         async function fetchCategories() {
             const data = await window.electron.ipcRenderer.invoke('get-categories');
-            setCategories(data);
+            setCategories(data || []);
         }
         async function fetchTaxes() {
             const res = await window.electron.ipcRenderer.invoke('get-taxes');
-            setTaxes(res);
+            setTaxes(res || []);
         }
         fetchCategories();
         fetchTaxes();
@@ -47,7 +46,7 @@ const AddProduct = ({ onAdded }) => {
         try {
             await window.electron.ipcRenderer.invoke('add-product', form);
             toast.success('Product added successfully');
-            onAdded();
+            if (onAdded) onAdded();
             setForm({
                 name: '',
                 sku: '',
@@ -70,7 +69,9 @@ const AddProduct = ({ onAdded }) => {
 
     return (
         <div style={cardStyle}>
-            <h2><FaBox /> Add New Product</h2>
+            <h2 className="text-xl font-extrabold text-slate-900 flex items-center gap-2 mb-6 border-b border-slate-200 pb-3">
+                <FaBox className="text-blue-600" /> Add New Product
+            </h2>
             <form onSubmit={handleSubmit} style={formStyle}>
                 <fieldset style={fieldsetStyle}>
                     <legend style={legendStyle}>Product Details</legend>
@@ -109,7 +110,7 @@ const AddProduct = ({ onAdded }) => {
                         </div>
 
                         <div style={inputGroupStyle}>
-                            <label style={labelStyle}>Active</label>
+                            <label style={labelStyle}>Active Status</label>
                             <Switch name="active" checked={form.active} onChange={handleChange} />
                         </div>
 
@@ -153,7 +154,7 @@ const AddProduct = ({ onAdded }) => {
                                         : ''
                                 }
                                 disabled
-                                style={{ ...inputStyle, backgroundColor: '#E2E8F0' }}
+                                style={{ ...inputStyle, backgroundColor: '#f1f5f9' }}
                             />
                         </div>
 
@@ -164,14 +165,14 @@ const AddProduct = ({ onAdded }) => {
 
                         <div style={inputGroupStyle}>
                             <label style={labelStyle}>Stock Quantity</label>
-                            <input type="number" name="quantity_in_stock" placeholder="0" value={form.quantity_in_stock} readOnly style={{ ...inputStyle, backgroundColor: '#E2E8F0' }} />
+                            <input type="number" name="quantity_in_stock" placeholder="0" value={form.quantity_in_stock} readOnly style={{ ...inputStyle, backgroundColor: '#f1f5f9' }} />
                         </div>
                     </div>
                 </fieldset>
 
                 <button
                     type="submit"
-                    className="default-button"
+                    className="col-span-2 mt-4 px-6 py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md text-sm transition-all"
                 >
                     Add Product
                 </button>
@@ -181,10 +182,12 @@ const AddProduct = ({ onAdded }) => {
 };
 
 const cardStyle = {
-    background: '#2D3748',
-    padding: '20px',
-    borderRadius: '4px',
-    color: '#fff',
+    background: '#ffffff',
+    padding: '24px',
+    borderRadius: '16px',
+    border: '1px solid #e2e8f0',
+    color: '#0f172a',
+    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
 };
 
 const formStyle = {
@@ -194,30 +197,31 @@ const formStyle = {
 };
 
 const fieldsetStyle = {
-    border: '1px solid #4A5568',
-    borderRadius: '8px',
+    border: '1px solid #e2e8f0',
+    borderRadius: '12px',
     padding: '20px',
     margin: '0',
+    backgroundColor: '#fafafa',
 };
 
 const legendStyle = {
     padding: '0 10px',
-    color: '#E2E8F0',
-    fontWeight: 'bold',
-    fontSize: '18px',
+    color: '#1e293b',
+    fontWeight: '800',
+    fontSize: '15px',
     marginLeft: '10px',
 };
 
 const detailsGridStyle = {
     display: 'grid',
     gridTemplateColumns: '1fr 1fr',
-    gap: '20px',
+    gap: '16px',
 };
 
 const priceGridStyle = {
     display: 'grid',
     gridTemplateColumns: '1fr 1fr',
-    gap: '20px',
+    gap: '16px',
 };
 
 const inputGroupStyle = {
@@ -226,23 +230,22 @@ const inputGroupStyle = {
 };
 
 const labelStyle = {
-    marginBottom: '8px',
-    fontSize: '14px',
-    color: '#A0AEC0',
+    marginBottom: '6px',
+    fontSize: '13px',
+    fontWeight: '600',
+    color: '#475569',
 };
 
 const inputStyle = {
     width: '100%',
-    padding: '12px',
-    borderRadius: '5px',
-    border: '1px solid #A0AEC0',
-    backgroundColor: '#fff',
-    color: '#333',
+    padding: '10px 12px',
+    borderRadius: '10px',
+    border: '1px solid #cbd5e1',
+    backgroundColor: '#ffffff',
+    color: '#0f172a',
     fontSize: '14px',
     boxSizing: 'border-box',
+    outline: 'none',
 };
-
-
-
 
 export default AddProduct;

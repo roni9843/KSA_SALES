@@ -3,11 +3,12 @@
   "version": "1.0.0",
   "main": "src/main/main.js",
   "scripts": {
-    "dev": "concurrently \"cross-env BROWSER=none npm run dev-react\" \"npm run dev-electron\"",
-    "dev-react": "cd renderer && npm run dev",
-    "dev-electron": "electron .",
-    "build": "cd renderer && npm run build && electron-builder",
-    "postinstall": "electron-builder install-app-deps"
+    "dev": "npx concurrently \"npm run dev-backend\" \"npm run dev-web\"",
+    "dev-all": "npx concurrently \"npm run dev-backend\" \"npm run dev-web\" \"npm run dev-admin\"",
+    "dev-backend": "cd backend && npx nodemon server.js",
+    "dev-web": "cd renderer && npm run dev",
+    "dev-admin": "cd super-admin && npm run dev",
+    "build": "cd renderer && npm run build"
   },
   "build": {
     "appId": "com.moto.pos",

@@ -3,7 +3,7 @@ import AsyncSelect from 'react-select/async';
 import toast from 'react-hot-toast';
 import { DateRange } from 'react-date-range';
 import { format } from 'date-fns';
-import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { FaChevronLeft, FaChevronRight, FaExchangeAlt } from 'react-icons/fa';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import 'react-date-range/dist/styles.css';
@@ -64,8 +64,8 @@ const ProductTransaction = () => {
                 page: page,
                 limit: PAGE_SIZE
             });
-            setReportData(rows);
-            setTotalPages(Math.ceil(totalCount / PAGE_SIZE));
+            setReportData(rows || []);
+            setTotalPages(Math.ceil((totalCount || 0) / PAGE_SIZE));
             setCurrentPage(page);
         } catch (error) {
             console.error('Error fetching report:', error);
@@ -218,21 +218,23 @@ const ProductTransaction = () => {
 
     return (
         <div style={styles.container}>
-            <h2>Product Transaction History</h2>
+            <h2 className="text-xl font-extrabold text-slate-900 flex items-center gap-2 mb-4 border-b border-slate-200 pb-3">
+                <FaExchangeAlt className="text-blue-600" /> Product Inventory Transaction Log
+            </h2>
             <div style={styles.filters}>
                 <div style={{ flex: 2 }}>
-                    <label>Select Product</label>
+                    <label className="block text-xs font-semibold text-slate-600 mb-1">Select Product</label>
                     <AsyncSelect
                         cacheOptions
                         defaultOptions
                         loadOptions={loadProductOptions}
                         onChange={handleProductSelect}
-                        placeholder="Type to search for a product..."
+                        placeholder="Type to search product..."
                         isClearable
                     />
                 </div>
                 <div style={{ flex: 2, position: 'relative' }}>
-                    <label>Date Range</label>
+                    <label className="block text-xs font-semibold text-slate-600 mb-1">Date Range</label>
                     <input
                         type="text"
                         readOnly
@@ -251,17 +253,17 @@ const ProductTransaction = () => {
                         </div>
                     )}
                 </div>
-                <button onClick={handleGenerateReport} disabled={loading || !selectedProduct} className="default-button">
-                    {loading ? 'Generating...' : 'Generate Report'}
+                <button onClick={handleGenerateReport} disabled={loading || !selectedProduct} className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm shadow-md transition-all">
+                    {loading ? 'Generating...' : 'Generate History'}
                 </button>
                 {reportData.length > 0 && <Dropdown options={exportOptions} onSelect={handleExportSelect} title="Export Report" />}
             </div>
 
             {selectedProduct && (
-                <div style={styles.tableContainer}>
+                <div className="overflow-x-auto rounded-xl border border-slate-200 mt-4">
                     <table style={styles.table}>
                         <thead>
-                            <tr>
+                            <tr style={styles.thRow}>
                                 <th style={styles.th}>Date</th>
                                 <th style={styles.th}>Transaction Type</th>
                                 <th style={styles.th}>ID</th>
@@ -272,17 +274,17 @@ const ProductTransaction = () => {
                         </thead>
                         <tbody>
                             {reportData.length > 0 ? reportData.map((row, index) => (
-                                <tr key={index}>
+                                <tr key={index} style={{ backgroundColor: index % 2 === 0 ? '#ffffff' : '#f8fafc' }}>
                                     <td style={styles.td}>{new Date(row.date).toLocaleDateString()}</td>
-                                    <td style={styles.td}>{row.type}</td>
-                                    <td style={styles.td}>{row.id}</td>
-                                    <td style={styles.td}>{row.quantity}</td>
+                                    <td style={{ ...styles.td, fontWeight: '700', color: row.type === 'SALE' ? '#ef4444' : '#10b981' }}>{row.type}</td>
+                                    <td style={{ ...styles.td, fontWeight: '600', color: '#2563eb' }}>#{row.id}</td>
+                                    <td style={{ ...styles.td, fontWeight: '700' }}>{row.quantity}</td>
                                     <td style={styles.td}>{row.pre_stock}</td>
-                                    <td style={styles.td}>{row.new_stock}</td>
+                                    <td style={{ ...styles.td, fontWeight: '700', color: '#0f172a' }}>{row.new_stock}</td>
                                 </tr>
                             )) : (
                                 <tr>
-                                    <td colSpan="6" style={{ textAlign: 'center', padding: '20px' }}>No transactions found for the selected criteria.</td>
+                                    <td colSpan="6" style={{ textAlign: 'center', padding: '24px', color: '#64748b' }}>No transactions found for the selected criteria.</td>
                                 </tr>
                             )}
                         </tbody>
@@ -292,11 +294,11 @@ const ProductTransaction = () => {
 
             {totalPages > 1 && (
                 <div style={styles.pagination}>
-                    <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} className="default-button">
+                    <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg text-sm disabled:opacity-50">
                         <FaChevronLeft />
                     </button>
-                    <span>Page {currentPage} of {totalPages}</span>
-                    <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} className="default-button">
+                    <span className="text-xs font-semibold text-slate-600">Page {currentPage} of {totalPages}</span>
+                    <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg text-sm disabled:opacity-50">
                         <FaChevronRight />
                     </button>
                 </div>
@@ -306,14 +308,14 @@ const ProductTransaction = () => {
 };
 
 const styles = {
-    container: { padding: '20px', background: '#2D3748', color: '#fff', borderRadius: '4px' },
-    filters: { display: 'flex', gap: '20px', alignItems: 'flex-end', marginBottom: '20px' },
-    dateInput: { width: '100%', padding: '10px', borderRadius: '5px', border: 'none', backgroundColor: '#eeeeee', color: '#333', boxSizing: 'border-box', cursor: 'pointer' },
-    tableContainer: { marginTop: '20px' },
+    container: { padding: '24px', background: '#ffffff', color: '#0f172a', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' },
+    filters: { display: 'flex', gap: '16px', alignItems: 'flex-end', marginBottom: '20px' },
+    dateInput: { width: '100%', padding: '9px 12px', borderRadius: '10px', border: '1px solid #cbd5e1', backgroundColor: '#f8fafc', color: '#0f172a', fontSize: '13px', cursor: 'pointer', outline: 'none' },
     table: { width: '100%', borderCollapse: 'collapse' },
-    th: { background: '#4A5568', color: '#fff', padding: '12px', textAlign: 'left' },
-    td: { padding: '12px', borderBottom: '1px solid #4A5568' },
-    pagination: { display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', marginTop: '20px' },
+    thRow: { backgroundColor: '#f8fafc' },
+    th: { color: '#475569', padding: '12px 16px', textAlign: 'left', borderBottom: '1px solid #e2e8f0', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase' },
+    td: { padding: '12px 16px', borderBottom: '1px solid #e2e8f0', color: '#334155', fontSize: '14px' },
+    pagination: { display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '12px', marginTop: '20px' },
 };
 
 export default ProductTransaction;

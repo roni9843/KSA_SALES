@@ -9,7 +9,7 @@ const AddCategory = () => {
 
     const fetchCategories = async () => {
         const res = await window.electron.ipcRenderer.invoke('get-categories');
-        setList(res);
+        setList(res || []);
     };
 
     useEffect(() => {
@@ -18,7 +18,6 @@ const AddCategory = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
         if (!name.trim()) return;
 
         if (editId) {
@@ -46,7 +45,9 @@ const AddCategory = () => {
 
     return (
         <div style={cardStyle}>
-            <h2><FaFolder /> Category Management</h2>
+            <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2 mb-4 border-b border-slate-200 pb-3">
+                <FaFolder className="text-blue-600" /> Category Management
+            </h2>
 
             <form onSubmit={handleSubmit} style={formStyle}>
                 <input
@@ -56,96 +57,103 @@ const AddCategory = () => {
                     onChange={(e) => setName(e.target.value)}
                     style={inputStyle}
                 />
-                <button type="submit" className="default-button">
-                    {editId ? 'Update' : 'Add'}
+                <button type="submit" className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-sm text-sm transition-all">
+                    {editId ? 'Update' : 'Add Category'}
                 </button>
                 {editId && (
-                    <button type="button" onClick={() => { setEditId(null); setName(''); }} className="default-button">
+                    <button type="button" onClick={() => { setEditId(null); setName(''); }} className="px-4 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded-xl text-sm transition-all">
                         Cancel
                     </button>
                 )}
             </form>
 
-            <table style={tableStyle}>
-                <thead style={tableHeaderStyle}>
-                    <tr>
-                        <th style={{ ...thStyle, width: '50px' }}>#</th>
-                        <th style={thStyle}>Name</th>
-                        <th style={{ ...thStyle, textAlign: 'center' }}>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {list.map((cat, index) => (
-                        <tr key={cat.id} style={tableRowStyle(index)}>
-                            <td style={tdStyle}>{index + 1}</td>
-                            <td style={tdStyle}>{cat.name}</td>
-                            <td style={{ ...tdStyle, textAlign: 'center' }}>
-                                <button onClick={() => handleEdit(cat)} className="action-button"><FaEdit /></button>
-                                <button onClick={() => handleDelete(cat.id)} className="action-button"><FaTrash /></button>
-                            </td>
+            <div className="overflow-x-auto rounded-xl border border-slate-200 mt-4">
+                <table style={tableStyle}>
+                    <thead style={tableHeaderStyle}>
+                        <tr>
+                            <th style={{ ...thStyle, width: '50px' }}>#</th>
+                            <th style={thStyle}>Category Name</th>
+                            <th style={{ ...thStyle, textAlign: 'center', width: '120px' }}>Actions</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {list.length === 0 ? (
+                            <tr>
+                                <td colSpan="3" className="p-8 text-center text-slate-500 text-sm">No categories found. Add one above!</td>
+                            </tr>
+                        ) : (
+                            list.map((cat, index) => (
+                                <tr key={cat.id} style={tableRowStyle(index)}>
+                                    <td style={tdStyle}>{index + 1}</td>
+                                    <td style={{ ...tdStyle, fontWeight: '600' }}>{cat.name}</td>
+                                    <td style={{ ...tdStyle, textAlign: 'center' }}>
+                                        <button onClick={() => handleEdit(cat)} className="p-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors mr-2"><FaEdit /></button>
+                                        <button onClick={() => handleDelete(cat.id)} className="p-2 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 transition-colors"><FaTrash /></button>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
+                    </tbody>
+                </table>
+            </div>
         </div>
     );
 };
 
 export default AddCategory;
 
-
 const cardStyle = {
-    background: '#2D3748',
-    padding: '20px',
-    borderRadius: '4px',
-    color: '#fff'
+    background: '#ffffff',
+    padding: '24px',
+    borderRadius: '16px',
+    border: '1px solid #e2e8f0',
+    color: '#0f172a',
+    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
 };
 
 const formStyle = {
     display: 'flex',
-    gap: '10px',
+    gap: '12px',
     marginBottom: '20px'
 };
 
 const inputStyle = {
     flex: 1,
-    padding: '10px',
-    borderRadius: '5px',
-    border: '1px solid #ccc',
-    backgroundColor: '#eeeeee',
-    color: '#333',
+    padding: '10px 14px',
+    borderRadius: '12px',
+    border: '1px solid #cbd5e1',
+    backgroundColor: '#f8fafc',
+    color: '#0f172a',
+    fontSize: '14px',
+    outline: 'none',
 };
 
 const tableStyle = {
     width: '100%',
-    marginTop: '20px',
     borderCollapse: 'collapse',
-    borderRadius: '8px',
-    overflow: 'hidden',
 };
 
 const tableHeaderStyle = {
-    backgroundColor: '#4A5568',
-    color: '#fff',
+    backgroundColor: '#f8fafc',
+    color: '#475569',
 };
 
 const thStyle = {
-    padding: '12px 15px',
+    padding: '12px 16px',
     textAlign: 'left',
-    borderBottom: '1px solid #2D3748',
+    borderBottom: '1px solid #e2e8f0',
     textTransform: 'uppercase',
-    fontSize: '12px',
+    fontSize: '11px',
+    fontWeight: '700',
 };
 
 const tableRowStyle = (index) => ({
-    backgroundColor: index % 2 === 0 ? '#575F6D' : '#4A5568',
+    backgroundColor: index % 2 === 0 ? '#ffffff' : '#f8fafc',
 });
 
 const tdStyle = {
-    padding: '12px 15px',
-    borderBottom: '1px solid #2D3748',
+    padding: '12px 16px',
+    borderBottom: '1px solid #e2e8f0',
+    color: '#0f172a',
+    fontSize: '14px',
 };
-
-
-
-

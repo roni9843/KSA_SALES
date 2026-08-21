@@ -396,7 +396,13 @@ db.serialize(() => {
       { name: 'license_key', type: 'TEXT', default: 'NULL' },
       { name: 'subscription_end_date', type: 'TEXT', default: 'NULL' },
       { name: 'license_status', type: 'TEXT', default: 'unlicensed' },
-      { name: 'last_successful_validation_date', type: 'TEXT', default: 'NULL' }
+      { name: 'last_successful_validation_date', type: 'TEXT', default: 'NULL' },
+      { name: 'tax_number', type: 'TEXT', default: "'310123456700003'" },
+      { name: 'zatca_connected', type: 'INTEGER', default: 0 },
+      { name: 'zatca_environment', type: 'TEXT', default: "'sandbox'" },
+      { name: 'zatca_otp', type: 'TEXT', default: "''" },
+      { name: 'zatca_binary_token', type: 'TEXT', default: "''" },
+      { name: 'zatca_secret', type: 'TEXT', default: "''" }
     ];
 
     newSettingsColumns.forEach(col => {

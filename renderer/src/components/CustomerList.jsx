@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import Switch from './common/Switch';
-
 import { FaEdit, FaTrash, FaUsers, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
 const PAGE_SIZE = 10;
@@ -18,8 +17,8 @@ const CustomerList = ({ refresh }) => {
             limit: PAGE_SIZE,
             searchTerm: search,
         });
-        setList(rows);
-        setTotalPages(Math.ceil(totalCount / PAGE_SIZE));
+        setList(rows || []);
+        setTotalPages(Math.ceil((totalCount || 0) / PAGE_SIZE));
     };
 
     useEffect(() => {
@@ -62,7 +61,9 @@ const CustomerList = ({ refresh }) => {
     return (
         <div style={cardStyle}>
             <div style={headerStyle}>
-                <h2><FaUsers /> Customer List</h2>
+                <h2 className="text-xl font-extrabold text-slate-900 flex items-center gap-2">
+                    <FaUsers className="text-blue-600" /> Customer List
+                </h2>
                 <div style={searchContainerStyle}>
                     <input
                         type="text"
@@ -73,46 +74,56 @@ const CustomerList = ({ refresh }) => {
                     />
                 </div>
             </div>
-            <table style={tableStyle}>
-                <thead style={tableHeaderStyle}>
-                    <tr>
-                        <th style={{ ...thStyle, textAlign: 'left' }}>Name</th>
-                        <th style={thStyle}>Phone</th>
-                        <th style={thStyle}>Email</th>
-                        <th style={thStyle}>Tax Number</th>
-                        <th style={thStyle}>Uakam No</th>
-                        <th style={{ ...thStyle, textAlign: 'center' }}>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {list.map((c, index) => (
-                        <tr key={c.id} style={tableRowStyle(index)}>
-                            <td style={{ ...tdStyle, textAlign: 'left' }}>{c.name}</td>
-                            <td style={tdStyle}>{c.phone}</td>
-                            <td style={tdStyle}>{c.email}</td>
-                            <td style={tdStyle}>{c.tax_number}</td>
-                            <td style={tdStyle}>{c.Uakam_no}</td>
-                            <td style={{ ...tdStyle, textAlign: 'center' }}>
-                                <button onClick={() => setEditCustomer(c)} className="action-button"><FaEdit /></button>
-                                <button onClick={() => deleteCustomer(c.id)} className="action-button"><FaTrash /></button>
-                            </td>
+
+            <div className="overflow-x-auto rounded-xl border border-slate-200 mt-4">
+                <table style={tableStyle}>
+                    <thead style={tableHeaderStyle}>
+                        <tr>
+                            <th style={{ ...thStyle, textAlign: 'left' }}>Customer Name</th>
+                            <th style={thStyle}>Phone</th>
+                            <th style={thStyle}>Email</th>
+                            <th style={thStyle}>Tax Number</th>
+                            <th style={thStyle}>Uakam No</th>
+                            <th style={{ ...thStyle, textAlign: 'center' }}>Actions</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {list.length === 0 ? (
+                            <tr>
+                                <td colSpan="6" className="p-8 text-center text-slate-500 text-sm">No customers registered yet.</td>
+                            </tr>
+                        ) : (
+                            list.map((c, index) => (
+                                <tr key={c.id} style={tableRowStyle(index)}>
+                                    <td style={{ ...tdStyle, textAlign: 'left', fontWeight: '700', color: '#0f172a' }}>{c.name}</td>
+                                    <td style={{ ...tdStyle, fontWeight: '600' }}>{c.phone || '-'}</td>
+                                    <td style={tdStyle}>{c.email || '-'}</td>
+                                    <td style={tdStyle}>{c.tax_number || '-'}</td>
+                                    <td style={tdStyle}>{c.Uakam_no || '-'}</td>
+                                    <td style={{ ...tdStyle, textAlign: 'center' }}>
+                                        <button onClick={() => setEditCustomer(c)} className="p-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors mr-2"><FaEdit /></button>
+                                        <button onClick={() => deleteCustomer(c.id)} className="p-2 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 transition-colors"><FaTrash /></button>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
+                    </tbody>
+                </table>
+            </div>
 
             {totalPages > 1 && (
                 <div style={paginationStyle}>
-                    <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} className="default-button">
+                    <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg text-sm disabled:opacity-50">
                         <FaChevronLeft />
                     </button>
-                    <span>Page {currentPage} of {totalPages}</span>
-                    <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} className="default-button">
+                    <span className="text-xs font-semibold text-slate-600">Page {currentPage} of {totalPages}</span>
+                    <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg text-sm disabled:opacity-50">
                         <FaChevronRight />
                     </button>
                 </div>
             )}
 
+            {/* Modal */}
             {editCustomer && (
                 <div style={modalOverlay}>
                     <div style={modalBox}>
@@ -163,9 +174,9 @@ const CustomerList = ({ refresh }) => {
                                 <Switch name="status" checked={editCustomer.status} onChange={handleChange} />
                             </div>
 
-                            <div style={{ gridColumn: '1 / span 2', display: 'flex', gap: '10px', marginTop: '10px' }}>
-                                <button type="submit" className="default-button">Update</button>
-                                <button type="button" onClick={() => setEditCustomer(null)} className="default-button">Cancel</button>
+                            <div style={{ gridColumn: '1 / span 2', display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
+                                <button type="button" onClick={() => setEditCustomer(null)} className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded-xl text-sm transition-all">Cancel</button>
+                                <button type="submit" className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm shadow-md transition-all">Save Changes</button>
                             </div>
                         </form>
                     </div>
@@ -176,17 +187,21 @@ const CustomerList = ({ refresh }) => {
 };
 
 const cardStyle = {
-    background: '#2D3748',
-    padding: '20px',
-    borderRadius: '4px',
-    color: '#fff'
+    background: '#ffffff',
+    padding: '24px',
+    borderRadius: '16px',
+    border: '1px solid #e2e8f0',
+    color: '#0f172a',
+    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
 };
 
 const headerStyle = {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: '20px'
+    marginBottom: '16px',
+    borderBottom: '1px solid #e2e8f0',
+    paddingBottom: '12px',
 };
 
 const searchContainerStyle = {
@@ -195,58 +210,59 @@ const searchContainerStyle = {
 };
 
 const searchInputStyle = {
-    padding: '10px',
-    borderRadius: '5px',
-    border: '1px solid #A0AEC0',
-    backgroundColor: '#fff',
-    color: '#333',
-    fontSize: '14px',
-    minWidth: '300px'
+    padding: '8px 14px',
+    borderRadius: '10px',
+    border: '1px solid #cbd5e1',
+    backgroundColor: '#f8fafc',
+    color: '#0f172a',
+    fontSize: '13px',
+    minWidth: '280px',
+    outline: 'none',
 };
 
 const tableStyle = {
     width: '100%',
-    marginTop: '20px',
     borderCollapse: 'collapse',
-    borderRadius: '8px',
-    overflow: 'hidden',
 };
 
 const tableHeaderStyle = {
-    backgroundColor: '#4A5568',
-    color: '#fff',
+    backgroundColor: '#f8fafc',
+    color: '#475569',
 };
 
 const thStyle = {
-    padding: '12px 15px',
-    textAlign: 'right',
-    borderBottom: '1px solid #2D3748',
+    padding: '12px 16px',
+    textAlign: 'left',
+    borderBottom: '1px solid #e2e8f0',
     textTransform: 'uppercase',
-    fontSize: '12px',
+    fontSize: '11px',
+    fontWeight: '700',
 };
 
 const tableRowStyle = (index) => ({
-    backgroundColor: index % 2 === 0 ? '#575F6D' : '#4A5568',
-    borderBottom: '1px solid #2D3748',
+    backgroundColor: index % 2 === 0 ? '#ffffff' : '#f8fafc',
 });
 
 const tdStyle = {
-    padding: '12px 15px',
-    textAlign: 'right',
+    padding: '12px 16px',
+    borderBottom: '1px solid #e2e8f0',
+    color: '#334155',
+    fontSize: '14px',
 };
 
 const paginationStyle = {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: '10px',
+    gap: '12px',
     marginTop: '20px'
 };
 
 const modalOverlay = {
     position: 'fixed',
     top: 0, left: 0, right: 0, bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backdropFilter: 'blur(4px)',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
@@ -254,24 +270,28 @@ const modalOverlay = {
 };
 
 const modalBox = {
-    background: '#2D3748',
-    padding: '30px',
-    borderRadius: '5px',
+    background: '#ffffff',
+    padding: '28px',
+    borderRadius: '20px',
     width: 'clamp(400px, 50vw, 600px)',
-    color: '#fff',
-    boxShadow: '0 5px 15px rgba(0,0,0,0.3)',
+    color: '#0f172a',
+    border: '1px solid #e2e8f0',
+    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
 };
 
 const modalHeaderStyle = {
-    textAlign: 'center',
-    marginBottom: '20px',
-    fontSize: '22px',
+    textAlign: 'left',
+    marginBottom: '16px',
+    fontSize: '18px',
+    fontWeight: '800',
+    borderBottom: '1px solid #e2e8f0',
+    paddingBottom: '10px',
 };
 
 const formStyle = {
     display: 'grid',
     gridTemplateColumns: '1fr 1fr',
-    gap: '15px',
+    gap: '12px',
 };
 
 const inputGroupStyle = {
@@ -280,18 +300,20 @@ const inputGroupStyle = {
 };
 
 const labelStyle = {
-    marginBottom: '5px',
-    fontSize: '14px',
-    color: '#A0AEC0',
+    marginBottom: '4px',
+    fontSize: '12px',
+    fontWeight: '600',
+    color: '#475569',
 };
 
 const inputStyle = {
-    padding: '10px',
-    borderRadius: '5px',
-    border: '1px solid #A0AEC0',
-    backgroundColor: '#fff',
-    color: '#333',
-    fontSize: '14px',
+    padding: '8px 12px',
+    borderRadius: '8px',
+    border: '1px solid #cbd5e1',
+    backgroundColor: '#ffffff',
+    color: '#0f172a',
+    fontSize: '13px',
+    outline: 'none',
 };
 
 export default CustomerList;

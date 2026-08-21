@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FaPlus, FaShoppingCart, FaTrash } from 'react-icons/fa';
+import { FaShoppingCart, FaTrash } from 'react-icons/fa';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import toast from 'react-hot-toast';
@@ -38,9 +38,9 @@ const ProductPurchase = () => {
     const fetchInitialData = async () => {
       try {
         const suppliersData = await window.electron.ipcRenderer.invoke('get-suppliers');
-        setSuppliers(suppliersData);
+        setSuppliers(suppliersData || []);
         const generatedPurchaseId = await window.electron.ipcRenderer.invoke('generate-purchase-id');
-        setPurchaseId(generatedPurchaseId);
+        setPurchaseId(generatedPurchaseId || '');
       } catch (error) {
         console.error('Error fetching initial data:', error);
         toast.error('Failed to fetch initial data.');
@@ -95,7 +95,6 @@ const ProductPurchase = () => {
     }
   };
 
-
   const handleItemChange = (index, field, value) => {
     const updatedItems = [...purchaseItems];
     const item = updatedItems[index];
@@ -107,14 +106,13 @@ const ProductPurchase = () => {
 
     item[field] = value;
 
-    // Recalculate totals
     const quantity = parseFloat(item.quantity) || 0;
     const priceBeforeTax = parseFloat(item.priceBeforeTax) || 0;
     const tax = parseFloat(item.tax) || 0;
     const discountPercentage = parseFloat(item.discountPercentage) || 0;
 
     item.totalBeforeTax = quantity * priceBeforeTax;
-    item.price = priceBeforeTax * (1 + tax / 100); // Price with tax
+    item.price = priceBeforeTax * (1 + tax / 100);
     item.total = item.totalBeforeTax * (1 + tax / 100) * (1 - discountPercentage / 100);
 
     setPurchaseItems(updatedItems);
@@ -195,17 +193,16 @@ const ProductPurchase = () => {
         product_id: item.productId,
         quantity: item.quantity,
         tax_percentage: item.tax,
-        price: item.priceBeforeTax, // Store price before tax in DB
+        price: item.priceBeforeTax,
         discount_percentage: item.discountPercentage,
         total_before_tax: item.totalBeforeTax,
         total: item.total,
       })),
     };
-    console.log(purchaseData);
+
     try {
       await window.electron.ipcRenderer.invoke('add-purchase', purchaseData);
       toast.success('Purchase added successfully');
-      // Clear form after successful submission
       const generatedPurchaseId = await window.electron.ipcRenderer.invoke('generate-purchase-id');
       setPurchaseId(generatedPurchaseId);
       setSupplierInvoiceNo('');
@@ -220,7 +217,9 @@ const ProductPurchase = () => {
 
   return (
     <div style={cardStyle}>
-      <h2><FaShoppingCart /> Create Purchase</h2>
+      <h2 className="text-xl font-extrabold text-slate-900 flex items-center gap-2 mb-4 border-b border-slate-200 pb-3">
+        <FaShoppingCart className="text-blue-600" /> Create Stock Purchase Order
+      </h2>
       <form onSubmit={handleSubmit} style={formStyle}>
         <fieldset style={fieldsetStyle}>
           <legend style={legendStyle}>Purchase Details</legend>
@@ -235,7 +234,7 @@ const ProductPurchase = () => {
                 name="purchaseId"
                 value={purchaseId}
                 readOnly
-                style={{ ...inputStyle, backgroundColor: '#E2E8F0' }}
+                style={{ ...inputStyle, backgroundColor: '#f1f5f9' }}
               />
             </div>
             <div style={inputGroupStyle}>
@@ -247,7 +246,7 @@ const ProductPurchase = () => {
                 name="purchaseDate"
                 selected={purchaseDate}
                 dateFormat="yyyy-MM-dd"
-                customInput={<CustomDatePickerInput style={{ ...inputStyle, backgroundColor: '#E2E8F0' }} isReadOnly={true} />}
+                customInput={<CustomDatePickerInput style={{ ...inputStyle, backgroundColor: '#f1f5f9' }} isReadOnly={true} />}
               />
             </div>
             <div style={inputGroupStyle}>
@@ -299,14 +298,13 @@ const ProductPurchase = () => {
                 ))}
               </select>
             </div>
-
           </div>
         </fieldset>
 
         <fieldset style={fieldsetStyle}>
           <legend style={legendStyle}>Purchase Items</legend>
-          <div style={{ marginBottom: '20px' }}>
-            <label style={labelStyle}>Search and Add Product</label>
+          <div style={{ marginBottom: '16px' }}>
+            <label style={labelStyle}>Search & Select Product</label>
             <AsyncSelect
               key={selectKey}
               ref={selectRef}
@@ -319,7 +317,7 @@ const ProductPurchase = () => {
               styles={selectStyles}
             />
           </div>
-          <div style={tableContainerStyle}>
+          <div style={tableContainerStyle} className="rounded-xl border border-slate-200">
             <table style={tableStyle}>
               <thead style={tableHeaderStyle}>
                 <tr>
@@ -335,97 +333,92 @@ const ProductPurchase = () => {
                 </tr>
               </thead>
               <tbody>
-                {purchaseItems.map((item, index) => (
-                  <tr key={index} style={tableRowStyle(index)}>
-                    <td style={{ ...tdStyle, width: '25%' }}>
-                      {item.name}
-                    </td>
-                    <td style={{ ...tdStyle, width: '10%' }}>
-                      <input
-                        type="number"
-                        value={item.quantity}
-                        onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
-                        style={inputStyle}
-                      />
-                    </td>
-                    <td style={{ ...tdStyle, width: '12%', textAlign: 'right' }}>
-                      <input
-                        type="number"
-                        value={(item.priceBeforeTax || 0).toFixed(2)}
-                        readOnly
-                        style={{ ...inputStyle, backgroundColor: '#E2E8F0', textAlign: 'right' }}
-                      />
-                    </td>
-                    <td style={{ ...tdStyle, width: '8%' }}>
-                      <input
-                        type="number"
-                        value={item.tax}
-                        onChange={(e) => handleItemChange(index, 'tax', e.target.value)}
-                        style={inputStyle}
-                      />
-                    </td>
-                    <td style={{ ...tdStyle, width: '10%', textAlign: 'right' }}>
-                      <input
-                        type="number"
-                        value={(item.price || 0).toFixed(2)}
-                        readOnly
-                        style={{ ...inputStyle, backgroundColor: '#E2E8F0', textAlign: 'right' }}
-                      />
-                    </td>
-                    <td style={{ ...tdStyle, width: '10%' }}>
-                      <input
-                        type="number"
-                        value={item.discountPercentage}
-                        onChange={(e) => handleItemChange(index, 'discountPercentage', e.target.value)}
-                        style={inputStyle}
-                      />
-                    </td>
-                    <td style={{ ...tdStyle, width: '12%', textAlign: 'right' }}>
-                      {(item.totalBeforeTax || 0).toFixed(2)}
-                    </td>
-                    <td style={{ ...tdStyle, width: '10%', textAlign: 'right' }}>
-                      {(item.total || 0).toFixed(2)}
-                    </td>
-                    <td style={{ ...tdStyle, width: '3%' }}>
-                      <button type="button" onClick={() => removeItem(index)} className="action-button">
-                        <FaTrash />
-                      </button>
-                    </td>
+                {purchaseItems.length === 0 ? (
+                  <tr>
+                    <td colSpan="9" className="p-8 text-center text-slate-400 text-sm">Select products above to add items to purchase order.</td>
                   </tr>
-                ))}
+                ) : (
+                  purchaseItems.map((item, index) => (
+                    <tr key={index} style={tableRowStyle(index)}>
+                      <td style={{ ...tdStyle, width: '25%', fontWeight: '700', color: '#0f172a' }}>
+                        {item.name}
+                      </td>
+                      <td style={{ ...tdStyle, width: '10%' }}>
+                        <input
+                          type="number"
+                          value={item.quantity}
+                          onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
+                          style={qtyInputStyle}
+                        />
+                      </td>
+                      <td style={{ ...tdStyle, width: '12%', textAlign: 'right' }}>
+                        ৳{(item.priceBeforeTax || 0).toFixed(2)}
+                      </td>
+                      <td style={{ ...tdStyle, width: '8%' }}>
+                        <input
+                          type="number"
+                          value={item.tax}
+                          onChange={(e) => handleItemChange(index, 'tax', e.target.value)}
+                          style={qtyInputStyle}
+                        />
+                      </td>
+                      <td style={{ ...tdStyle, width: '10%', textAlign: 'right' }}>
+                        ৳{(item.price || 0).toFixed(2)}
+                      </td>
+                      <td style={{ ...tdStyle, width: '10%' }}>
+                        <input
+                          type="number"
+                          value={item.discountPercentage}
+                          onChange={(e) => handleItemChange(index, 'discountPercentage', e.target.value)}
+                          style={qtyInputStyle}
+                        />
+                      </td>
+                      <td style={{ ...tdStyle, width: '12%', textAlign: 'right' }}>
+                        ৳{(item.totalBeforeTax || 0).toFixed(2)}
+                      </td>
+                      <td style={{ ...tdStyle, width: '10%', textAlign: 'right', fontWeight: '700', color: '#2563eb' }}>
+                        ৳{(item.total || 0).toFixed(2)}
+                      </td>
+                      <td style={{ ...tdStyle, width: '3%' }}>
+                        <button type="button" onClick={() => removeItem(index)} className="p-1.5 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 transition-colors">
+                          <FaTrash />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
         </fieldset>
 
         <fieldset style={fieldsetStyle}>
-          <legend style={legendStyle}>Summary</legend>
+          <legend style={legendStyle}>Financial Summary</legend>
           <div style={summaryGridStyle}>
             <div style={summaryItemStyle}>
               <span style={summaryLabelStyle}>Total Before Tax:</span>
-              <span style={summaryValueStyle}>{(calculateTotalBeforeTax() || 0).toFixed(2)}</span>
+              <span style={summaryValueStyle}>৳{(calculateTotalBeforeTax() || 0).toFixed(2)}</span>
             </div>
             <div style={summaryItemStyle}>
               <span style={summaryLabelStyle}>Total Tax:</span>
-              <span style={summaryValueStyle}>{(calculateTotalTax() || 0).toFixed(2)}</span>
+              <span style={summaryValueStyle}>৳{(calculateTotalTax() || 0).toFixed(2)}</span>
             </div>
             <div style={summaryItemStyle}>
               <span style={summaryLabelStyle}>Total Discount:</span>
-              <span style={summaryValueStyle}>{(calculateTotalDiscount() || 0).toFixed(2)}</span>
+              <span style={summaryValueStyle}>৳{(calculateTotalDiscount() || 0).toFixed(2)}</span>
             </div>
             <div style={summaryItemStyle}>
               <span style={summaryLabelStyle}>Grand Total:</span>
-              <span style={summaryValueStyle}>{(calculateGrandTotal() || 0).toFixed(2)}</span>
+              <span style={{ ...summaryValueStyle, color: '#2563eb', fontWeight: 'bold' }}>৳{(calculateGrandTotal() || 0).toFixed(2)}</span>
             </div>
           </div>
         </fieldset>
 
         <button
           type="submit"
-          // style={{ ...buttonStyle, gridColumn: '1 / -1' }}
-          className="default-button"
+          className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm shadow-md transition-all mt-2"
         >
-          Save Purchase
+          Save Purchase Order
         </button>
       </form>
     </div>
@@ -433,10 +426,12 @@ const ProductPurchase = () => {
 };
 
 const cardStyle = {
-  background: '#2D3748',
-  padding: '20px',
-  borderRadius: '4px',
-  color: '#fff'
+  background: '#ffffff',
+  padding: '24px',
+  borderRadius: '16px',
+  border: '1px solid #e2e8f0',
+  color: '#0f172a',
+  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
 };
 
 const formStyle = {
@@ -446,24 +441,25 @@ const formStyle = {
 };
 
 const fieldsetStyle = {
-  border: '1px solid #4A5568',
-  borderRadius: '8px',
+  border: '1px solid #e2e8f0',
+  borderRadius: '12px',
   padding: '20px',
   margin: '0',
+  backgroundColor: '#f8fafc',
 };
 
 const legendStyle = {
   padding: '0 10px',
-  color: '#E2E8F0',
-  fontWeight: 'bold',
-  fontSize: '18px',
+  color: '#0f172a',
+  fontWeight: '800',
+  fontSize: '15px',
   marginLeft: '10px',
 };
 
 const detailsGridStyle = {
   display: 'grid',
   gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-  gap: '20px',
+  gap: '16px',
 };
 
 const inputGroupStyle = {
@@ -472,103 +468,122 @@ const inputGroupStyle = {
 };
 
 const labelStyle = {
-  marginBottom: '8px',
-  fontSize: '14px',
-  color: '#A0AEC0',
+  marginBottom: '6px',
+  fontSize: '13px',
+  fontWeight: '600',
+  color: '#475569',
 };
 
 const inputStyle = {
   width: '100%',
-  padding: '12px',
-  borderRadius: '4px',
-  border: '1px solid #A0AEC0',
-  backgroundColor: '#fff',
-  color: '#333',
+  padding: '10px 12px',
+  borderRadius: '10px',
+  border: '1px solid #cbd5e1',
+  backgroundColor: '#ffffff',
+  color: '#0f172a',
   fontSize: '14px',
   boxSizing: 'border-box',
+  outline: 'none',
 };
 
-
+const qtyInputStyle = {
+  width: '65px',
+  padding: '6px',
+  borderRadius: '8px',
+  border: '1px solid #cbd5e1',
+  backgroundColor: '#ffffff',
+  color: '#0f172a',
+  fontSize: '13px',
+  outline: 'none',
+};
 
 const tableContainerStyle = {
   overflowX: 'auto',
-  marginTop: '20px',
+  marginTop: '16px',
 };
 
 const tableStyle = {
   width: '100%',
   borderCollapse: 'collapse',
-  borderRadius: '8px',
-  overflow: 'hidden',
 };
 
 const tableHeaderStyle = {
-  backgroundColor: '#4A5568',
-  color: '#fff',
+  backgroundColor: '#ffffff',
+  color: '#475569',
 };
 
 const thStyle = {
-  padding: '12px 15px',
+  padding: '12px 16px',
   textAlign: 'left',
   textTransform: 'uppercase',
-  fontSize: '12px',
-  borderBottom: '1px solid #2D3748',
+  fontSize: '11px',
+  fontWeight: '700',
+  borderBottom: '1px solid #e2e8f0',
 };
 
 const tableRowStyle = (index) => ({
-  backgroundColor: index % 2 === 0 ? '#575F6D' : '#4A5568',
-  borderBottom: '1px solid #2D3748',
+  backgroundColor: index % 2 === 0 ? '#ffffff' : '#f8fafc',
 });
 
 const tdStyle = {
-  padding: '12px 15px',
+  padding: '12px 16px',
   textAlign: 'left',
   whiteSpace: 'nowrap',
+  borderBottom: '1px solid #e2e8f0',
+  color: '#334155',
+  fontSize: '14px',
 };
 
 const summaryGridStyle = {
   display: 'grid',
   gridTemplateColumns: '1fr 1fr',
-  gap: '10px',
-  marginTop: '20px',
+  gap: '12px',
 };
 
 const summaryItemStyle = {
   display: 'flex',
   justifyContent: 'space-between',
-  padding: '5px 0',
-  borderBottom: '1px dashed #4A5568',
+  padding: '8px 0',
+  borderBottom: '1px dashed #cbd5e1',
 };
 
 const summaryLabelStyle = {
   fontWeight: 'bold',
-  color: '#A0AEC0',
+  color: '#475569',
+  fontSize: '14px',
 };
 
 const summaryValueStyle = {
-  color: '#E2E8F0',
+  color: '#0f172a',
+  fontSize: '14px',
 };
 
 const selectStyles = {
   control: (provided) => ({
     ...provided,
-    backgroundColor: '#fff',
-    color: '#333',
-    border: '1px solid #A0AEC0',
+    backgroundColor: '#ffffff',
+    color: '#0f172a',
+    border: '1px solid #cbd5e1',
+    borderRadius: '10px',
+    fontSize: '13px',
   }),
   menu: (provided) => ({
     ...provided,
-    backgroundColor: '#fff',
-    color: '#333',
+    backgroundColor: '#ffffff',
+    color: '#0f172a',
+    borderRadius: '10px',
+    border: '1px solid #cbd5e1',
   }),
   option: (provided, state) => ({
     ...provided,
-    backgroundColor: state.isSelected ? '#27ae60' : state.isFocused ? '#f0f0f0' : '#fff',
-    color: state.isSelected ? '#fff' : '#333',
+    backgroundColor: state.isSelected ? '#2563eb' : state.isFocused ? '#f1f5f9' : '#ffffff',
+    color: state.isSelected ? '#ffffff' : '#0f172a',
+    fontSize: '13px',
   }),
   singleValue: (provided) => ({
     ...provided,
-    color: '#333',
+    color: '#0f172a',
+    fontSize: '13px',
   }),
 };
 
