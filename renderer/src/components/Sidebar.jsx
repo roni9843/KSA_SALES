@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
     FaHome, FaFolder, FaBox, FaFileInvoice, FaUsers, FaTruck,
     FaChartBar, FaPercent, FaCog, FaShoppingCart, FaBoxes,
-    FaChevronDown, FaChevronRight, FaSignOutAlt, FaUserCheck, FaStore, FaShieldAlt, FaMoneyBillWave, FaWarehouse, FaBook, FaUserTie, FaIndustry, FaTasks, FaCode
+    FaChevronDown, FaChevronRight, FaSignOutAlt, FaUserCheck, FaStore, FaShieldAlt, FaMoneyBillWave, FaWarehouse, FaBook, FaUserTie, FaIndustry, FaTasks, FaCode, FaClipboardList, FaSitemap, FaCalendarAlt
 } from 'react-icons/fa';
 
 import { useAuthStore } from '../store/authStore';
@@ -23,7 +23,8 @@ const Sidebar = () => {
         navigate('/login');
     };
 
-    // Organized Sectioned Menu Structure for Ultra-Professional POS
+    const userPermissions = user?.permissions || [];
+
     const menuSections = [
         {
             title: 'MAIN MENU',
@@ -121,24 +122,55 @@ const Sidebar = () => {
             ]
         },
         {
-            title: 'FINANCIAL & ACCOUNTING',
+            title: 'FINANCE & TREASURIES',
             items: [
-                { path: '/accounting', label: 'Chart of Accounts & Cheques', icon: <FaBook />, permission: 'page:view:reporting' },
-                { path: '/cash-flow', label: 'Cash Flow & Register', icon: <FaMoneyBillWave />, permission: 'page:view:reporting' }
+                {
+                    label: 'Finance & Treasuries',
+                    icon: <FaMoneyBillWave />,
+                    permission: 'page:view:reporting',
+                    subItems: [
+                        { path: '/finance', label: 'Expenses & Incomes' },
+                        { path: '/finance', label: 'Treasuries & Bank Accounts' },
+                        { path: '/finance', label: 'Employee Custody' }
+                    ]
+                }
             ]
         },
         {
-            title: 'HUMAN RESOURCES (HR)',
+            title: 'ACCOUNTING & JOURNAL',
             items: [
                 {
-                    label: 'HR & Payroll Engine',
+                    label: 'Double-Entry Accounting',
+                    icon: <FaBook />,
+                    permission: 'page:view:reporting',
+                    subItems: [
+                        { path: '/accounting', label: 'Chart of Accounts & Cheques' },
+                        { path: '/accounting', label: 'Journal Entries & Postings' },
+                        { path: '/cash-flow', label: 'Cash Flow & Register' }
+                    ]
+                }
+            ]
+        },
+        {
+            title: 'REQUESTS & REQUISITIONS',
+            items: [
+                { path: '/requests', label: 'Manage Requests & Approvals', icon: <FaClipboardList />, permission: 'page:view:dashboard' }
+            ]
+        },
+        {
+            title: 'HUMAN RESOURCES & STRUCTURE',
+            items: [
+                {
+                    label: 'HR & Directory',
                     icon: <FaUserTie />,
                     permission: 'page:view:dashboard',
                     subItems: [
                         { path: '/employees', label: 'Employee Directory & Expiry' },
-                        { path: '/payroll', label: 'Payroll Run & WPS Export' },
+                        { path: '/payroll', label: 'Payroll Run & WPS Export' }
                     ]
-                }
+                },
+                { path: '/org-structure', label: 'Organizational Structure', icon: <FaSitemap />, permission: 'page:view:dashboard' },
+                { path: '/attendance', label: 'Attendance & Leaves', icon: <FaCalendarAlt />, permission: 'page:view:dashboard' }
             ]
         },
         {
@@ -149,42 +181,28 @@ const Sidebar = () => {
                     icon: <FaChartBar />,
                     permission: 'page:view:reporting',
                     subItems: [
-                        { path: '/product-sales-report', label: 'Product Sales Report' },
-                        { path: '/product-transaction', label: 'Inventory Log' },
+                        { path: '/reporting', label: 'Sales & Tax Summary' },
+                        { path: '/product-sales-report', label: 'Product Sales Analysis' },
+                        { path: '/product-transaction', label: 'Product Activity Register' },
                     ]
                 }
+            ]
+        },
+        {
+            title: 'ADMINISTRATION & API',
+            items: [
+                { path: '/system-settings', label: 'System Sequences & Tax', icon: <FaCog />, permission: 'manage:users' },
+                { path: '/developer-api', label: 'Developer API & Webhooks', icon: <FaCode />, permission: 'manage:users' },
+                { path: '/manage-merchants', label: 'SaaS Store Control', icon: <FaStore />, permission: 'manage:users' },
+                { path: '/manage-users', label: 'Staff Users & Roles', icon: <FaUserCheck />, permission: 'manage:users' },
+                { path: '/general-setting', label: 'General Receipt Settings', icon: <FaCog />, permission: 'manage:users' },
+                { path: '/database-backup', label: 'Database Backup & Restore', icon: <FaCog />, permission: 'manage:users' }
             ]
         }
     ];
 
-    const userPermissions = user?.permissions || [];
-
-    // Add Administration Settings Section
-    if (user && (userPermissions.includes('*') || userPermissions.includes('manage:users'))) {
-        menuSections.push({
-            title: 'ADMINISTRATION',
-            items: [
-                {
-                    label: 'Settings & Security',
-                    icon: <FaCog />,
-                    permission: 'manage:users',
-                    subItems: [
-                        { path: '/developer-api', label: 'Developer API & Webhooks' },
-                        { path: '/system-settings', label: 'System Sequences & VAT' },
-                        { path: '/manage-merchants', label: 'Store SaaS Management' },
-                        { path: '/manage-roles', label: 'Role & Permissions' },
-                        { path: '/manage-users', label: 'Staff Users' },
-                        { path: '/general-setting', label: 'General Setting' },
-                        { path: '/database-backup', label: 'Database Backup' },
-                    ]
-                }
-            ]
-        });
-    }
-
     return (
         <div className="flex flex-col h-full bg-white border-r border-slate-200 text-slate-700 font-['Plus_Jakarta_Sans',sans-serif] select-none">
-            {/* Sidebar Search/Quick Status Header */}
             <div className="p-3 pb-1 border-b border-slate-100">
                 <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-600">
                     <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -192,7 +210,6 @@ const Sidebar = () => {
                 </div>
             </div>
 
-            {/* Menu List */}
             <div className="flex-1 overflow-y-auto px-3 py-3 space-y-4">
                 {menuSections.map((section, idx) => {
                     const filteredItems = section.items.filter(item =>
@@ -219,39 +236,33 @@ const Sidebar = () => {
                                                 <div>
                                                     <button
                                                         onClick={() => handleMenuClick(item.label)}
-                                                        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 group ${
-                                                            isParentActive
-                                                                ? 'bg-blue-50 text-blue-700 shadow-sm border border-blue-200/60'
-                                                                : 'text-slate-700 hover:bg-slate-50 hover:text-blue-700'
+                                                        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all ${
+                                                            isParentActive 
+                                                                ? 'bg-blue-50 text-blue-700' 
+                                                                : 'text-slate-700 hover:bg-slate-50 hover:text-blue-600'
                                                         }`}
                                                     >
                                                         <div className="flex items-center gap-2.5">
-                                                            <div className={`h-7 w-7 rounded-lg flex items-center justify-center text-xs transition-colors ${
-                                                                isParentActive
-                                                                    ? 'bg-blue-600 text-white shadow-sm shadow-blue-500/30'
-                                                                    : 'bg-slate-100 text-slate-500 group-hover:bg-blue-100 group-hover:text-blue-600'
-                                                            }`}>
-                                                                {item.icon}
-                                                            </div>
+                                                            <span className="text-sm text-slate-500">{item.icon}</span>
                                                             <span>{item.label}</span>
                                                         </div>
-                                                        <span className="text-[10px] text-slate-400 group-hover:text-blue-600">
+                                                        <span className="text-[10px] text-slate-400">
                                                             {isOpen ? <FaChevronDown /> : <FaChevronRight />}
                                                         </span>
                                                     </button>
 
                                                     {isOpen && (
-                                                        <div className="ml-5 pl-3 border-l-2 border-blue-500/30 mt-1.5 space-y-1 py-0.5">
+                                                        <div className="ml-5 pl-2 border-l-2 border-slate-100 mt-1 space-y-1">
                                                             {item.subItems.map(subItem => {
                                                                 const isSubActive = location.pathname === subItem.path;
                                                                 return (
                                                                     <Link
-                                                                        key={subItem.path}
+                                                                        key={subItem.path + subItem.label}
                                                                         to={subItem.path}
-                                                                        className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+                                                                        className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                                                                             isSubActive
-                                                                                ? 'bg-blue-600 text-white font-extrabold shadow-md shadow-blue-600/20'
-                                                                                : 'text-slate-600 hover:text-blue-700 hover:bg-blue-50/80'
+                                                                                ? 'bg-blue-600 text-white font-bold shadow-sm'
+                                                                                : 'text-slate-600 hover:text-blue-600 hover:bg-slate-50'
                                                                         }`}
                                                                     >
                                                                         <span className={`h-1.5 w-1.5 rounded-full ${isSubActive ? 'bg-white' : 'bg-slate-300'}`}></span>
@@ -265,19 +276,13 @@ const Sidebar = () => {
                                             ) : (
                                                 <Link
                                                     to={item.path}
-                                                    className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 group ${
+                                                    className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold transition-all ${
                                                         isSelfActive
-                                                            ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-600/25'
-                                                            : 'text-slate-700 hover:bg-slate-50 hover:text-blue-700'
+                                                            ? 'bg-blue-600 text-white shadow-sm'
+                                                            : 'text-slate-700 hover:bg-slate-50 hover:text-blue-600'
                                                     }`}
                                                 >
-                                                    <div className={`h-7 w-7 rounded-lg flex items-center justify-center text-xs transition-colors ${
-                                                        isSelfActive
-                                                            ? 'bg-white/20 text-white'
-                                                            : 'bg-slate-100 text-slate-500 group-hover:bg-blue-100 group-hover:text-blue-600'
-                                                    }`}>
-                                                        {item.icon}
-                                                    </div>
+                                                    <span className={`text-sm ${isSelfActive ? 'text-white' : 'text-slate-500'}`}>{item.icon}</span>
                                                     <span>{item.label}</span>
                                                 </Link>
                                             )}
@@ -290,16 +295,15 @@ const Sidebar = () => {
                 })}
             </div>
 
-            {/* Merchant User Footer Card */}
             {user && (
-                <div className="p-3 border-t border-slate-200 bg-slate-50/80 m-2 rounded-2xl border">
+                <div className="p-3 border-t border-slate-100 bg-slate-50/50 m-2 rounded-2xl">
                     {user.merchant && (
-                        <div className="flex items-center justify-between mb-2 pb-2 border-b border-slate-200">
+                        <div className="flex items-center justify-between mb-2 pb-2 border-b border-slate-200/60">
                             <div className="flex items-center gap-2 overflow-hidden">
-                                <div className="h-6 w-6 rounded-md bg-blue-100 flex items-center justify-center text-blue-700 text-xs shrink-0 font-bold">
+                                <div className="h-6 w-6 rounded-md bg-blue-100 flex items-center justify-center text-blue-600 text-xs shrink-0 font-bold">
                                     <FaStore />
                                 </div>
-                                <div className="text-xs font-extrabold text-slate-900 truncate">
+                                <div className="text-xs font-extrabold text-slate-800 truncate">
                                     {user.merchant.shopName}
                                 </div>
                             </div>
@@ -311,13 +315,13 @@ const Sidebar = () => {
 
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2 overflow-hidden">
-                            <div className="h-8 w-8 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white text-xs font-bold shrink-0 shadow-sm shadow-blue-500/20">
+                            <div className="h-8 w-8 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white text-xs font-bold shrink-0 shadow-sm">
                                 <FaUserCheck />
                             </div>
                             <div className="truncate">
-                                <div className="text-xs font-extrabold text-slate-900 truncate">{user.username}</div>
+                                <div className="text-xs font-extrabold text-slate-800 truncate">{user.username}</div>
                                 <div className="text-[10px] text-blue-600 font-semibold flex items-center gap-1">
-                                    <FaShieldAlt className="text-[9px]" /> Staff Cashier
+                                    <FaShieldAlt className="text-[9px]" /> Staff Member
                                 </div>
                             </div>
                         </div>

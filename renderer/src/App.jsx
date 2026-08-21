@@ -50,6 +50,10 @@ import ManufacturingManager from './components/ManufacturingManager';
 import TaskManager from './components/TaskManager';
 import SettingsManager from './components/SettingsManager';
 import DeveloperApiManager from './components/DeveloperApiManager';
+import FinanceManager from './components/FinanceManager';
+import RequestsManager from './components/RequestsManager';
+import OrgStructureManager from './components/OrgStructureManager';
+import AttendanceManager from './components/AttendanceManager';
 
 import MerchantRegister from './pages/MerchantRegister';
 import MerchantManagement from './pages/MerchantManagement';
@@ -92,6 +96,10 @@ function App() {
                 <Route path="/tasks-operations" element={<TaskManager />} />
                 <Route path="/system-settings" element={<SettingsManager />} />
                 <Route path="/developer-api" element={<DeveloperApiManager />} />
+                <Route path="/finance" element={<FinanceManager />} />
+                <Route path="/requests" element={<RequestsManager />} />
+                <Route path="/org-structure" element={<OrgStructureManager />} />
+                <Route path="/attendance" element={<AttendanceManager />} />
                 <Route path="/reporting" element={<Reporting />} />
                 <Route path="/product-sales-report" element={<ProductSalesReport />} />
                 <Route path="/product-transaction" element={<ProductTransaction />} />
@@ -100,14 +108,13 @@ function App() {
                 <Route path="/my-company" element={<MyCompany />} />
                 <Route path="/product-purchase" element={<ProductPurchase />} />
                 <Route path="/purchase-list" element={<PurchaseList />} />
+                <Route path="/stock-adjust" element={<StockAdjust />} />
+                <Route path="/stock-adjustment-list" element={<StockAdjustmentList />} />
+                <Route path="/general-setting" element={<GeneralSetting />} />
                 <Route path="/manage-roles" element={<RoleManagement />} />
                 <Route path="/manage-users" element={<UserManagement />} />
                 <Route path="/manage-merchants" element={<MerchantManagement />} />
-                <Route path="/general-setting" element={<GeneralSetting />} />
-                <Route path="/stock-adjust" element={<StockAdjust />} />
-                <Route path="/stock-adjustment-list" element={<StockAdjustmentList />} />
                 <Route path="/database-backup" element={<DatabaseBackup />} />
-                <Route path="*" element={<p>404 Not Found</p>} />
               </Routes>
             </Layout>
           } />
