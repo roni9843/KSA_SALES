@@ -2,8 +2,10 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AsyncSelect from 'react-select/async';
 import toast from 'react-hot-toast';
-import { FaTrash, FaPlus, FaMoneyBillWave, FaCreditCard, FaUniversity, FaFileInvoice, FaSave } from 'react-icons/fa';
+import { FaTrash, FaPlus, FaMoneyBillWave, FaCreditCard, FaUniversity, FaFileInvoice, FaSave, FaCashRegister, FaPrint } from 'react-icons/fa';
 import AddCustomer from '../components/AddCustomer';
+import PosShiftModal from '../components/PosShiftModal';
+import InvoicePrintModal from '../components/InvoicePrintModal';
 
 const CreateInvoice = () => {
     const navigate = useNavigate();
@@ -14,13 +16,31 @@ const CreateInvoice = () => {
     const [paidByCard, setPaidByCard] = useState('');
     const [paidByBank, setPaidByBank] = useState('');
     const [invoiceItems, setInvoiceItems] = useState([]);
+    
+    // Modals state
     const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
+    const [isShiftModalOpen, setIsShiftModalOpen] = useState(false);
+    const [createdInvoiceToPrint, setCreatedInvoiceToPrint] = useState(null);
+    const [activeShift, setActiveShift] = useState(null);
+    
     const [selectKey, setSelectKey] = useState(0);
     const [loading, setLoading] = useState(false);
     const selectRef = useRef(null);
 
+    const checkShift = async () => {
+        try {
+            const res = await fetch('http://localhost:5000/api/pos-shifts/current', {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            });
+            const data = await res.json();
+            if (data.success) setActiveShift(data.shift);
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
     useEffect(() => {
-        // Any initial load logic if needed
+        checkShift();
     }, []);
 
     const loadProductOptions = async (inputValue) => {
@@ -29,12 +49,11 @@ const CreateInvoice = () => {
             const results = await window.electron.ipcRenderer.invoke('search-products-for-invoice', inputValue);
             return results.map(p => ({
                 value: p.id,
-                label: `${p.name} - ৳${p.sale_price} (Stock: ${p.quantity_in_stock})`,
+                label: `${p.name} - ${p.sale_price} SAR (Stock: ${p.quantity_in_stock})`,
                 product: p
             }));
         } catch (error) {
             console.error('Error searching products:', error);
-            toast.error('Failed to search products.');
             return [];
         }
     };
@@ -50,7 +69,6 @@ const CreateInvoice = () => {
             }));
         } catch (error) {
             console.error('Error searching customers:', error);
-            toast.error('Failed to search customers.');
             return [];
         }
     };
@@ -121,7 +139,7 @@ const CreateInvoice = () => {
     const due = total - paid;
     const change = paid > total ? paid - total : 0;
 
-    const buildInvoicePayload = (statusType = 'draft') => ({
+    const buildInvoicePayload = (statusType = 'final') => ({
         customer_id: customer ? customer.id : null,
         invoice_date: invoiceDate,
         sub_total: subtotal,
@@ -147,57 +165,66 @@ const CreateInvoice = () => {
         }))
     });
 
-    const handleSaveDraft = async () => {
+    const handleCreateFinalInvoice = async () => {
         if (invoiceItems.length === 0) {
-            toast.error('Please add products to save draft.');
-            return;
+            return toast.error('Please add products to checkout.');
         }
 
         setLoading(true);
         try {
-            const invoiceData = buildInvoicePayload('draft');
-            const newId = await window.electron.ipcRenderer.invoke('create-invoice', invoiceData);
-            toast.success('Draft Invoice Saved Successfully!');
-            navigate(`/invoice/${newId}`);
+            const invoiceData = buildInvoicePayload('final');
+            const res = await fetch('http://localhost:5000/api/invoices', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify(invoiceData)
+            });
+            const data = await res.json();
+            if (data.success) {
+                toast.success('ZATCA Tax Invoice Generated Successfully!');
+                setCreatedInvoiceToPrint(data.invoice || {
+                    invoiceId: 'INV-' + Date.now(),
+                    invoiceDate,
+                    customer,
+                    items: invoiceItems,
+                    subTotal: subtotal,
+                    itemTax,
+                    payableTotal: total,
+                    zatcaQrCode: data.invoice?.zatcaQrCode
+                });
+            } else {
+                toast.error(data.message || 'Failed to create invoice');
+            }
         } catch (error) {
-            console.error('Error saving draft invoice:', error);
-            toast.error('Failed to save draft invoice.');
+            console.error('Error creating invoice:', error);
+            toast.error('Failed to checkout invoice.');
         } finally {
             setLoading(false);
         }
     };
 
-    const handleQuotation = () => {
-        if (invoiceItems.length === 0) {
-            toast.error('Please add products to the quotation.');
-            return;
-        }
-
-        const quotationData = {
-            customer: customer,
-            items: invoiceItems,
-            subtotal: subtotal,
-            itemDiscount: itemDiscount,
-            itemTax: itemTax,
-            cartDiscount: parseFloat(cartDiscount || 0),
-            total: total,
-            date: invoiceDate,
-        };
-
-        navigate('/quotation', { state: { quotation: quotationData } });
-    };
-
-    const handleCustomerAdded = () => {
-        setIsCustomerModalOpen(false);
-        toast.success('Customer added successfully!');
-    };
-
     return (
         <div style={formContainer}>
+            {/* Shift Status Header Banner */}
+            <div className="w-full bg-slate-900 text-white p-3 rounded-xl flex justify-between items-center mb-2 col-span-2">
+                <div className="flex items-center gap-3">
+                    <FaCashRegister className="text-xl text-blue-400" />
+                    <div>
+                        <span className="text-xs font-semibold text-slate-300">POS Cashier Counter Shift:</span>
+                        <h4 className="text-sm font-extrabold">{activeShift ? `Active Shift (${activeShift.shiftNumber}) - Opening Float: ${activeShift.openingFloat} SAR` : 'No Active Shift Opened'}</h4>
+                    </div>
+                </div>
+                <button onClick={() => setIsShiftModalOpen(true)} className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-xs">
+                    {activeShift ? 'Manage / Close Shift' : 'Open Shift Drawer'}
+                </button>
+            </div>
+
             {/* Left Column: Product Selection & Cart Items */}
             <div style={leftCol}>
                 <h2 className="text-xl font-extrabold text-slate-900 flex items-center gap-2 mb-4 border-b border-slate-200 pb-3">
-                    <FaFileInvoice className="text-blue-600" /> Create POS Invoice
+                    <FaFileInvoice className="text-blue-600" /> Create POS Tax Invoice
                 </h2>
                 <AsyncSelect
                     key={selectKey}
@@ -219,7 +246,7 @@ const CreateInvoice = () => {
                                 <th style={thStyle}>Qty</th>
                                 <th style={thStyle}>Price</th>
                                 <th style={thStyle}>Tax (%)</th>
-                                <th style={thStyle}>Discount (৳)</th>
+                                <th style={thStyle}>Discount (SAR)</th>
                                 <th style={thStyle}>Total</th>
                                 <th style={{ ...thStyle, textAlign: 'center' }}>Action</th>
                             </tr>
@@ -242,7 +269,7 @@ const CreateInvoice = () => {
                                                 min="1"
                                             />
                                         </td>
-                                        <td style={tdStyle}>৳{i.sale_price.toFixed(2)}</td>
+                                        <td style={tdStyle}>{i.sale_price.toFixed(2)} SAR</td>
                                         <td style={tdStyle}>
                                             <input
                                                 type="number"
@@ -259,7 +286,7 @@ const CreateInvoice = () => {
                                                 style={qtyInputStyle}
                                             />
                                         </td>
-                                        <td style={{ ...tdStyle, fontWeight: '700', color: '#2563eb' }}>৳{i.total_price.toFixed(2)}</td>
+                                        <td style={{ ...tdStyle, fontWeight: '700', color: '#2563eb' }}>{i.total_price.toFixed(2)} SAR</td>
                                         <td style={{ ...tdStyle, textAlign: 'center' }}>
                                             <button onClick={() => removeItem(i.id)} className="p-1.5 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 transition-colors">
                                                 <FaTrash />
@@ -306,12 +333,12 @@ const CreateInvoice = () => {
                     </div>
 
                     <div>
-                        <label style={labelStyle}>Cart Discount (৳)</label>
+                        <label style={labelStyle}>Cart Discount (SAR)</label>
                         <input type="number" placeholder="0.00" value={cartDiscount} onChange={(e) => setCartDiscount(e.target.value)} style={inputStyle} />
                     </div>
 
                     <div className="pt-2">
-                        <label style={labelStyle}>Payment Breakdown</label>
+                        <label style={labelStyle}>Split Payment Breakdown</label>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
                             <div style={paymentGroupStyle}>
                                 <label style={paymentLabelStyle}><FaMoneyBillWave className="text-emerald-600" /> Cash</label>
@@ -332,64 +359,53 @@ const CreateInvoice = () => {
                 <hr className="border-slate-200 my-4" />
                 <div style={summaryRow} className="text-sm font-semibold text-slate-600">
                     <span>Subtotal</span>
-                    <span>৳{subtotal.toFixed(2)}</span>
+                    <span>{subtotal.toFixed(2)} SAR</span>
                 </div>
                 <div style={summaryRow} className="text-sm font-semibold text-slate-600">
-                    <span>Item Discount</span>
-                    <span>৳{itemDiscount.toFixed(2)}</span>
-                </div>
-                <div style={summaryRow} className="text-sm font-semibold text-slate-600">
-                    <span>Tax Total</span>
-                    <span>৳{itemTax.toFixed(2)}</span>
+                    <span>VAT Total (15%)</span>
+                    <span>{itemTax.toFixed(2)} SAR</span>
                 </div>
                 <div style={summaryRow} className="text-sm font-semibold text-slate-600">
                     <span>Cart Discount</span>
-                    <span>৳{cartDiscount || '0.00'}</span>
+                    <span>{cartDiscount || '0.00'} SAR</span>
                 </div>
                 <hr className="border-slate-200 my-3" />
                 <div style={summaryRow} className="text-base font-extrabold text-slate-900">
                     <span>Payable Total</span>
-                    <span className="text-blue-600">৳{total.toFixed(2)}</span>
+                    <span className="text-blue-600">{total.toFixed(2)} SAR</span>
                 </div>
-                {change > 0 && (
-                    <div style={summaryRow} className="text-sm font-bold text-emerald-600">
-                        <span>Change</span>
-                        <span>৳{change.toFixed(2)}</span>
-                    </div>
-                )}
-                {due > 0 && (
-                    <div style={summaryRow} className="text-sm font-bold text-rose-600">
-                        <span>Due Amount</span>
-                        <span>৳{due.toFixed(2)}</span>
-                    </div>
-                )}
 
                 <div className="flex flex-col gap-2 mt-5">
-                    <button disabled={loading} className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm shadow-md transition-all flex items-center justify-center gap-2" onClick={handleSaveDraft}>
-                        <FaSave /> Save & Draft Invoice
-                    </button>
-                    <button disabled={loading} className="w-full py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded-xl text-sm transition-all" onClick={handleQuotation}>
-                        Print Quotation
+                    <button disabled={loading} className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm shadow-md transition-all flex items-center justify-center gap-2" onClick={handleCreateFinalInvoice}>
+                        <FaFileInvoice /> Complete POS Invoice & Print ZATCA QR
                     </button>
                 </div>
             </div>
 
-            {/* Add Customer Modal */}
+            {/* Modals */}
             {isCustomerModalOpen && (
                 <div style={modalOverlay}>
                     <div style={modalBox}>
-                        <AddCustomer onAdded={handleCustomerAdded} />
+                        <AddCustomer onAdded={() => setIsCustomerModalOpen(false)} />
                         <button onClick={() => setIsCustomerModalOpen(false)} style={{ ...closeButtonStyle, position: 'absolute', top: '15px', right: '15px' }}>✕</button>
                     </div>
                 </div>
+            )}
+
+            {isShiftModalOpen && (
+                <PosShiftModal isOpen={isShiftModalOpen} onClose={() => setIsShiftModalOpen(false)} onShiftUpdated={setActiveShift} />
+            )}
+
+            {createdInvoiceToPrint && (
+                <InvoicePrintModal invoice={createdInvoiceToPrint} onClose={() => setCreatedInvoiceToPrint(null)} />
             )}
         </div>
     );
 };
 
 const formContainer = {
-    display: 'flex',
-    justifyContent: 'space-between',
+    display: 'grid',
+    gridTemplateColumns: '2fr 1fr',
     gap: '24px',
     background: '#ffffff',
     color: '#0f172a',
@@ -399,9 +415,8 @@ const formContainer = {
     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
 };
 
-const leftCol = { flex: 2 };
+const leftCol = {};
 const rightCol = {
-    flex: 1,
     background: '#f8fafc',
     padding: '20px',
     borderRadius: '12px',

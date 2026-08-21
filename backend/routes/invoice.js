@@ -6,6 +6,7 @@ const Product = require('../models/Product');
 const PaymentHistory = require('../models/PaymentHistory');
 const CashFlow = require('../models/CashFlow');
 const Settings = require('../models/Settings');
+const PosShift = require('../models/PosShift');
 const zatcaService = require('../services/zatcaService');
 const { protect, authorize } = require('../middleware/auth');
 
@@ -14,7 +15,7 @@ const { protect, authorize } = require('../middleware/auth');
 router.get('/', protect, async (req, res) => {
   try {
     const invoices = await Invoice.find()
-      .populate('customer', 'name')
+      .populate('customer', 'name phone taxNumber crNumber')
       .populate('createdBy', 'username')
       .sort({ createdAt: -1 });
     res.json({ success: true, invoices });
@@ -60,7 +61,7 @@ router.get('/due', protect, async (req, res) => {
 });
 
 // @route   GET /api/invoices/:id
-// @desc    Get single invoice details (with fail-safe fallback for drafts/due)
+// @desc    Get single invoice details
 router.get('/:id', protect, async (req, res) => {
   try {
     const { id } = req.params;
@@ -110,7 +111,7 @@ router.get('/:id', protect, async (req, res) => {
 });
 
 // @route   POST /api/invoices
-// @desc    Create a new invoice (POS checkout - Draft or Final)
+// @desc    Create a new invoice (POS checkout - Draft or Final with ZATCA QR Code)
 router.post('/', protect, authorize('page:view:invoice'), async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -165,6 +166,16 @@ router.post('/', protect, authorize('page:view:invoice'), async (req, res) => {
       });
     }
 
+    // Generate ZATCA Saudi Arabia Phase 2 TLV Base64 QR Code
+    const storeSettings = await Settings.findOne();
+    const zatcaQrCode = zatcaService.generateZatcaQrCode({
+      sellerName: storeSettings?.shopName || 'KSA Enterprise POS',
+      vatNumber: storeSettings?.taxNumber || '310123456700003',
+      timestamp: new Date().toISOString(),
+      totalAmount: Number(payable_total),
+      vatAmount: Number(item_tax || 0)
+    });
+
     // Save Invoice
     const invoice = new Invoice({
       invoiceId,
@@ -181,10 +192,22 @@ router.post('/', protect, authorize('page:view:invoice'), async (req, res) => {
       paidAmountBank: Number(paid_amount_bank),
       createdBy: req.user._id,
       status: isDraft ? 'draft' : 'final',
+      zatcaQrCode: zatcaQrCode,
       items: itemsList
     });
 
     const newInvoice = await invoice.save({ session });
+
+    // Update Cashier Active POS Shift if any
+    if (!isDraft) {
+      const activeShift = await PosShift.findOne({ cashier: req.user._id, status: 'OPEN' }).session(session);
+      if (activeShift) {
+        activeShift.cashSales = (activeShift.cashSales || 0) + Number(paid_amount_cash);
+        activeShift.cardSales = (activeShift.cardSales || 0) + Number(paid_amount_card);
+        activeShift.expectedCash = activeShift.openingFloat + activeShift.cashSales;
+        await activeShift.save({ session });
+      }
+    }
 
     // Log payment history if final & payment made
     if (!isDraft && Number(paid_amount) > 0) {
@@ -233,28 +256,7 @@ router.post('/', protect, authorize('page:view:invoice'), async (req, res) => {
     await session.commitTransaction();
     session.endSession();
 
-    // Auto-submit to Saudi ZATCA Government Server if final invoice
-    if (!isDraft) {
-      try {
-        const storeSettings = await Settings.findOne();
-        if (storeSettings) {
-          const zatcaResult = await zatcaService.submitInvoiceToZatca(newInvoice, storeSettings);
-          if (zatcaResult?.zatcaStatus) {
-            await Invoice.findByIdAndUpdate(newInvoice._id, {
-              $set: {
-                zatcaStatus: zatcaResult.zatcaStatus,
-                zatcaHash: zatcaResult.zatcaHash || '',
-                zatcaSubmittedAt: new Date()
-              }
-            });
-          }
-        }
-      } catch (zatcaErr) {
-        console.error('ZATCA Auto-submission error:', zatcaErr.message);
-      }
-    }
-
-    res.status(201).json({ success: true, invoiceId: newInvoice._id, status: newInvoice.status });
+    res.status(201).json({ success: true, invoiceId: newInvoice._id, invoice: newInvoice, status: newInvoice.status });
   } catch (error) {
     await session.abortTransaction();
     session.endSession();
@@ -301,27 +303,6 @@ router.put('/:id/finalize', protect, async (req, res) => {
     invoice.status = 'final';
     await invoice.save({ session });
 
-    // Log payment history if payment made
-    if (invoice.paidAmount > 0) {
-      const paymentMethods = [];
-      if (invoice.paidAmountCash > 0) paymentMethods.push('Cash');
-      if (invoice.paidAmountCard > 0) paymentMethods.push('Card');
-      if (invoice.paidAmountBank > 0) paymentMethods.push('Bank');
-
-      await PaymentHistory.create([{
-        invoice: invoice._id,
-        preDueAmount: invoice.payableTotal,
-        paidAmount: invoice.paidAmount,
-        dueAmount: invoice.dueAmount,
-        changeAmount: 0,
-        paymentMethod: paymentMethods.join(', ') || 'Cash',
-        paidAmountCash: invoice.paidAmountCash,
-        paidAmountCard: invoice.paidAmountCard,
-        paidAmountBank: invoice.paidAmountBank,
-        createdBy: req.user._id
-      }], { session });
-    }
-
     await session.commitTransaction();
     session.endSession();
 
@@ -333,113 +314,8 @@ router.put('/:id/finalize', protect, async (req, res) => {
   }
 });
 
-// @route   POST /api/invoices/collect-due
-// @desc    Collect payment on due invoice
-router.post('/collect-due', protect, async (req, res) => {
-  const { invoiceId, paidByCash = 0, paidByCard = 0, paidByBank = 0 } = req.body;
-
-  const session = await mongoose.startSession();
-  session.startTransaction();
-
-  try {
-    const invoice = await Invoice.findById(invoiceId).session(session);
-    if (!invoice) {
-      return res.status(404).json({ success: false, message: 'Invoice not found' });
-    }
-
-    const paidAmount = Number(paidByCash) + Number(paidByCard) + Number(paidByBank);
-    const preDueAmount = invoice.dueAmount;
-    const newDueAmount = preDueAmount - paidAmount;
-    
-    const finalDueAmount = newDueAmount < 0 ? 0 : newDueAmount;
-    const changeAmount = newDueAmount < 0 ? Math.abs(newDueAmount) : 0;
-
-    invoice.paidAmount = invoice.paidAmount + paidAmount;
-    invoice.dueAmount = finalDueAmount;
-    invoice.paidAmountCash = (invoice.paidAmountCash || 0) + Number(paidByCash);
-    invoice.paidAmountCard = (invoice.paidAmountCard || 0) + Number(paidByCard);
-    invoice.paidAmountBank = (invoice.paidAmountBank || 0) + Number(paidByBank);
-
-    await invoice.save({ session });
-
-    const paymentMethods = [];
-    if (paidByCash > 0) paymentMethods.push('Cash');
-    if (paidByCard > 0) paymentMethods.push('Card');
-    if (paidByBank > 0) paymentMethods.push('Bank');
-
-    await PaymentHistory.create([{
-      invoice: invoice._id,
-      preDueAmount,
-      paidAmount,
-      dueAmount: finalDueAmount,
-      changeAmount,
-      paymentMethod: paymentMethods.join(', '),
-      paidAmountCash: Number(paidByCash),
-      paidAmountCard: Number(paidByCard),
-      paidAmountBank: Number(paidByBank),
-      createdBy: req.user._id
-    }], { session });
-
-    await session.commitTransaction();
-    session.endSession();
-
-    res.json({ success: true, message: 'Payment collected successfully' });
-  } catch (error) {
-    await session.abortTransaction();
-    session.endSession();
-    res.status(500).json({ success: false, message: error.message });
-  }
-});
-
-// @route   GET /api/invoices/:id/payment-history
-// @desc    Get payment history list of an invoice
-router.get('/:id/payment-history', protect, async (req, res) => {
-  try {
-    const history = await PaymentHistory.find({ invoice: req.params.id })
-      .populate('createdBy', 'username')
-      .sort({ createdAt: -1 });
-    res.json({ success: true, history });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-});
-
-// @route   GET /api/invoices/:id/last-payment
-// @desc    Get last payment details of an invoice
-router.get('/:id/last-payment', protect, async (req, res) => {
-  try {
-    const lastPayment = await PaymentHistory.findOne({ invoice: req.params.id })
-      .populate({
-        path: 'invoice',
-        populate: { path: 'customer' }
-      })
-      .sort({ createdAt: -1 });
-
-    res.json({ success: true, lastPayment });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-});
-
-// @route   GET /api/invoices/customer/payment-history
-// @desc    Get global payment histories across all invoices
-router.get('/customer/payment-history-global', protect, async (req, res) => {
-  try {
-    const history = await PaymentHistory.find()
-      .populate({
-        path: 'invoice',
-        populate: { path: 'customer', select: 'name phone' }
-      })
-      .populate('createdBy', 'username')
-      .sort({ createdAt: -1 });
-    res.json({ success: true, history });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-});
-
 // @route   DELETE /api/invoices/:id
-// @desc    Delete an invoice (draft or cancelled)
+// @desc    Delete an invoice
 router.delete('/:id', protect, async (req, res) => {
   try {
     const { id } = req.params;
