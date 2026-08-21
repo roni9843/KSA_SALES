@@ -169,6 +169,7 @@ const Sidebar = () => {
                     icon: <FaCog />,
                     permission: 'manage:users',
                     subItems: [
+                        { path: '/system-settings', label: 'System Sequences & VAT' },
                         { path: '/manage-merchants', label: 'Store SaaS Management' },
                         { path: '/manage-roles', label: 'Role & Permissions' },
                         { path: '/manage-users', label: 'Staff Users' },
