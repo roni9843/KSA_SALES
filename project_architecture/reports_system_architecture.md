@@ -1,27 +1,53 @@
 # 📈 Reports & Analytics System Architecture & Functional Specification
-## (রিপোর্ট ও এনালিটিক্স মডিউলের পূর্ণাঙ্গ ৪-লেভেল প্রযুক্তিগত বিবরণী)
+## (রিপোর্ট ও এনালিটিক্স মডিউলের বিস্তারিত ৪-লেভেল প্রযুক্তিগত বিবরণী)
 
 ---
 
 ## 1. 💰 SALES REPORTS SUITE (বিক্রয় রিপোর্ট)
 
-* **1.1 Sales by Item:** পণ্য ভিত্তিক বিক্রয় পরিমাণ, মোট রেভিনিউ এবং প্রফিট মার্জিন।
-* **1.2 Sales by Client:** ক্লায়েন্ট ভিত্তিক মোট সেলস এবং পরিশোধ বনাম বকেয়ার সামারি রিপোর্ট।
-* **1.3 Tax Summary Report:** সরকারি ভ্যাট রিটার্ন জমা দেওয়ার জন্য আউটপুট ট্যাক্স সামারি।
+* **1.1 Sales by Item / Client / Staff:** পণ্য, ক্লায়েন্ট বা বিক্রয় প্রতিনিধি (Staff) অনুযায়ী বিক্রয়ের অর্থমূল্য, মোট ইউনিট এবং গ্রস প্রফিট।
+* **1.2 Tax Summary Report:** সরকারি আয়কর/ভ্যাট রিটার্ন জমা দেওয়ার জন্য আউটপুট ভ্যাট কালেকশন রিপোর্ট।
+* **1.3 Profit & Loss per Invoice:** প্রতিটি বিক্রয় ইনভয়েস ভিত্তিক সুনির্দিষ্ট মুনাফা বা ক্ষতির বিশ্লেষণ।
 
 ---
 
-## 2. 📊 ACCOUNTING REPORTS SUITE (হিসাবরক্ষণ রিপোর্ট)
+## 2. 🛒 PURCHASES REPORTS SUITE (পারচেজ রিপোর্ট)
 
-* **2.1 Profit & Loss Statement (Income Statement):** আয় ও ব্যয়ের হিসাব এবং নিট মুনাফা/ক্ষতি।
-* **2.2 Balance Sheet:** নির্দিষ্ট তারিখে মোট সম্পদ, দেনা এবং মালিকানা স্বত্বের সঠিক ভারসাম্য।
-* **2.3 Trial Balance & General Ledger:** লেজার ওয়াইজ ডেবিট-ক্রেডিট ব্যালেন্সিং রিপোর্ট।
+* **2.1 Purchases by Supplier / Item:** সরবরাহকারী বা নির্দিষ্ট পণ্য ভিত্তিক ক্রয় হিসাব ও ট্রেন্ড।
+* **2.2 Purchase Tax Reports:** ক্রয়ের বিপরীতে পরিশোধিত ইনপুট ভ্যাট (Input VAT Claimable) ট্যাক্স রিপোর্ট।
 
 ---
 
-## 3. 🔍 AUDIT LOG & STORE ANALYTICS (অডিট ও স্টোর অ্যানালিটিক্স)
+## 3. 📊 ACCOUNTING REPORTS SUITE (হিসাবরক্ষণ রিপোর্ট)
 
-* **3.1 Activity Audit Log:** সিস্টেম ব্যবহারকারীদের প্রতিটি ক্রিয়া (ইনভয়েস পরিবর্তন, স্ট্যাটাস রিমুভাল, পেমেন্ট ডিলেশন) সময় ও আইপি সহ ট্র্যাকিং।
-* **3.2 Inventory Valuation & Low Stock Report:** বর্তমান মজুদের অর্থমূল্য (Weighted Average) এবং পুনঃক্রয় অ্যালার্ট (Reorder Level Alert) রিপোর্ট।
+* **3.1 Income Statement / Profit & Loss (P&L):**
+  $$\text{Net Income} = \text{Operating Revenue} - \text{COGS} - \text{Operating Expenses}$$
+* **3.2 Balance Sheet (উদ্বর্তপত্র):**
+  $$\text{Assets} = \text{Liabilities} + \text{Owner's Equity}$$
+* **3.3 Trial Balance (রেওয়ামিল):** সমাপনী হিসাবসমূহের ডেবিট ও ক্রেডিটের সামঞ্জস্যতা রিপোর্ট।
+* **3.4 General Ledger & Account Statements:** নির্দিষ্ট হিসাব খাতের বিস্তারিত ট্রানজ্যাকশন হিস্ট্রি ও খতিয়ান।
+
+---
+
+## 4. 📦 INVENTORY & STORE REPORTS (ইনভেন্টরি রিপোর্ট)
+
+* **4.1 Stock Valuation Report:** Weighted Average Costিং পদ্ধতিতে মজুদের মোট বর্তমান আর্থিক মূল্য।
+* **4.2 Inventory Movement Tracking:** গুদামে পণ্যের রিসিভ, ইসু, ইন-ট্রানজিট স্থানান্তরের ট্র্যাকিং।
+* **4.3 Low Stock Alerts:** পুনর্ক্রয় সীমার নিচে (Below Reorder Level) নেমে যাওয়া পণ্যের সসংক্রান্ত অ্যালার্ট রিপোর্ট।
+
+---
+
+## 5. 🔍 SYSTEM ACTIVITY AUDIT LOG (অ্যাক্টিভিটি লগ)
+
+* **5.1 User Actions Log Data:** ইউজার আইডি, কাজের ধরন (LOGIN, CREATE, UPDATE, DELETE), পরিবর্তিত ডাটার পূর্ববর্তী ও বর্তমান মান, টাইমস্ট্যাম্প ও আইপি এড্রেস ট্র্যাকিং।
+
+---
+
+## 6. 📂 OTHER SPECIALIZED REPORTS (অন্যান্য রিপোর্ট)
+
+* **6.1 Employee Reports:** কর্মীর উপস্থিতি, ছুটির হিসেব এবং পে-স্লিপ ডাউনলোডের রিপোর্ট।
+* **6.2 Cheques Report:** ইস্যু ও রিসিভকৃত চেকের স্ট্যাটাস (Pending, Cleared, Bounced) ও পোর্টফোলিও সামারি।
+* **6.3 Clients & Points Reports:** গ্রাহকদের বাকি বাকি বয়স (Aging Report: 30/60/90 Days), জমানো ওয়ালেট ও লয়ালটি পয়েন্ট রিপোর্ট।
+* **6.4 Rental Reports:** রেন্টাল এসেটের ব্যবহার সময়, মোট আয় এবং বর্তমান কন্ডিশন রিপোর্ট।
 
 ---
