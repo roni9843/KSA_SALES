@@ -4,7 +4,7 @@ const AutoSequenceSchema = new mongoose.Schema({
   merchantId: { type: mongoose.Schema.Types.ObjectId, ref: 'Merchant' },
   docType: { 
     type: String, 
-    enum: ['INVOICE', 'PO', 'PR', 'JV', 'MO', 'TASK'], 
+    enum: ['INVOICE', 'PO', 'PR', 'JV', 'MO', 'TASK', 'ESTIMATE', 'BOOKING', 'QUOTATION'], 
     required: true, 
     unique: true 
   },

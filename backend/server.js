@@ -51,6 +51,10 @@ app.use('/api/merchants', require('./routes/merchant'));
 app.use('/api/cashflow', require('./routes/cashflow'));
 app.use('/api/cash-register', require('./routes/cashRegister'));
 app.use('/api/returns', require('./routes/salesReturn'));
+app.use('/api/quotations', require('./routes/quotation'));
+app.use('/api/bookings', require('./routes/booking'));
+app.use('/api/client-attendance', require('./routes/clientAttendance'));
+app.use('/api/points-credits', require('./routes/pointCredit'));
 
 // Simple base route
 app.get('/', (req, res) => {
