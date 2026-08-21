@@ -47,6 +47,7 @@ import ChartOfAccountsManager from './components/ChartOfAccountsManager';
 import EmployeeManager from './components/EmployeeManager';
 import PayrollManager from './components/PayrollManager';
 import ManufacturingManager from './components/ManufacturingManager';
+import TaskManager from './components/TaskManager';
 
 import MerchantRegister from './pages/MerchantRegister';
 import MerchantManagement from './pages/MerchantManagement';
@@ -86,6 +87,7 @@ function App() {
                 <Route path="/employees" element={<EmployeeManager />} />
                 <Route path="/payroll" element={<PayrollManager />} />
                 <Route path="/manufacturing" element={<ManufacturingManager />} />
+                <Route path="/tasks-operations" element={<TaskManager />} />
                 <Route path="/reporting" element={<Reporting />} />
                 <Route path="/product-sales-report" element={<ProductSalesReport />} />
                 <Route path="/product-transaction" element={<ProductTransaction />} />
