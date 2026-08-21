@@ -40,6 +40,13 @@ import StockAdjust from './pages/StockAdjust';
 import StockAdjustmentList from './pages/StockAdjustmentList';
 import DatabaseBackup from './pages/DatabaseBackup';
 
+// Newly Integrated Enterprise ERP Core Modules
+import WarehouseManager from './components/WarehouseManager';
+import PurchaseOrderManager from './components/PurchaseOrderManager';
+import ChartOfAccountsManager from './components/ChartOfAccountsManager';
+import EmployeeManager from './components/EmployeeManager';
+import PayrollManager from './components/PayrollManager';
+
 import MerchantRegister from './pages/MerchantRegister';
 import MerchantManagement from './pages/MerchantManagement';
 
@@ -58,6 +65,7 @@ function App() {
                 <Route path="/category" element={<AddCategory />} />
                 <Route path="/products" element={<ProductPage />} />
                 <Route path="/product-list" element={<ProductListPage />} />
+                <Route path="/warehouses" element={<WarehouseManager />} />
                 <Route path="/create-invoice" element={<CreateInvoice />} />
                 <Route path="/draft-invoices" element={<DraftInvoices />} />
                 <Route path="/invoice/:id" element={<InvoicePrint />} />
@@ -72,6 +80,10 @@ function App() {
                 <Route path="/customer-list" element={<CustomerListPage />} />
                 <Route path="/suppliers" element={<Suppliers />} />
                 <Route path="/supplier-list" element={<SupplierListPage />} />
+                <Route path="/purchase-orders" element={<PurchaseOrderManager />} />
+                <Route path="/accounting" element={<ChartOfAccountsManager />} />
+                <Route path="/employees" element={<EmployeeManager />} />
+                <Route path="/payroll" element={<PayrollManager />} />
                 <Route path="/reporting" element={<Reporting />} />
                 <Route path="/product-sales-report" element={<ProductSalesReport />} />
                 <Route path="/product-transaction" element={<ProductTransaction />} />

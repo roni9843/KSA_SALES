@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
     FaHome, FaFolder, FaBox, FaFileInvoice, FaUsers, FaTruck,
     FaChartBar, FaPercent, FaCog, FaShoppingCart, FaBoxes,
-    FaChevronDown, FaChevronRight, FaSignOutAlt, FaUserCheck, FaStore, FaShieldAlt, FaMoneyBillWave, FaUndo
+    FaChevronDown, FaChevronRight, FaSignOutAlt, FaUserCheck, FaStore, FaShieldAlt, FaMoneyBillWave, FaWarehouse, FaBook, FaUserTie
 } from 'react-icons/fa';
 
 import { useAuthStore } from '../store/authStore';
@@ -44,6 +44,7 @@ const Sidebar = () => {
                         { path: '/product-list', label: 'Product Catalog' },
                     ]
                 },
+                { path: '/warehouses', label: 'Warehouses & Stock Transfers', icon: <FaWarehouse />, permission: 'page:view:products' },
                 {
                     label: 'Stock Adjustments',
                     icon: <FaBoxes />,
@@ -87,10 +88,11 @@ const Sidebar = () => {
             title: 'SUPPLIERS & PURCHASES',
             items: [
                 {
-                    label: 'Purchase Orders',
+                    label: 'Purchase Orders & Landed Cost',
                     icon: <FaShoppingCart />,
                     permission: 'page:view:purchase',
                     subItems: [
+                        { path: '/purchase-orders', label: 'PO & Landed Cost Manager' },
                         { path: '/product-purchase', label: 'New Purchase' },
                         { path: '/purchase-list', label: 'Purchase History' },
                     ]
@@ -107,6 +109,27 @@ const Sidebar = () => {
             ]
         },
         {
+            title: 'FINANCIAL & ACCOUNTING',
+            items: [
+                { path: '/accounting', label: 'Chart of Accounts & Cheques', icon: <FaBook />, permission: 'page:view:reporting' },
+                { path: '/cash-flow', label: 'Cash Flow & Register', icon: <FaMoneyBillWave />, permission: 'page:view:reporting' }
+            ]
+        },
+        {
+            title: 'HUMAN RESOURCES (HR)',
+            items: [
+                {
+                    label: 'HR & Payroll Engine',
+                    icon: <FaUserTie />,
+                    permission: 'page:view:dashboard',
+                    subItems: [
+                        { path: '/employees', label: 'Employee Directory & Expiry' },
+                        { path: '/payroll', label: 'Payroll Run & WPS Export' },
+                    ]
+                }
+            ]
+        },
+        {
             title: 'REPORTS & ANALYTICS',
             items: [
                 {
@@ -117,8 +140,7 @@ const Sidebar = () => {
                         { path: '/product-sales-report', label: 'Product Sales Report' },
                         { path: '/product-transaction', label: 'Inventory Log' },
                     ]
-                },
-                { path: '/cash-flow', label: 'Cash Flow & Register', icon: <FaMoneyBillWave />, permission: 'page:view:reporting' }
+                }
             ]
         }
     ];
