@@ -24,7 +24,7 @@ const PurchaseOrderManager = () => {
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
             });
             const poData = await poRes.json();
-            if (poData.success) setPurchaseOrders(poData.pos || []);
+            if (poData.success) setPurchaseOrders(poData.orders || poData.pos || []);
 
             const suppRes = await fetch('http://localhost:5000/api/suppliers', {
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
@@ -123,7 +123,6 @@ const PurchaseOrderManager = () => {
                                 <th style={thStyle}>Supplier Name</th>
                                 <th style={thStyle}>Total Bill</th>
                                 <th style={thStyle}>Landed Cost (Freight+Customs)</th>
-                                <th style={thStyle}>Effective Unit Price</th>
                                 <th style={thStyle}>Status</th>
                             </tr>
                         </thead>
@@ -133,16 +132,7 @@ const PurchaseOrderManager = () => {
                                     <td style={tdStyle}><strong>{po.poNumber}</strong></td>
                                     <td style={tdStyle}>{po.supplier?.name || '-'}</td>
                                     <td style={tdStyle}>{po.totalAmount} SAR</td>
-                                    <td style={tdStyle}><span className="text-amber-700 font-bold">{po.shippingCost + po.customsFee} SAR</span></td>
-                                    <td style={tdStyle}>
-                                        <div className="text-xs">
-                                            {po.items?.map((it, i) => (
-                                                <div key={i} className="text-emerald-700 font-bold">
-                                                    {it.productName}: {it.effectiveUnitPrice?.toFixed(2)} SAR/unit
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </td>
+                                    <td style={tdStyle}><span className="text-amber-700 font-bold">{(po.shippingCost || 0) + (po.customsFee || 0)} SAR</span></td>
                                     <td style={tdStyle}>
                                         <span className="px-2 py-0.5 rounded bg-blue-100 text-blue-700 font-bold text-[10px]">{po.status}</span>
                                     </td>
