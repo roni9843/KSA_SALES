@@ -7,7 +7,7 @@
 
 ### 1.1 হাইব্রিড ডেপ্লয়মেন্ট মডেল (Hybrid Desktop & Cloud Architecture)
 * **ডেস্কটপ অ্যাপ্লিকেশন:** Electron + React (Vite) + Local SQLite Database।
-* **ক্লাউড সার্ভার (Central API):** Node.js / Express (বা NestJS) + PostgreSQL / MySQL Database + Redis Caching।
+* **ক্লাউড সার্ভার (Central API):** Node.js / Express + Remote MongoDB (MongoDB Atlas / Mongoose ORM) + Redis Caching।
 * **মোবাইল অ্যাপ্লিকেশনস:** React Native / Flutter (Android & iOS)।
 * **অফলাইন-ফার্স্ট ডিএসওয়াইএনসি ইঞ্জিন (Offline-First Sync Engine):**
   - ডেস্কেটপ পিওএস (POS) অফলাইনে কাজ করবে। সমস্ত কেনাকাটা ও ট্রানজ্যাকশন লোকাল SQLite ডাটাবেসে `sync_status = 'pending'` হিসেবে সংরক্ষিত হবে।
@@ -285,76 +285,89 @@
 
 ---
 
-## 3. 🛠️ ইআরডি ও ডাটাবেস ডিজাইন কনসেপ্ট (Database Schema Structure)
+## 3. 🛠️ ডাটাবেস ডিজাইন কনসেপ্ট (MongoDB / Mongoose Schema Structure)
 
-সিস্টেমের প্রধান টেবিলগুলোর স্ট্রাকচার নিচে দেওয়া হলো:
+আপনার ব্যাকএন্ডে ব্যবহৃত **Remote MongoDB Database (Mongoose ORM)**-এর সাথে সামঞ্জস্যপূর্ণ মূল কালেকশনগুলোর স্কিমা ডিজাইন নিচে দেওয়া হলো:
 
-```sql
--- Tenants / Companies Table
-CREATE TABLE tenants (
-    id VARCHAR(36) PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    country_code VARCHAR(5) DEFAULT 'SA',
-    currency VARCHAR(10) DEFAULT 'SAR',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+```javascript
+// 1. Tenants / Merchants Collection (tenants)
+const TenantSchema = new mongoose.Schema({
+  merchantId: { type: String, required: true, unique: true },
+  name: { type: String, required: true },
+  countryCode: { type: String, default: 'SA' },
+  currency: { type: String, default: 'SAR' },
+  vatNumber: { type: String },
+  subscriptionPlan: { type: String, default: 'trial' },
+  isActive: { type: Boolean, default: true }
+}, { timestamps: true });
 
--- Users & RBAC
-CREATE TABLE users (
-    id VARCHAR(36) PRIMARY KEY,
-    tenant_id VARCHAR(36) REFERENCES tenants(id),
-    name VARCHAR(150),
-    email VARCHAR(150) UNIQUE,
-    password_hash VARCHAR(255),
-    role_id INT,
-    is_active BOOLEAN DEFAULT TRUE
-);
+// 2. Users Collection (users)
+const UserSchema = new mongoose.Schema({
+  merchantId: { type: mongoose.Schema.Types.ObjectId, ref: 'Merchant' },
+  name: { type: String, required: true },
+  username: { type: String, required: true, unique: true },
+  email: { type: String, required: true },
+  password: { type: String, required: true },
+  roles: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Role' }],
+  isActive: { type: Boolean, default: true }
+}, { timestamps: true });
 
--- Products Master
-CREATE TABLE products (
-    id VARCHAR(36) PRIMARY KEY,
-    tenant_id VARCHAR(36) REFERENCES tenants(id),
-    sku VARCHAR(100) UNIQUE,
-    name VARCHAR(255) NOT NULL,
-    product_type ENUM('standard', 'service', 'bundle', 'batch', 'serial'),
-    unit_id INT,
-    purchase_price DECIMAL(15, 4),
-    selling_price DECIMAL(15, 4),
-    min_reorder_level INT DEFAULT 10,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+// 3. Products Master Collection (products)
+const ProductSchema = new mongoose.Schema({
+  merchantId: { type: mongoose.Schema.Types.ObjectId, ref: 'Merchant' },
+  sku: { type: String, unique: true },
+  barcode: { type: String },
+  name: { type: String, required: true },
+  productType: { type: String, enum: ['standard', 'service', 'bundle', 'batch', 'serial'], default: 'standard' },
+  category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category' },
+  unit: { type: String, default: 'PCS' },
+  purchasePrice: { type: Number, default: 0 },
+  sellingPrice: { type: Number, required: true },
+  stockQuantity: { type: Number, default: 0 },
+  minReorderLevel: { type: Number, default: 10 },
+  isZatcaCompliant: { type: Boolean, default: true }
+}, { timestamps: true });
 
--- Stock Ledger (Multi-Warehouse)
-CREATE TABLE stock_ledger (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    tenant_id VARCHAR(36),
-    warehouse_id VARCHAR(36),
-    product_id VARCHAR(36),
-    batch_number VARCHAR(100) NULL,
-    serial_number VARCHAR(100) NULL,
-    quantity_change DECIMAL(15, 4),
-    transaction_type ENUM('PURCHASE', 'SALE', 'TRANSFER', 'ADJUSTMENT', 'MANUFACTURING'),
-    reference_id VARCHAR(36),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+// 4. Stock Ledger Collection (stock_ledgers)
+const StockLedgerSchema = new mongoose.Schema({
+  merchantId: { type: mongoose.Schema.Types.ObjectId, ref: 'Merchant' },
+  warehouseId: { type: mongoose.Schema.Types.ObjectId, ref: 'Warehouse' },
+  productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
+  batchNumber: { type: String },
+  serialNumber: { type: String },
+  quantityChange: { type: Number, required: true },
+  transactionType: { type: String, enum: ['PURCHASE', 'SALE', 'TRANSFER', 'ADJUSTMENT', 'MANUFACTURING'] },
+  referenceId: { type: mongoose.Schema.Types.ObjectId },
+}, { timestamps: true });
 
--- Sales Invoices
-CREATE TABLE invoices (
-    id VARCHAR(36) PRIMARY KEY,
-    tenant_id VARCHAR(36),
-    invoice_number VARCHAR(100) NOT NULL,
-    client_id VARCHAR(36),
-    invoice_date DATE NOT NULL,
-    due_date DATE,
-    subtotal DECIMAL(15, 2),
-    tax_total DECIMAL(15, 2),
-    discount_total DECIMAL(15, 2),
-    grand_total DECIMAL(15, 2),
-    payment_status ENUM('unpaid', 'partially_paid', 'paid') DEFAULT 'unpaid',
-    zatca_uuid VARCHAR(100) NULL,
-    zatca_hash VARCHAR(255) NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+// 5. Invoices Collection (invoices - ZATCA & Regional Supported)
+const InvoiceSchema = new mongoose.Schema({
+  merchantId: { type: mongoose.Schema.Types.ObjectId, ref: 'Merchant' },
+  invoiceNumber: { type: String, required: true },
+  customer: { type: mongoose.Schema.Types.ObjectId, ref: 'Customer' },
+  items: [{
+    productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
+    name: String,
+    quantity: Number,
+    unitPrice: Number,
+    taxRate: Number,
+    taxAmount: Number,
+    total: Number
+  }],
+  subtotal: { type: Number, required: true },
+  taxTotal: { type: Number, required: true },
+  grandTotal: { type: Number, required: true },
+  paymentStatus: { type: String, enum: ['unpaid', 'partially_paid', 'paid'], default: 'unpaid' },
+  // ZATCA & Regional E-Invoicing Data
+  zatca: {
+    uuid: String,
+    invoiceHash: String,
+    previousInvoiceHash: String,
+    qrCodeBase64: String,
+    xmlContent: String,
+    submissionStatus: { type: String, enum: ['PENDING', 'REPORTED', 'CLEARED', 'FAILED'], default: 'PENDING' }
+  }
+}, { timestamps: true });
 ```
 
 ---
