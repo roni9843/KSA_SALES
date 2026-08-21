@@ -95,7 +95,6 @@ const seedData = async () => {
 
     console.log('✅ Existing data cleared successfully.');
 
-    // Helper for historical dates (1 Year timeline = up to 365 days ago)
     const daysAgo = (days) => new Date(Date.now() - days * 86400000);
 
     // 1. CREATE SAUDI MERCHANT & SETTINGS
@@ -196,19 +195,9 @@ const seedData = async () => {
       phone: '+966504445566'
     });
 
-    const whDmm = await Warehouse.create({
-      code: 'WH-DMM',
-      name: 'Dammam Eastern Hub (مستودع الدمام المنطقة الشرقية)',
-      address: 'First Industrial City, Coastal Highway, Dammam',
-      managerName: 'Fahad Al-Khaldi',
-      phone: '+966507778899'
-    });
-
     // 4. CATEGORIES & PRODUCTS
     const catHeavy = await Category.create({ name: 'Heavy Equipment & Spare Parts (معدات ثقيلة قطع غيار)' });
     const catElectrical = await Category.create({ name: 'Electrical & Automation Systems (أنظمة كهربائية وأتمتة)' });
-    const catPlumbing = await Category.create({ name: 'Plumbing & PVC Piping (أنابيب سباكة والبلاستيك)' });
-    const catSafety = await Category.create({ name: 'Safety Gear & PPE (معدات السلامة الحماية الشخصية)' });
 
     const prod1 = await Product.create({
       sku: 'SKU-CAT-320D',
@@ -239,55 +228,8 @@ const seedData = async () => {
       warehouse: whRuh._id
     });
 
-    const prod3 = await Product.create({
-      sku: 'SKU-HLM-BLU',
-      code: 'SAU-HLM-BLU',
-      name: 'Saudi Fiber Glass Safety Helmet - Blue (خوذة سلامة فيبر جلاس)',
-      category: catSafety._id,
-      purchasePrice: 42,
-      salePrice: 65,
-      quantityInStock: 1200,
-      alertQuantity: 30,
-      unit: 'Piece',
-      tax: 15,
-      warehouse: whRuh._id
-    });
-
-    const prod4 = await Product.create({
-      sku: 'SKU-PVC-110MM',
-      code: 'SAU-PVC-110',
-      name: 'Arabian PVC Pressure Pipe 110mm Class 5 (أنبوب بلاستيك ضغط عالي)',
-      category: catPlumbing._id,
-      purchasePrice: 85,
-      salePrice: 120,
-      quantityInStock: 2500,
-      alertQuantity: 50,
-      unit: 'Bar',
-      subUnits: [{ unitName: 'Bundle (10 Bars)', multiplier: 10 }],
-      tax: 15,
-      warehouse: whRuh._id
-    });
-
-    const prod5 = await Product.create({
-      sku: 'SKU-SIE-S71200',
-      code: 'SIE-PLC-S7',
-      name: 'Siemens Simatic S7-1200 Industrial PLC Module (موديول بي ال سي سيمنز)',
-      category: catElectrical._id,
-      purchasePrice: 3800,
-      salePrice: 4800,
-      quantityInStock: 65,
-      alertQuantity: 3,
-      unit: 'Piece',
-      isSerialTracked: true,
-      tax: 15,
-      warehouse: whRuh._id
-    });
-
-    console.log('✅ Saudi Inventory Products & Categories created.');
-
     // 5. CLIENT GROUPS & CUSTOMERS
     const groupCorporate = await ClientGroup.create({ name: 'Tier-1 Saudi Corporate Clients' });
-    const groupGov = await ClientGroup.create({ name: 'Saudi Government & Municipalities' });
 
     const custAramco = await Customer.create({
       name: 'Saudi Aramco Overseas Contracting (شركة أرامكو السعودية)',
@@ -314,57 +256,76 @@ const seedData = async () => {
       creditLimit: 500000
     });
 
-    const custBinladin = await Customer.create({
-      name: 'Saudi Binladin Group (مجموعة بن لادن السعودية)',
-      phone: '+966126643333',
-      email: 'info@sbg.com.sa',
-      address: 'Al-Andalus District, Prince Sultan St, Jeddah',
-      crNumber: '4030001204',
-      taxNumber: '300403000100003',
-      group: groupGov._id,
-      creditLimit: 2000000
+    // 6. CHART OF ACCOUNTS (COA) - CRITICAL FOR ACCOUNTING PAGE
+    const acc10010 = await Account.create({ code: '10010', name: 'Cash Vault (Riyadh Bank - خزينة الرياض)', accountType: 'ASSET', balance: 185000 });
+    const acc10020 = await Account.create({ code: '10020', name: 'Al Rajhi Corporate Bank Account (حساب الراجحي)', accountType: 'ASSET', balance: 1450000 });
+    const acc10030 = await Account.create({ code: '10030', name: 'Accounts Receivable - Trade Debtors (ذمم مدينين)', accountType: 'ASSET', balance: 45000 });
+    const acc20010 = await Account.create({ code: '20010', name: 'Accounts Payable - Trade Creditors (ذمم دائنين)', accountType: 'LIABILITY', balance: 120000 });
+    const acc20020 = await Account.create({ code: '20020', name: 'ZATCA VAT Output Payable 15% (ضريبة القيمة المضافة)', accountType: 'LIABILITY', balance: 34500 });
+    const acc40010 = await Account.create({ code: '40010', name: 'Commercial Sales Revenue (إيرادات المبيعات)', accountType: 'INCOME', balance: 890000 });
+    const acc50010 = await Account.create({ code: '50010', name: 'Cost of Goods Sold - COGS (تكلفة البضاعة المباعة)', accountType: 'EXPENSE', balance: 480000 });
+    const acc50020 = await Account.create({ code: '50020', name: 'Staff Wages & WPS Payroll Expense (رواتب الموظفين)', accountType: 'EXPENSE', balance: 145000 });
+
+    console.log('✅ Chart of Accounts (COA) created.');
+
+    // 7. JOURNAL VOUCHERS (JV) - CRITICAL FOR ACCOUNTING PAGE
+    for (let jv = 1; jv <= 10; jv++) {
+      await JournalVoucher.create({
+        voucherNo: `JV-2026-000${jv}`,
+        voucherDate: daysAgo(jv * 5),
+        description: `Monthly Utility & Corporate Settlement Voucher ${jv}`,
+        totalDebit: 12500 * jv,
+        totalCredit: 12500 * jv,
+        status: 'POSTED',
+        createdBy: adminUser._id,
+        createdAt: daysAgo(jv * 5),
+        entries: [
+          { accountId: acc50020._id, accountName: acc50020.name, debit: 12500 * jv, credit: 0, memo: 'Operational Expense' },
+          { accountId: acc10020._id, accountName: acc10020.name, debit: 0, credit: 12500 * jv, memo: 'Al Rajhi Corporate Settlement' }
+        ]
+      });
+    }
+    console.log('✅ Journal Vouchers (JVs) created.');
+
+    // 8. CHEQUES - CRITICAL FOR ACCOUNTING PAGE
+    await Cheque.create({
+      chequeNumber: 'CHK-NCB-90812',
+      chequeType: 'RECEIVED',
+      partyName: 'Saudi Aramco Contracting',
+      bankName: 'National Commercial Bank (NCB الأهلي)',
+      amount: 45000,
+      dueDate: daysAgo(10),
+      status: 'CLEARED'
     });
 
-    const custRedSea = await Customer.create({
-      name: 'Red Sea Global Development Co. (شركة البحر الأحمر الدولية)',
-      phone: '+966118009988',
-      email: 'contact@redseaglobal.com.sa',
-      address: 'Riyadh Digital City, KSA',
-      crNumber: '1010554433',
-      taxNumber: '310554433200003',
-      group: groupCorporate._id,
-      creditLimit: 1500000
+    await Cheque.create({
+      chequeNumber: 'CHK-RAJHI-11029',
+      chequeType: 'ISSUED',
+      partyName: 'Caterpillar Middle East Trading',
+      bankName: 'Al Rajhi Corporate Bank',
+      amount: 62000,
+      dueDate: daysAgo(2),
+      status: 'CLEARED'
     });
 
-    // 6. SUPPLIERS
-    const suppCat = await Supplier.create({
-      name: 'Caterpillar Middle East Trading FZE (كاتربيلر الشرق الأوسط)',
-      phone: '+97148835000',
-      email: 'sales@cat-me.com',
-      address: 'Jebel Ali Free Zone, Dubai / Riyadh Office',
-      taxNumber: '310998877600003',
-      crNumber: '1010998877',
-      creditLimit: 800000
+    await Cheque.create({
+      chequeNumber: 'CHK-RIYADH-55012',
+      chequeType: 'RECEIVED',
+      partyName: 'SABIC Industrial Plastics Co.',
+      bankName: 'Riyadh Bank',
+      amount: 85000,
+      dueDate: new Date(Date.now() + 5 * 86400000),
+      status: 'PENDING'
     });
 
-    const suppSchneider = await Supplier.create({
-      name: 'Schneider Electric Saudi Arabia Ltd. (شنايدر إلكتريك السعودية)',
-      phone: '+966112651100',
-      email: 'orders.sa@se.com',
-      address: 'Riyadh Second Industrial City, KSA',
-      taxNumber: '300123987600003',
-      crNumber: '1010123987',
-      creditLimit: 400000
-    });
+    console.log('✅ Cheques created.');
 
-    // 7. 50+ HISTORICAL ZATCA TAX INVOICES SPANNING 365 DAYS (1 YEAR)
+    // 9. 50+ HISTORICAL ZATCA TAX INVOICES SPANNING 365 DAYS (1 YEAR)
     let invNumberSeq = 1000;
-    const customersList = [custAramco, custSabic, custBinladin, custRedSea];
 
     for (let day = 360; day >= 0; day -= 7) {
       invNumberSeq += 1;
       const invDate = daysAgo(day);
-      const selCust = customersList[invNumberSeq % customersList.length];
       const subTotal = Math.floor(15000 + (day * 120) + Math.random() * 20000);
       const taxAmount = subTotal * 0.15;
       const payableTotal = subTotal + taxAmount;
@@ -379,7 +340,7 @@ const seedData = async () => {
 
       await Invoice.create({
         invoiceId: `KSA-INV-2025-${invNumberSeq}`,
-        customer: selCust._id,
+        customer: custAramco._id,
         subTotal,
         itemTax: taxAmount,
         payableTotal,
@@ -392,127 +353,14 @@ const seedData = async () => {
         zatcaQrCode: zatcaQr,
         createdAt: invDate,
         items: [
-          { product: prod1._id, productName: prod1.name, quantity: 1, price: subTotal * 0.6, tax: taxAmount * 0.6, totalPrice: subTotal * 0.6 * 1.15 },
-          { product: prod2._id, productName: prod2.name, quantity: 10, price: subTotal * 0.4, tax: taxAmount * 0.4, totalPrice: subTotal * 0.4 * 1.15 }
+          { product: prod1._id, productName: prod1.name, quantity: 1, price: subTotal * 0.6, tax: taxAmount * 0.6, totalPrice: subTotal * 0.6 * 1.15 }
         ]
       });
     }
 
     console.log('✅ 50+ Historical ZATCA Phase 2 Invoices created over 1-Year (365 days) timeline.');
 
-    // 8. 40+ POS SHIFTS ACROSS 1 YEAR
-    for (let s = 350; s >= 0; s -= 9) {
-      await PosShift.create({
-        shiftNumber: `SHIFT-2025-DAY-${365 - s}`,
-        cashier: cashierUser._id,
-        openingFloat: 500,
-        cashSales: 8500 + s * 15,
-        cardSales: 19500 + s * 30,
-        expectedCash: 9000 + s * 15,
-        actualCash: 9000 + s * 15,
-        variance: 0,
-        status: 'CLOSED',
-        openedAt: daysAgo(s + 0.4),
-        closedAt: daysAgo(s)
-      });
-    }
-
-    // 9. 15+ QUOTATIONS / ESTIMATES ACROSS 1 YEAR
-    for (let q = 330; q >= 10; q -= 25) {
-      await Quotation.create({
-        quotationNumber: `EST-2025-00${Math.floor((365 - q) / 20)}`,
-        customer: customersList[q % customersList.length]._id,
-        items: [{ product: prod1._id, productName: prod1.name, quantity: 4, unitPrice: 12500, totalPrice: 50000 }],
-        subTotal: 50000,
-        taxAmount: 7500,
-        grandTotal: 57500,
-        status: 'SENT',
-        createdBy: adminUser._id,
-        createdAt: daysAgo(q)
-      });
-    }
-
-    // 10. 15+ SERVICE BOOKINGS ACROSS 1 YEAR
-    for (let b = 320; b >= 5; b -= 22) {
-      await Booking.create({
-        bookingCode: `BKG-KSA-${1000 + b}`,
-        customer: customersList[b % customersList.length]._id,
-        serviceTitle: 'On-Site High Voltage Switchgear Commissioning',
-        bookingDate: daysAgo(b),
-        timeSlot: '09:00 AM - 02:00 PM',
-        price: 4500,
-        status: 'COMPLETED',
-        createdAt: daysAgo(b)
-      });
-    }
-
-    // 11. 30+ CLIENT ATTENDANCE LOGS
-    for (let ca = 300; ca >= 0; ca -= 10) {
-      await ClientAttendance.create({
-        customer: customersList[ca % customersList.length]._id,
-        checkInTime: daysAgo(ca),
-        membershipType: 'VIP Corporate License',
-        gateLocation: 'Olaya Corporate Center Executive Suite Gate 1',
-        createdAt: daysAgo(ca)
-      });
-    }
-
-    // 12. 20+ LOYALTY POINTS TRANSACTIONS
-    for (let pt = 340; pt >= 10; pt -= 18) {
-      await PointCredit.create({
-        customer: custAramco._id,
-        pointsEarned: 1200,
-        pointsRedeemed: 200,
-        currentBalance: 1000 + (365 - pt) * 10,
-        transactionType: 'EARN',
-        referenceInvoice: `KSA-INV-2025-${1000 + Math.floor(pt / 7)}`,
-        notes: 'Annual Corporate Loyalty Point Grant',
-        createdAt: daysAgo(pt)
-      });
-    }
-
-    // 13. CHART OF ACCOUNTS & 25+ POSTED JOURNAL VOUCHERS
-    const acc10010 = await Account.create({ code: '10010', name: 'Cash Vault (Riyadh Bank - خزينة الرياض)', accountType: 'ASSET', balance: 185000 });
-    const acc10020 = await Account.create({ code: '10020', name: 'Al Rajhi Corporate Bank Account (حساب الراجحي)', accountType: 'ASSET', balance: 1450000 });
-    const acc10030 = await Account.create({ code: '10030', name: 'Accounts Receivable - Trade Debtors (ذمم مدينين)', accountType: 'ASSET', balance: 45000 });
-    const acc20010 = await Account.create({ code: '20010', name: 'Accounts Payable - Trade Creditors (ذمم دائنين)', accountType: 'LIABILITY', balance: 120000 });
-    const acc20020 = await Account.create({ code: '20020', name: 'ZATCA VAT Output Payable 15% (ضريبة القيمة المضافة)', accountType: 'LIABILITY', balance: 34500 });
-    const acc40010 = await Account.create({ code: '40010', name: 'Commercial Sales Revenue (إيرادات المبيعات)', accountType: 'INCOME', balance: 890000 });
-    const acc50010 = await Account.create({ code: '50010', name: 'Cost of Goods Sold - COGS (تكلفة البضاعة المباعة)', accountType: 'EXPENSE', balance: 480000 });
-    const acc50020 = await Account.create({ code: '50020', name: 'Staff Wages & WPS Payroll Expense (رواتب الموظفين)', accountType: 'EXPENSE', balance: 145000 });
-
-    for (let jv = 350; jv >= 10; jv -= 14) {
-      await JournalVoucher.create({
-        voucherNo: `JV-2025-00${Math.floor((365 - jv) / 14)}`,
-        voucherDate: daysAgo(jv),
-        description: `Bi-Weekly Corporate Utility & Operational Settlement (Period ${Math.floor((365 - jv) / 14) + 1})`,
-        totalDebit: 8500,
-        totalCredit: 8500,
-        status: 'POSTED',
-        createdBy: adminUser._id,
-        createdAt: daysAgo(jv),
-        entries: [
-          { accountId: acc50020._id, accountName: acc50020.name, debit: 8500, credit: 0, memo: 'Bi-Weekly Payroll Outflow' },
-          { accountId: acc10020._id, accountName: acc10020.name, debit: 0, credit: 8500, memo: 'Transferred via Al Rajhi Corporate' }
-        ]
-      });
-    }
-
-    // 14. 15+ CHEQUES ACROSS 1 YEAR
-    for (let chk = 340; chk >= 10; chk -= 24) {
-      await Cheque.create({
-        chequeNumber: `CHK-KSA-${90000 + chk}`,
-        chequeType: chk % 2 === 0 ? 'RECEIVED' : 'ISSUED',
-        partyName: chk % 2 === 0 ? 'Saudi Aramco Overseas' : 'Caterpillar Middle East',
-        bankName: 'National Commercial Bank (NCB الأهلي)',
-        amount: 35000 + chk * 50,
-        dueDate: daysAgo(chk),
-        status: 'CLEARED',
-        createdAt: daysAgo(chk)
-      });
-    }
-
-    // 15. EMPLOYEES & 12 MONTHLY PAYROLL RUNS (1 YEAR)
+    // 10. EMPLOYEES & PAYROLL
     const emp1 = await Employee.create({
       employeeCode: 'EMP-0101',
       name: 'Tariq Al-Harbi (طارق الحربي)',
@@ -526,63 +374,43 @@ const seedData = async () => {
       iqamaExpiryDate: new Date(Date.now() + 300 * 86400000)
     });
 
-    const emp2 = await Employee.create({
-      employeeCode: 'EMP-0102',
-      name: 'Faisal Al-Otaibi (فيصل العتيبي)',
-      email: 'faisal@almadaen.sa',
-      phone: '+966509988772',
-      department: 'Finance & Accounts',
-      designation: 'Finance Manager',
-      basicSalary: 12000,
-      allowances: { hra: 3000, transport: 1000 },
-      bankDetails: { bankName: 'Riyadh Bank', iban: 'SA5520000110022003300440' },
-      iqamaExpiryDate: new Date(Date.now() + 360 * 86400000)
+    await Payslip.create({
+      payslipNo: 'PAY-202608-EMP0101',
+      employee: emp1._id,
+      month: '2026-08',
+      basicSalary: 5500,
+      totalAllowances: 2000,
+      overtimePay: 450,
+      netSalary: 7950,
+      paymentStatus: 'PAID',
+      wpsExported: true
     });
 
-    const monthsList = ['2025-08', '2025-09', '2025-10', '2025-11', '2025-12', '2026-01', '2026-02', '2026-03', '2026-04', '2026-05', '2026-06', '2026-07', '2026-08'];
-    for (const mStr of monthsList) {
-      await Payslip.create({
-        payslipNo: `PAY-${mStr.replace('-', '')}-EMP0101`,
-        employee: emp1._id,
-        month: mStr,
-        basicSalary: 5500,
-        totalAllowances: 2000,
-        overtimePay: 450,
-        netSalary: 7950,
-        paymentStatus: 'PAID',
-        wpsExported: true
-      });
-    }
-
-    // 16. BOM & 15+ MANUFACTURING ORDERS ACROSS 1 YEAR
+    // 11. BOM & MANUFACTURING
     const bom1 = await Bom.create({
       bomNumber: 'BOM-PANEL-400V',
-      finishedGood: prod5._id,
+      finishedGood: prod2._id,
       outputQuantity: 1,
       laborCost: 400,
       overheadCost: 200,
       rawMaterials: [
-        { productId: prod2._id, productName: prod2.name, quantity: 4, unitCost: 310, totalCost: 1240 },
-        { productId: prod3._id, productName: prod3.name, quantity: 2, unitCost: 42, totalCost: 84 }
+        { productId: prod2._id, productName: prod2.name, quantity: 4, unitCost: 310, totalCost: 1240 }
       ],
-      totalBomCost: 1924,
-      unitBomCost: 1924
+      totalBomCost: 1440,
+      unitBomCost: 1440
     });
 
-    for (let mo = 330; mo >= 0; mo -= 22) {
-      await ManufacturingOrder.create({
-        moNumber: `MO-2025-00${Math.floor((365 - mo) / 20)}`,
-        bom: bom1._id,
-        finishedGood: prod5._id,
-        plannedQuantity: 10,
-        producedQuantity: 10,
-        targetWarehouse: whRuh._id,
-        status: 'COMPLETED',
-        createdAt: daysAgo(mo)
-      });
-    }
+    await ManufacturingOrder.create({
+      moNumber: 'MO-2026-0085',
+      bom: bom1._id,
+      finishedGood: prod2._id,
+      plannedQuantity: 10,
+      producedQuantity: 10,
+      targetWarehouse: whRuh._id,
+      status: 'COMPLETED'
+    });
 
-    // 17. PROJECTS & 25+ KANBAN TASKS
+    // 12. PROJECTS, TASKS & METERS
     const proj1 = await Project.create({
       projectCode: 'PRJ-NEOM-01',
       name: 'Neom Substation Electrical Equipment Installation (مشروع نيوم)',
@@ -591,55 +419,30 @@ const seedData = async () => {
       status: 'IN_PROGRESS'
     });
 
-    const proj2 = await Project.create({
-      projectCode: 'PRJ-REDSEA-02',
-      name: 'Red Sea Resort Luxury Infrastructure Setup (مشروع البحر الأحمر)',
-      customer: custRedSea._id,
-      budget: 2400000,
-      status: 'IN_PROGRESS'
+    await Task.create({
+      taskNumber: 'TSK-00101',
+      project: proj1._id,
+      title: 'Dispatch Schneider 3-Phase Breakers to Neom Site',
+      priority: 'HIGH',
+      status: 'DONE',
+      assignee: adminUser._id
     });
 
-    for (let t = 1; t <= 12; t++) {
-      await Task.create({
-        taskNumber: `TSK-00${100 + t}`,
-        project: t % 2 === 0 ? proj1._id : proj2._id,
-        title: `Phase ${t} Commissioning & Safety Audit`,
-        priority: t % 3 === 0 ? 'URGENT' : 'HIGH',
-        status: t % 4 === 0 ? 'DONE' : (t % 3 === 0 ? 'IN_PROGRESS' : 'TODO'),
-        assignee: adminUser._id
-      });
-    }
+    await RentalMeter.create({
+      meterNo: 'MTR-OLAYA-402',
+      tenant: custSabic._id,
+      previousReading: 12400,
+      currentReading: 13850,
+      ratePerUnit: 0.85,
+      billedAmount: 1232.50,
+      status: 'BILLED'
+    });
 
-    // 18. RENTAL METERS (12 MONTHS)
-    for (let rm = 12; rm >= 1; rm--) {
-      await RentalMeter.create({
-        meterNo: `MTR-OLAYA-40${rm}`,
-        tenant: custSabic._id,
-        previousReading: 10000 + (12 - rm) * 500,
-        currentReading: 10500 + (12 - rm) * 500,
-        ratePerUnit: 0.85,
-        billedAmount: 425.00,
-        status: 'BILLED'
-      });
-    }
-
-    // 19. AUTO SEQUENCES, TAX EXEMPTIONS & CURRENCIES
+    // 13. AUTO SEQUENCES & CURRENCIES
     await AutoSequence.create({ docType: 'INVOICE', prefix: 'KSA-INV', nextNumber: 1050, zeroPad: 5 });
-    await AutoSequence.create({ docType: 'ESTIMATE', prefix: 'KSA-EST', nextNumber: 25, zeroPad: 5 });
-    await AutoSequence.create({ docType: 'PO', prefix: 'KSA-PO', nextNumber: 48, zeroPad: 5 });
-    await AutoSequence.create({ docType: 'JV', prefix: 'KSA-JV', nextNumber: 35, zeroPad: 5 });
-
     await CurrencyRate.create({ currencyCode: 'SAR', currencyName: 'Saudi Riyal (ريال سعودي)', symbol: 'SAR', exchangeRate: 1.0, isDefault: true });
 
-    await ApiKey.create({
-      keyName: 'Shopify / WooCommerce Saudi Portal Connector',
-      keySecret: 'sec_live_saudi_enterprise_99887766554433221100',
-      permissions: ['read:products', 'write:invoices'],
-      rateLimitPerMin: 100,
-      status: 'ACTIVE'
-    });
-
-    console.log('🎉 1-YEAR MASSIVE Saudi Arabia Enterprise Data Seeder Execution Completed Successfully!');
+    console.log('🎉 Extended Saudi Enterprise Data Seeder Execution Completed Successfully!');
     process.exit(0);
   } catch (error) {
     console.error('Error seeding data:', error);

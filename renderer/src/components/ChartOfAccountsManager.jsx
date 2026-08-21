@@ -33,7 +33,7 @@ const ChartOfAccountsManager = () => {
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
             });
             const jvData = await jvRes.json();
-            if (jvData.success) setJvs(jvData.jvs || []);
+            if (jvData.success) setJvs(jvData.vouchers || jvData.jvs || []);
 
             const chkRes = await fetch('http://localhost:5000/api/cheques', {
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
